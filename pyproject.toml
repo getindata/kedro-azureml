@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "kedro-azureml"
+version = "0.1.0"
+description = ""
+authors = ["marcin.zablocki <marcin.zablocki@getindata.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+kedro = ">=0.18.2"
+cloudpickle = "^2.1.0"
+adlfs = "^2022.7.0"
+azure-ai-ml = "~=0.1.0b4"
+kedro-mlflow = { version = "^0.11.1", optional = true }
+pydantic = "^1.9.1"
+
+[tool.poetry.extras]
+mlflow = ["kedro-mlflow"]
+
+[tool.poetry.dev-dependencies]
+pytest = "<6.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
