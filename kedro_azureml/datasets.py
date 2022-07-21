@@ -1,10 +1,9 @@
 from functools import lru_cache
 from typing import Any, Dict
-
+import bz2  # TODO: consider zstandard?
 import fsspec
-from cloudpickle import cloudpickle
+import cloudpickle
 from kedro.io import AbstractDataSet
-
 from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
 
 
@@ -38,13 +37,19 @@ class KedroAzureRunnerDataset(AbstractDataSet):
         with fsspec.open(
             self._get_target_path(), "rb", **self._get_storage_options()
         ) as f:
-            return cloudpickle.load(f)
+            with bz2.open(f, "rb") as stream:
+                return cloudpickle.load(stream)
 
     def _save(self, data: Any) -> None:
         with fsspec.open(
             self._get_target_path(), "wb", **self._get_storage_options()
         ) as f:
-            cloudpickle.dump(data, f)
+            with bz2.open(f, "wb") as stream:
+                cloudpickle.dump(data, stream)
 
     def _describe(self) -> Dict[str, Any]:
-        return {"KedroAzureRunnerDataset": "for use only within Azure ML Pipelines"}
+        return {
+            "info": "for use only within Azure ML Pipelines",
+            "dataset_name": self.dataset_name,
+            "path": self._get_target_path(),
+        }

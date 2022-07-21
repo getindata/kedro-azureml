@@ -1,23 +1,25 @@
+import logging
 import os
-from contextlib import contextmanager
-from copy import deepcopy
 from io import StringIO
-
-import click
-
 from pathlib import Path
 from typing import Optional
 
+import click
 import yaml
+from azure.ai.ml.entities import Job
 
 from kedro_azureml.cli_functions import (
     get_context_and_pipeline,
 )
 from kedro_azureml.client import AzureMLPipelinesClient
 from kedro_azureml.config import CONFIG_TEMPLATE
-from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
-from kedro_azureml.generator import AzureMLPipelineGenerator
+from kedro_azureml.constants import (
+    KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
+    AZURE_SUBSCRIPTION_ID,
+)
 from kedro_azureml.utils import CliContext, KedroContextManager
+
+logger = logging.getLogger(__name__)
 
 
 @click.group("AzureML")
@@ -109,8 +111,8 @@ def init(
 @click.option(
     "-s",
     "--subscription_id",
-    help="Azure Subscription ID. Defaults to env `AZURE_SUBSCRIPTION_ID`",
-    default=lambda: os.getenv("AZURE_SUBSCRIPTION_ID", ""),
+    help=f"Azure Subscription ID. Defaults to env `{AZURE_SUBSCRIPTION_ID}`",
+    default=lambda: os.getenv(AZURE_SUBSCRIPTION_ID, ""),
     type=str,
 )
 @click.option(
@@ -144,11 +146,22 @@ def run(
     params: list,
     wait_for_completion: bool,
 ):
-    assert subscription_id, "Please provide Azure Subscription ID"
+    assert (
+        subscription_id
+    ), f"Please provide Azure Subscription ID or set `{AZURE_SUBSCRIPTION_ID}` env"
+
+    if image:
+        click.echo(f"Overriding image for run to: {image}")
+
     mgr: KedroContextManager
     with get_context_and_pipeline(ctx, image, pipeline, params) as (mgr, az_pipeline):
         az_client = AzureMLPipelinesClient(az_pipeline, subscription_id)
-        az_client.run(mgr.plugin_config.azure, wait_for_completion)
+
+        az_client.run(
+            mgr.plugin_config.azure,
+            wait_for_completion,
+            lambda job: click.echo(job.studio_url),
+        )
 
 
 @azureml_group.command()

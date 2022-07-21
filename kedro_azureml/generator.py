@@ -12,6 +12,7 @@ from kedro.pipeline import Pipeline, node
 from kedro.pipeline.node import Node
 
 from kedro_azureml.config import KedroAzureMLConfig, KedroAzureRunnerConfig
+from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +88,7 @@ class AzureMLPipelineGenerator:
             display_name=node.name,
             command=self._prepare_command(node),
             environment_variables={
-                "KEDRO_AZURE_RUNNER_CONFIG": KedroAzureRunnerConfig(
+                KEDRO_AZURE_RUNNER_CONFIG: KedroAzureRunnerConfig(
                     temporary_storage=self.config.azure.temporary_storage,
                     run_id=kedro_azure_run_id,
                     storage_account_key=self.storage_account_key,
@@ -155,7 +156,7 @@ class AzureMLPipelineGenerator:
 
     def _prepare_command(self, node):
         return (
-            f"cd /home/kedro && kedro run -e {self.kedro_environment} --pipeline={self.pipeline_name} --node={node.name} --runner=kedroazureml.azurerunner.AzurePipelinesRunner"
+            f"cd /home/kedro && kedro run -e {self.kedro_environment} --pipeline={self.pipeline_name} --node={node.name} --runner=kedro_azureml.runner.AzurePipelinesRunner"
             + (
                 (
                     " && "

@@ -1,5 +1,7 @@
+import logging
 from pathlib import Path
 from tempfile import TemporaryFile, TemporaryDirectory
+from typing import Callable, Optional
 
 from azure.ai.ml import MLClient
 from azure.ai.ml.entities import Job
@@ -7,6 +9,8 @@ from azure.identity import DefaultAzureCredential, InteractiveBrowserCredential
 import json
 from kedro_azureml.config import AzureMLConfig
 from contextlib import contextmanager
+
+logger = logging.getLogger(__name__)
 
 
 @contextmanager
@@ -42,17 +46,30 @@ class AzureMLPipelinesClient:
     def compile(self, output_path: Path):
         output_path.write_text(str(self.azure_pipeline))
 
-    def run(self, config: AzureMLConfig, wait_for_completion=False) -> bool:
+    def run(
+        self,
+        config: AzureMLConfig,
+        wait_for_completion=False,
+        on_job_scheduled: Optional[Callable[[Job], None]] = None,
+    ) -> bool:
         with _get_azureml_client(self.subscription_id, config) as ml_client:
-            assert ml_client.compute.get(
-                config.cluster_name
+            assert (
+                cluster := ml_client.compute.get(config.cluster_name)
             ), f"Cluster {config.cluster_name} does not exist"
+
+            logger.info(
+                f"Creating job on cluster {cluster.name} ({cluster.size}, min instances: {cluster.min_instances}, "
+                f"max instances: {cluster.max_instances})"
+            )
 
             pipeline_job = ml_client.jobs.create_or_update(
                 self.azure_pipeline,
                 experiment_name=config.experiment_name,
                 compute=config.cluster_name,
             )
+
+            if on_job_scheduled:
+                on_job_scheduled(pipeline_job)
 
             if wait_for_completion:
                 try:
