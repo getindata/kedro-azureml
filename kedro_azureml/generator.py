@@ -1,6 +1,9 @@
+import logging
 import re
 from typing import Optional, Dict
 from uuid import uuid4
+
+import click
 from azure.ai.ml import MLClient, command, Input, Output
 from azure.ai.ml.dsl import pipeline as azure_pipeline
 from azure.ai.ml.entities import Environment, Job
@@ -8,7 +11,9 @@ from azure.ai.ml.entities._builders import Command
 from kedro.pipeline import Pipeline, node
 from kedro.pipeline.node import Node
 
-from kedro_azureml.config import KedroAzureMLConfig
+from kedro_azureml.config import KedroAzureMLConfig, KedroAzureRunnerConfig
+
+logger = logging.getLogger(__name__)
 
 
 class AzureMLPipelineGenerator:
@@ -18,10 +23,12 @@ class AzureMLPipelineGenerator:
         kedro_environment: str,
         config: KedroAzureMLConfig,
         docker_image: Optional[str] = None,
-        params: Optional[dict] = None,
+        params: Optional[list] = None,
+        storage_account_key: Optional[str] = "",
     ):
+        self.storage_account_key = storage_account_key
         self.kedro_environment = kedro_environment
-        self.params = params
+        self.params = params  # TODO - use this
         self.docker_image = docker_image
         self.config = config
         self.pipeline_name = pipeline_name
@@ -31,6 +38,8 @@ class AzureMLPipelineGenerator:
 
         pipeline: Pipeline = pipelines[self.pipeline_name]
         kedro_azure_run_id = uuid4().hex
+
+        logger.info(f"Translating {self.pipeline_name} to Azure ML Pipeline")
 
         def kedro_azure_pipeline_fn():
             # TODO - maybe add mlflow as built-in python + add Inputs to all downstream components?
@@ -68,16 +77,22 @@ class AzureMLPipelineGenerator:
         return name.lower().replace(".", "__")
 
     def _construct_azure_command(
-        self, pipeline: Pipeline, node: Node, kedro_azure_run_id: str
+        self,
+        pipeline: Pipeline,
+        node: Node,
+        kedro_azure_run_id: str,
     ):
         return command(
             name=self._sanitize_azure_name(node.name),
             display_name=node.name,
             command=self._prepare_command(node),
             environment_variables={
-                "KEDRO_AZURE_RUN_ID": kedro_azure_run_id,
-                # TODO : "KEDRO_AZURE_STORAGE_ACCOUNT_KEY": key,
-            },  # TODO - make this more intelligent :D
+                "KEDRO_AZURE_RUNNER_CONFIG": KedroAzureRunnerConfig(
+                    temporary_storage=self.config.azure.temporary_storage,
+                    run_id=kedro_azure_run_id,
+                    storage_account_key=self.storage_account_key,
+                ).json(),
+            },
             environment=Environment(
                 image=self.docker_image or self.config.docker.image
             ),

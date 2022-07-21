@@ -1521,7 +1521,7 @@ mlflow = ["kedro-mlflow"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "e8d6750b39a6dda92350d3f794cc72874dac6056ad98b75c6f15ea3a4ee5a66a"
+content-hash = "bb26333b2975ae9ef28575068c0bb10588ad81a5389e874dd3aa3749a91c6daf"
 
 [metadata.files]
 adal = [

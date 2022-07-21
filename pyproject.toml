@@ -8,16 +8,22 @@ authors = ["marcin.zablocki <marcin.zablocki@getindata.com>"]
 python = ">=3.9,<3.11"
 kedro = ">=0.18.2"
 cloudpickle = "^2.1.0"
-adlfs = "^2022.7.0"
+adlfs = ">=2022.4.0"
 azure-ai-ml = "~=0.1.0b4"
 kedro-mlflow = { version = "^0.11.1", optional = true }
-pydantic = "^1.9.1"
+pydantic = "~=1.9.1"
 
 [tool.poetry.extras]
 mlflow = ["kedro-mlflow"]
 
 [tool.poetry.dev-dependencies]
 pytest = "<6.0"
+
+[tool.poetry.plugins] # Optional super table
+
+[tool.poetry.plugins."kedro.project_commands"]
+"azureml" = "kedro_azureml.cli:commands"
+
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
