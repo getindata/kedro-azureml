@@ -24,12 +24,12 @@ class AzureMLPipelineGenerator:
         kedro_environment: str,
         config: KedroAzureMLConfig,
         docker_image: Optional[str] = None,
-        params: Optional[list] = None,
+        params: Optional[str] = None,
         storage_account_key: Optional[str] = "",
     ):
         self.storage_account_key = storage_account_key
         self.kedro_environment = kedro_environment
-        self.params = params  # TODO - use this
+        self.params = params
         self.docker_image = docker_image
         self.config = config
         self.pipeline_name = pipeline_name
@@ -155,21 +155,16 @@ class AzureMLPipelineGenerator:
         return invoked_components
 
     def _prepare_command(self, node):
-        return (
-            f"cd /home/kedro && kedro run -e {self.kedro_environment} --pipeline={self.pipeline_name} --node={node.name} --runner=kedro_azureml.runner.AzurePipelinesRunner"
-            + (
-                (
-                    " && "
-                    + " && ".join(
-                        [
-                            "echo 'Show must go on!' > ${{outputs."
-                            + self._sanitize_param_name(name)
-                            + "}}/output.txt"
-                            for name in node.outputs
-                        ]
-                    )
-                )
-                if node.outputs
-                else ""
-            )
+        azure_outputs = (
+            [
+                "--az-output=${{outputs." + self._sanitize_param_name(name) + "}}"
+                for name in node.outputs
+            ]
+            if node.outputs
+            else []
         )
+        return (
+            f"cd /home/kedro && kedro azureml -e {self.kedro_environment} execute --pipeline={self.pipeline_name} --node={node.name} "
+            + " ".join(azure_outputs)
+            + f" --params='{self.params}'"
+        ).strip()

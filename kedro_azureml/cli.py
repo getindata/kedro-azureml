@@ -1,8 +1,9 @@
+import json
 import logging
 import os
 from io import StringIO
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 import click
 import yaml
@@ -17,6 +18,7 @@ from kedro_azureml.constants import (
     KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
     AZURE_SUBSCRIPTION_ID,
 )
+from kedro_azureml.runner import AzurePipelinesRunner
 from kedro_azureml.utils import CliContext, KedroContextManager
 
 logger = logging.getLogger(__name__)
@@ -130,11 +132,10 @@ def init(
     default="__default__",
 )
 @click.option(
-    "--param",
+    "--params",
     "params",
     type=str,
-    multiple=True,
-    help="Parameters override in form of `key=value`",
+    help="Parameters override in form of JSON string",
 )
 @click.option("--wait-for-completion", type=bool, is_flag=True, default=False)
 @click.pass_obj
@@ -143,7 +144,7 @@ def run(
     subscription_id: str,
     image: Optional[str],
     pipeline: str,
-    params: list,
+    params: str,
     wait_for_completion: bool,
 ):
     assert (
@@ -180,11 +181,10 @@ def run(
     default="__default__",
 )
 @click.option(
-    "--param",
+    "--params",
     "params",
     type=str,
-    multiple=True,
-    help="Parameters override in form of `key=value`",
+    help="Parameters override in form of JSON string",
 )
 @click.option(
     "-o",
@@ -199,3 +199,54 @@ def compile(
 ):
     with get_context_and_pipeline(ctx, image, pipeline, params) as (_, az_pipeline):
         Path(output).write_text(str(az_pipeline))
+        click.echo(f"Compiled pipeline to {output}")
+
+
+@azureml_group.command(hidden=True)
+@click.option(
+    "-p",
+    "--pipeline",
+    "pipeline",
+    type=str,
+    help="Name of pipeline to run",
+    default="__default__",
+)
+@click.option(
+    "-n", "--node", "node", type=str, help="Name of the node to run", required=True
+)
+@click.option(
+    "--params",
+    "params",
+    type=str,
+    help="Parameters override in form of `key=value`",
+)
+@click.option(
+    "--az-output",
+    "azure_outputs",
+    type=str,
+    multiple=True,
+    help="Paths of Azure ML Pipeline outputs to save dummy data into",
+)
+@click.pass_obj
+def execute(
+    ctx: CliContext, pipeline: str, node: str, params: str, azure_outputs: List[str]
+):
+    # 1. Run kedro
+    if params:
+        parameters = json.loads(params.strip("'"))
+        click.echo(
+            f"Running with extra parameters:\n{json.dumps(parameters, indent=4)}"
+        )
+    else:
+        parameters = None
+    with KedroContextManager(
+        ctx.metadata.package_name, env=ctx.env, extra_params=parameters
+    ) as mgr:
+        runner = AzurePipelinesRunner()
+        mgr.session.run(pipeline, node_names=[node], runner=runner)
+
+    # 2. Save dummy outputs
+    for dummy_output in azure_outputs:
+        (Path(dummy_output) / "output.txt").write_text(
+            "Kedro Azure ML output placeholder :)"
+        )
