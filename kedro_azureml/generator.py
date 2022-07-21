@@ -166,5 +166,5 @@ class AzureMLPipelineGenerator:
         return (
             f"cd /home/kedro && kedro azureml -e {self.kedro_environment} execute --pipeline={self.pipeline_name} --node={node.name} "
             + " ".join(azure_outputs)
-            + f" --params='{self.params}'"
+            + (f" --params='{self.params}'" if self.params else "")
         ).strip()
