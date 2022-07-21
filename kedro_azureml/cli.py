@@ -11,6 +11,7 @@ from azure.ai.ml.entities import Job
 
 from kedro_azureml.cli_functions import (
     get_context_and_pipeline,
+    parse_extra_params,
 )
 from kedro_azureml.client import AzureMLPipelinesClient
 from kedro_azureml.config import CONFIG_TEMPLATE
@@ -147,6 +148,7 @@ def run(
     params: str,
     wait_for_completion: bool,
 ):
+    params = json.dumps(parse_extra_params(params))
     assert (
         subscription_id
     ), f"Please provide Azure Subscription ID or set `{AZURE_SUBSCRIPTION_ID}` env"
@@ -197,6 +199,7 @@ def run(
 def compile(
     ctx: CliContext, image: Optional[str], pipeline: str, params: list, output: str
 ):
+    params = json.dumps(parse_extra_params(params))
     with get_context_and_pipeline(ctx, image, pipeline, params) as (_, az_pipeline):
         Path(output).write_text(str(az_pipeline))
         click.echo(f"Compiled pipeline to {output}")
@@ -232,13 +235,7 @@ def execute(
     ctx: CliContext, pipeline: str, node: str, params: str, azure_outputs: List[str]
 ):
     # 1. Run kedro
-    if params:
-        parameters = json.loads(params.strip("'"))
-        click.echo(
-            f"Running with extra parameters:\n{json.dumps(parameters, indent=4)}"
-        )
-    else:
-        parameters = None
+    parameters = parse_extra_params(params)
     with KedroContextManager(
         ctx.metadata.package_name, env=ctx.env, extra_params=parameters
     ) as mgr:

@@ -1,3 +1,4 @@
+import json
 import os
 from contextlib import contextmanager
 
@@ -29,3 +30,14 @@ def get_context_and_pipeline(ctx: CliContext, image: str, pipeline: str, params)
         )
         az_pipeline = generator.generate()
         yield mgr, az_pipeline
+
+
+def parse_extra_params(params):
+    if params:
+        parameters = json.loads(params.strip("'"))
+        click.echo(
+            f"Running with extra parameters:\n{json.dumps(parameters, indent=4)}"
+        )
+    else:
+        parameters = None
+    return parameters
