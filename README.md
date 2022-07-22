@@ -152,7 +152,7 @@ Execution Summary
 RunId: placid_pot_bdcyntnkvn 
 ```
 
-![Kedro AzureML Pipeline execution](./docs/images/kedro-azureml-pipeline-spaceflights.png)
+![Kedro AzureML Pipeline execution](./docs/images/azureml_running_pipeline.gif)
 
 
 ## MLflow integration
