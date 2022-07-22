@@ -6,7 +6,7 @@ authors = ["marcin.zablocki <marcin.zablocki@getindata.com>"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
-kedro = ">=0.18.2"
+kedro = ">=0.18.2,<0.19"
 cloudpickle = "^2.1.0"
 adlfs = ">=2022.4.0"
 azure-ai-ml = ">=0.1.0b4"

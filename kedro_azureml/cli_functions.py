@@ -33,8 +33,7 @@ def get_context_and_pipeline(ctx: CliContext, image: str, pipeline: str, params)
 
 
 def parse_extra_params(params):
-    if params:
-        parameters = json.loads(params.strip("'"))
+    if params and (parameters := json.loads(params.strip("'"))):
         click.echo(
             f"Running with extra parameters:\n{json.dumps(parameters, indent=4)}"
         )

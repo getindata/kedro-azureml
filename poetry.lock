@@ -1892,7 +1892,7 @@ mlflow = ["azureml-mlflow", "mlflow"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "b801262066cff927afe9a8b6580bbac338997a620ee73da3a64a0612140532b0"
+content-hash = "af93177d9cffdcc3a30c3d266132cbba2b83851ce9e984dd4465b092fce1a9a7"
 
 [metadata.files]
 adal = [
