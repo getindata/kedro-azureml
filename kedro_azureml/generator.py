@@ -83,6 +83,7 @@ class AzureMLPipelineGenerator:
         node: Node,
         kedro_azure_run_id: str,
     ):
+        # TODO - config can probably expose compute-per-step setting, to allow different steps to be scheduled on different machine types # noqa
         return command(
             name=self._sanitize_azure_name(node.name),
             display_name=node.name,

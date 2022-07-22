@@ -14,7 +14,7 @@ from kedro_azureml.cli_functions import (
     parse_extra_params,
 )
 from kedro_azureml.client import AzureMLPipelinesClient
-from kedro_azureml.config import CONFIG_TEMPLATE
+from kedro_azureml.config import CONFIG_TEMPLATE_YAML
 from kedro_azureml.constants import (
     KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
     AZURE_SUBSCRIPTION_ID,
@@ -70,24 +70,22 @@ def init(
 ):
     with KedroContextManager(ctx.metadata.package_name, ctx.env) as mgr:
         target_path = Path.cwd().joinpath("conf/base/azureml.yml")
-        with StringIO() as buffer:
-            yaml.safe_dump(CONFIG_TEMPLATE.dict(), buffer)
-            cfg = buffer.getvalue().format(
-                **{
-                    "resource_group": resource_group,
-                    "workspace_name": workspace_name,
-                    "experiment_name": experiment_name,
-                    "cluster_name": cluster_name,
-                    "docker_image": (
-                        f"{acr}.azurecr.io/{mgr.context.project_path.name}:latest"
-                        if acr
-                        else "<fill in docker image>"
-                    ),
-                    "storage_container": storage_container,
-                    "storage_account_name": storage_account_name,
-                }
-            )
-            target_path.write_text(cfg)
+        cfg = CONFIG_TEMPLATE_YAML.format(
+            **{
+                "resource_group": resource_group,
+                "workspace_name": workspace_name,
+                "experiment_name": experiment_name,
+                "cluster_name": cluster_name,
+                "docker_image": (
+                    f"{acr}.azurecr.io/{mgr.context.project_path.name}:latest"
+                    if acr
+                    else "<fill in docker image>"
+                ),
+                "storage_container": storage_container,
+                "storage_account_name": storage_account_name,
+            }
+        )
+        target_path.write_text(cfg)
 
         click.echo(f"Configuration generated in {target_path}")
 
@@ -244,6 +242,4 @@ def execute(
 
     # 2. Save dummy outputs
     for dummy_output in azure_outputs:
-        (Path(dummy_output) / "output.txt").write_text(
-            "Kedro Azure ML output placeholder :)"
-        )
+        (Path(dummy_output) / "output.txt").write_text("#getindata")
