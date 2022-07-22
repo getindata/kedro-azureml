@@ -39,8 +39,6 @@ pip install "kedro>=0.18.2,<0.19" "kedro-docker" "kedro-azureml"
 ```console
 kedro new --starter=spaceflights 
 
-kedro new --starter=spaceflights
-
 Project Name
 ============
 Please enter a human readable name for your new project.
@@ -73,7 +71,7 @@ See https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-po
 
 8. Adjust the Data Catalog - the default one stores all data locally, whereas the plugin will automatically use Azure Blob Storage. Only input data is required to be read locally. Final `conf/base/catalog.yml` should look like this:
 ```yaml
- companies:
+companies:
   type: pandas.CSVDataSet
   filepath: data/01_raw/companies.csv
   layer: raw
