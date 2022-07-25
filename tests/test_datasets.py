@@ -1,0 +1,67 @@
+from pathlib import Path
+from tempfile import TemporaryFile, TemporaryDirectory
+from unittest.mock import patch
+from uuid import uuid4
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
+from kedro_azureml.datasets import KedroAzureRunnerDataset
+
+
+def test_azure_dataset_config():
+    run_id = uuid4().hex
+    ds = KedroAzureRunnerDataset(
+        "storage_acc", "test_container", "key123", "unit_tests_dataset", run_id
+    )
+    target_path = ds._get_target_path()
+    cfg = ds._get_storage_options()
+    assert (
+        target_path.startswith("abfs://")
+        and target_path.endswith(".bin")
+        and all(
+            part in target_path
+            for part in (
+                "test_container",
+                "unit_tests_dataset",
+                KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
+                run_id,
+            )
+        )
+    ), "Invalid target path"
+
+    assert all(k in cfg for k in ("account_name", "account_key")), "Invalid ABFS config"
+
+
+@pytest.mark.parametrize(
+    "obj,comparer",
+    [
+        (
+            pd.DataFrame(np.random.rand(1000, 3), columns=["a", "b", "c"]),
+            lambda a, b: a.equals(b),
+        ),
+        (np.random.rand(100, 100), lambda a, b: np.equal(a, b).all()),
+        (["just", "a", "list"], lambda a, b: all(a[i] == b[i] for i in range(len(a)))),
+        ({"some": "dictionary"}, lambda a, b: all(a[k] == b[k] for k in a.keys())),
+        (set(["python", "set"]), lambda a, b: len(a - b) == 0),
+        ("this is a string", lambda a, b: a == b),
+        (1235, lambda a, b: a == b),
+        ((1234, 5678), lambda a, b: all(a[i] == b[i] for i in range(len(a)))),
+    ],
+)
+def test_can_save_python_objects_using_fspec(obj, comparer):
+    with TemporaryDirectory() as tmp_dir:
+        target_path = Path(tmp_dir) / "file.bin"
+        with patch.object(
+            KedroAzureRunnerDataset,
+            "_get_target_path",
+            return_value=str(target_path.absolute()),
+        ):
+            ds = KedroAzureRunnerDataset("", "", "", "ds", "run_id_1234")
+            ds.save(obj)
+            assert target_path.stat().st_size > 0, "File does not seem to be saved"
+            assert comparer(
+                obj, ds.load()
+            ), "Objects are not the same after deserialization"
