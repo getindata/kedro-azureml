@@ -31,6 +31,8 @@ pytest = "<6.0"
 pytest-cov = ">=2.8.0, <4.0.0"
 tox = ">=3.25.1"
 pre-commit = "2.20.0"
+numpy = "1.23.1"
+pandas = "^1.4.3"
 
 [tool.poetry.plugins] # Optional super table
 
