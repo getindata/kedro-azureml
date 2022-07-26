@@ -1,0 +1,15 @@
+repos:
+- repo: https://github.com/pycqa/isort
+  rev: 5.10.1
+  hooks:
+  - id: isort
+    args: ["--profile", "black", "--line-length=79"]
+- repo: https://github.com/psf/black
+  rev: 22.3.0
+  hooks:
+  - id: black
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.3.0
+  hooks:
+  - id: flake8
+    args: ['--ignore=E203,W503', '--max-line-length=120'] # see https://github.com/psf/black/issues/315 https://github.com/psf/black/issues/52
