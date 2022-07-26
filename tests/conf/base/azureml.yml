@@ -1,0 +1,10 @@
+azure:
+  cluster_name: "unit-tests-cluster"
+  experiment_name: "kedro-azure-experiment"
+  resource_group: "rg"
+  workspace_name: "workspace"
+  temporary_storage:
+    account_name: "account"
+    container: "container"
+docker:
+  image: "dummy:latest"

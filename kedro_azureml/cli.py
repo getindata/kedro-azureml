@@ -18,6 +18,7 @@ from kedro_azureml.config import CONFIG_TEMPLATE_YAML
 from kedro_azureml.constants import (
     KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
     AZURE_SUBSCRIPTION_ID,
+    FILL_IN_DOCKER_IMAGE,
 )
 from kedro_azureml.runner import AzurePipelinesRunner
 from kedro_azureml.utils import CliContext, KedroContextManager
@@ -68,6 +69,9 @@ def init(
     storage_container,
     acr,
 ):
+    """
+    Creates basic configuration for Kedro AzureML plugin
+    """
     with KedroContextManager(ctx.metadata.package_name, ctx.env) as mgr:
         target_path = Path.cwd().joinpath("conf/base/azureml.yml")
         cfg = CONFIG_TEMPLATE_YAML.format(
@@ -79,7 +83,7 @@ def init(
                 "docker_image": (
                     f"{acr}.azurecr.io/{mgr.context.project_path.name}:latest"
                     if acr
-                    else "<fill in docker image>"
+                    else FILL_IN_DOCKER_IMAGE
                 ),
                 "storage_container": storage_container,
                 "storage_account_name": storage_account_name,
@@ -138,7 +142,9 @@ def init(
 )
 @click.option("--wait-for-completion", type=bool, is_flag=True, default=False)
 @click.pass_obj
+@click.pass_context
 def run(
+    click_context: click.Context,
     ctx: CliContext,
     subscription_id: str,
     image: Optional[str],
@@ -146,6 +152,9 @@ def run(
     params: str,
     wait_for_completion: bool,
 ):
+    """Runs the specified pipeline in Azure ML Pipelines. Additional parameters can be passed from command line.
+    Can be used with --wait-for-completion param to block the caller until the pipeline finishes in Azure ML.
+    """
     params = json.dumps(parse_extra_params(params))
     assert (
         subscription_id
@@ -158,11 +167,29 @@ def run(
     with get_context_and_pipeline(ctx, image, pipeline, params) as (mgr, az_pipeline):
         az_client = AzureMLPipelinesClient(az_pipeline, subscription_id)
 
-        az_client.run(
+        is_ok = az_client.run(
             mgr.plugin_config.azure,
             wait_for_completion,
             lambda job: click.echo(job.studio_url),
         )
+
+        if is_ok:
+            exit_code = 0
+            click.echo(
+                click.style(
+                    "Pipeline {} successfully".format(
+                        "finished" if wait_for_completion else "started"
+                    ),
+                    fg="green",
+                )
+            )
+        else:
+            exit_code = 1
+            click.echo(
+                click.style("There was an error while running the pipeline", fg="red")
+            )
+
+        click_context.exit(exit_code)
 
 
 @azureml_group.command()

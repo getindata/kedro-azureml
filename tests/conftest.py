@@ -36,6 +36,12 @@ def dummy_plugin_config() -> KedroAzureMLConfig:
 
 
 @pytest.fixture()
+def patched_kedro_package():
+    with patch("kedro.framework.project.PACKAGE_NAME", "tests") as patched_package:
+        yield patched_package
+
+
+@pytest.fixture()
 def patched_azure_dataset():
     with TemporaryDirectory() as tmp_dir:
         target_path = Path(tmp_dir) / (uuid4().hex + ".bin")

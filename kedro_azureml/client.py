@@ -76,6 +76,7 @@ class AzureMLPipelinesClient:
                     ml_client.jobs.stream(pipeline_job.name)
                     return True
                 except Exception:
+                    logger.exception("Error while running the pipeline", exc_info=True)
                     return False
             else:
                 return True
