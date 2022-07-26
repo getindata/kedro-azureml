@@ -30,7 +30,7 @@ jobs:
     - name: Check pre-commit status
       run: |
         poetry install -v
-        python -m pre-commit run --all-files
+        poetry run pre-commit run --all-files
 
     - name: Test with tox
       run: |
