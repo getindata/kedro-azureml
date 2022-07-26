@@ -131,9 +131,16 @@ def test_can_invoke_execute_cli(
         Path, "cwd", return_value=tmp_path
     ):
         runner = CliRunner()
-        result = runner.invoke(execute, ["--node", "node1"], obj=cli_context)
+        result = runner.invoke(
+            execute,
+            ["--node", "node1", "--az-output", str(tmp_path)],
+            obj=cli_context,
+        )
         assert result.exit_code == 0
+        assert (
+            p := tmp_path / "output.txt"
+        ).exists() and p.stat().st_size > 0, "Output placeholders were not created"
 
 
 def test_can_invoke_run():
-    pass
+    raise  # TODO :)
