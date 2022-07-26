@@ -1,13 +1,10 @@
 import json
 import logging
 import os
-from io import StringIO
 from pathlib import Path
 from typing import Optional, List
 
 import click
-import yaml
-from azure.ai.ml.entities import Job
 
 from kedro_azureml.cli_functions import (
     get_context_and_pipeline,
@@ -155,7 +152,7 @@ def run(
     """Runs the specified pipeline in Azure ML Pipelines. Additional parameters can be passed from command line.
     Can be used with --wait-for-completion param to block the caller until the pipeline finishes in Azure ML.
     """
-    params = json.dumps(parse_extra_params(params))
+    params = json.dumps(p) if (p := parse_extra_params(params)) else ""
     assert (
         subscription_id
     ), f"Please provide Azure Subscription ID or set `{AZURE_SUBSCRIPTION_ID}` env"
@@ -224,7 +221,7 @@ def run(
 def compile(
     ctx: CliContext, image: Optional[str], pipeline: str, params: list, output: str
 ):
-    params = json.dumps(parse_extra_params(params))
+    params = json.dumps(p) if (p := parse_extra_params(params)) else ""
     with get_context_and_pipeline(ctx, image, pipeline, params) as (_, az_pipeline):
         Path(output).write_text(str(az_pipeline))
         click.echo(f"Compiled pipeline to {output}")

@@ -1,25 +1,26 @@
-from tempfile import TemporaryDirectory
-from unittest.mock import patch, MagicMock
+import os
+from unittest import mock
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
 import yaml
 from click.testing import CliRunner
-from kedro_azureml.cli import init
+from kedro_azureml.cli import init, compile as cli_compile, execute
 from kedro_azureml.config import KedroAzureMLConfig
 from kedro_azureml.constants import FILL_IN_DOCKER_IMAGE
-from kedro_azureml.utils import CliContext
+from kedro_azureml.generator import AzureMLPipelineGenerator
 from pathlib import Path
+
+from tests.utils import create_kedro_conf_dirs
 
 
 @pytest.mark.parametrize("with_acr", (True, False), ids=("with ACR", "without ACR"))
-def test_can_initialize_empty_plugin_config(
-    patched_kedro_package, tmp_path: Path, with_acr: bool
+def test_can_initialize_basic_plugin_config(
+    patched_kedro_package, cli_context, tmp_path: Path, with_acr: bool
 ):
-    metadata = MagicMock()
-    metadata.package_name = "tests"
-    config_path = tmp_path / "conf" / "base"
-    config_path.mkdir(parents=True)
+
+    config_path = create_kedro_conf_dirs(tmp_path)
     unique_id = uuid4().hex
     with patch.object(Path, "cwd", return_value=tmp_path):
         runner = CliRunner()
@@ -34,7 +35,7 @@ def test_can_initialize_empty_plugin_config(
                 f"storage_container_{unique_id}",
             ]
             + ([f"--acr", f"unit_test_acr_{unique_id}"] if with_acr else []),
-            obj=CliContext("base", metadata),
+            obj=cli_context,
         )
         assert result.exit_code == 0
 
@@ -65,3 +66,74 @@ def test_can_initialize_empty_plugin_config(
             )
         else:
             assert config.docker.image == FILL_IN_DOCKER_IMAGE
+
+
+@pytest.mark.parametrize(
+    "extra_params",
+    ("", '{"unit_test_param": 666.0}'),
+    ids=("without params", "with extra params"),
+)
+@pytest.mark.parametrize(
+    "storage_account_key",
+    ("", "dummy"),
+    ids=("without storage key env", "with storage key env set"),
+)
+def test_can_compile_pipeline(
+    patched_kedro_package,
+    cli_context,
+    dummy_pipeline,
+    dummy_plugin_config,
+    tmp_path: Path,
+    extra_params,
+    storage_account_key,
+):
+    with patch.object(
+        AzureMLPipelineGenerator, "get_kedro_pipeline", return_value=dummy_pipeline
+    ), patch(
+        "kedro_azureml.utils.KedroContextManager.plugin_config",
+        new_callable=mock.PropertyMock,
+        return_value=dummy_plugin_config,
+    ), patch.dict(
+        os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": storage_account_key}
+    ), patch(
+        "click.prompt", return_value="dummy"
+    ) as click_prompt:
+        runner = CliRunner()
+        output_path = tmp_path / "pipeline.yml"
+        result = runner.invoke(
+            cli_compile,
+            ["--output", str(output_path.absolute()), "--params", extra_params],
+            obj=cli_context,
+        )
+        assert result.exit_code == 0
+        assert isinstance(p := yaml.safe_load(output_path.read_text()), dict) and all(
+            k in p for k in ("display_name", "type", "jobs")
+        )
+
+        if not storage_account_key:
+            click_prompt.assert_called()
+
+
+def test_can_invoke_execute_cli(
+    patched_kedro_package,
+    cli_context,
+    dummy_pipeline,
+    dummy_plugin_config,
+    patched_azure_runner,
+    tmp_path: Path,
+):
+    create_kedro_conf_dirs(tmp_path)
+    with patch(
+        "kedro_azureml.runner.AzurePipelinesRunner", new=patched_azure_runner
+    ), patch.dict(
+        "kedro.framework.project.pipelines", {"__default__": dummy_pipeline}
+    ), patch.object(
+        Path, "cwd", return_value=tmp_path
+    ):
+        runner = CliRunner()
+        result = runner.invoke(execute, ["--node", "node1"], obj=cli_context)
+        assert result.exit_code == 0
+
+
+def test_can_invoke_run():
+    pass

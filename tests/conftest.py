@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
 from kedro.pipeline import Pipeline, pipeline, node
@@ -16,6 +16,7 @@ from kedro_azureml.config import (
 from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
 from kedro_azureml.datasets import KedroAzureRunnerDataset
 from kedro_azureml.runner import AzurePipelinesRunner
+from kedro_azureml.utils import CliContext
 from tests.utils import identity
 
 
@@ -39,6 +40,13 @@ def dummy_plugin_config() -> KedroAzureMLConfig:
 def patched_kedro_package():
     with patch("kedro.framework.project.PACKAGE_NAME", "tests") as patched_package:
         yield patched_package
+
+
+@pytest.fixture()
+def cli_context() -> CliContext:
+    metadata = MagicMock()
+    metadata.package_name = "tests"
+    return CliContext("base", metadata)
 
 
 @pytest.fixture()
