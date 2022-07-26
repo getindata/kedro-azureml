@@ -1,9 +1,11 @@
+import bz2  # TODO: consider zstandard?
 from functools import lru_cache
 from typing import Any, Dict
-import bz2  # TODO: consider zstandard?
-import fsspec
+
 import cloudpickle
+import fsspec
 from kedro.io import AbstractDataSet
+
 from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
 
 

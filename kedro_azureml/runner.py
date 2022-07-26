@@ -1,7 +1,7 @@
 import os
-from typing import Dict, Any
+from typing import Any, Dict
 
-from kedro.io import DataCatalog, AbstractDataSet
+from kedro.io import AbstractDataSet, DataCatalog
 from kedro.pipeline import Pipeline
 from kedro.runner import SequentialRunner
 from pluggy import PluginManager

@@ -1,17 +1,17 @@
 import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
-from kedro.pipeline import Pipeline, pipeline, node
 import pytest
+from kedro.pipeline import Pipeline, node, pipeline
 
 from kedro_azureml.config import (
-    KedroAzureRunnerConfig,
+    _CONFIG_TEMPLATE,
     AzureTempStorageConfig,
     KedroAzureMLConfig,
-    _CONFIG_TEMPLATE,
+    KedroAzureRunnerConfig,
 )
 from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
 from kedro_azureml.datasets import KedroAzureRunnerDataset
@@ -74,6 +74,6 @@ def patched_azure_runner(patched_azure_dataset):
         )
         os.environ[KEDRO_AZURE_RUNNER_CONFIG] = cfg.json()
         yield AzurePipelinesRunner()
-    except:
+    except Exception:
         pass
     os.environ = backup

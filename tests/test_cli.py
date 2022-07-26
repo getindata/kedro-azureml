@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from unittest import mock
 from unittest.mock import patch
 from uuid import uuid4
@@ -6,12 +7,12 @@ from uuid import uuid4
 import pytest
 import yaml
 from click.testing import CliRunner
-from kedro_azureml.cli import init, compile as cli_compile, execute
+
+from kedro_azureml.cli import compile as cli_compile
+from kedro_azureml.cli import execute, init
 from kedro_azureml.config import KedroAzureMLConfig
 from kedro_azureml.constants import FILL_IN_DOCKER_IMAGE
 from kedro_azureml.generator import AzureMLPipelineGenerator
-from pathlib import Path
-
 from tests.utils import create_kedro_conf_dirs
 
 
@@ -34,7 +35,7 @@ def test_can_initialize_basic_plugin_config(
                 f"storage_account_name_{unique_id}",
                 f"storage_container_{unique_id}",
             ]
-            + ([f"--acr", f"unit_test_acr_{unique_id}"] if with_acr else []),
+            + ([f"--acr", f"unit_test_acr_{unique_id}"] if with_acr else []),  # noqa
             obj=cli_context,
         )
         assert result.exit_code == 0
