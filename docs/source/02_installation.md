@@ -1,5 +1,11 @@
 # Installation guide
 
+## Prerequisites
+
+* a tool to manage Python virtual environments (e.g. venv, conda, virtualenv).
+* Docker
+* Azure CLI
+
 ## Kedro setup
 
 First, you need to install base Kedro package
@@ -17,6 +23,8 @@ You can install ``kedro-azureml`` plugin from ``PyPi`` with `pip`:
 ```console
 pip install --upgrade kedro-azureml
 ```
+
+Optionally, extra can be specified: `kedro-azureml[mlflow]`.
 
 ### Install from sources
 
