@@ -28,6 +28,7 @@ class AzurePipelinesRunner(SequentialRunner):
     ) -> Dict[str, Any]:
         unsatisfied = pipeline.inputs() - set(catalog.list())
         for ds_name in unsatisfied:
+            catalog = catalog.shallow_copy()
             catalog.add(ds_name, self.create_default_data_set(ds_name))
 
         return super().run(pipeline, catalog, hook_manager, session_id)

@@ -51,17 +51,10 @@ def test_azure_dataset_config():
         ((1234, 5678), lambda a, b: all(a[i] == b[i] for i in range(len(a)))),
     ],
 )
-def test_can_save_python_objects_using_fspec(obj, comparer):
-    with TemporaryDirectory() as tmp_dir:
-        target_path = Path(tmp_dir) / "file.bin"
-        with patch.object(
-            KedroAzureRunnerDataset,
-            "_get_target_path",
-            return_value=str(target_path.absolute()),
-        ):
-            ds = KedroAzureRunnerDataset("", "", "", "ds", "run_id_1234")
-            ds.save(obj)
-            assert target_path.stat().st_size > 0, "File does not seem to be saved"
-            assert comparer(
-                obj, ds.load()
-            ), "Objects are not the same after deserialization"
+def test_can_save_python_objects_using_fspec(obj, comparer, patched_azure_dataset):
+    ds = patched_azure_dataset
+    ds.save(obj)
+    assert (
+        Path(ds._get_target_path()).stat().st_size > 0
+    ), "File does not seem to be saved"
+    assert comparer(obj, ds.load()), "Objects are not the same after deserialization"

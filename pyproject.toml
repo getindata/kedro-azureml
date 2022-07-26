@@ -19,6 +19,7 @@ mlflow = ["azureml-mlflow", "mlflow"]
 
 [tool.poetry.dev-dependencies]
 pytest = "<6.0"
+pytest-cov = ">=2.8.0"
 
 [tool.poetry.plugins] # Optional super table
 

@@ -35,17 +35,12 @@ class AzureMLPipelineGenerator:
         self.pipeline_name = pipeline_name
 
     def generate(self) -> Job:
-        from kedro.framework.project import pipelines
-
-        pipeline: Pipeline = pipelines[self.pipeline_name]
+        pipeline = self.get_kedro_pipeline()
         kedro_azure_run_id = uuid4().hex
 
         logger.info(f"Translating {self.pipeline_name} to Azure ML Pipeline")
 
         def kedro_azure_pipeline_fn():
-            # TODO - maybe add mlflow as built-in python + add Inputs to all downstream components?
-            # TODO - maybe write EVERYTHING with custom prefix - so that the functions are python not bash, and everything is executed manually (call bash from python?)
-            # TODO - use Input / Output - just pass catalog references by names?
             commands = {}
 
             for node in pipeline.nodes:
@@ -70,6 +65,12 @@ class AzureMLPipelineGenerator:
 
         azure_pipeline_job: Job = kedro_azure_pipeline()
         return azure_pipeline_job
+
+    def get_kedro_pipeline(self) -> Pipeline:
+        from kedro.framework.project import pipelines
+
+        pipeline: Pipeline = pipelines[self.pipeline_name]
+        return pipeline
 
     def _sanitize_param_name(self, param_name: str) -> str:
         return re.sub(r"[^a-z0-9_]", "_", param_name.lower())
@@ -116,10 +117,9 @@ class AzureMLPipelineGenerator:
             source_node = next(
                 (n for n in pipeline.nodes if pipeline_output in n.outputs), None
             )
-            if source_node is None:
-                raise ValueError(
-                    f"There is no node which outputs `{pipeline_output}` dataset"
-                )
+            assert (
+                source_node is not None
+            ), f"There is no node which outputs `{pipeline_output}` dataset"
             azure_pipeline_outputs[sanitized_output_name] = invoked_components[
                 source_node.name
             ].outputs[sanitized_output_name]
