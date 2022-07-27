@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 from kedro.framework.context import KedroContext
 
 from kedro_azureml.config import KedroAzureMLConfig
