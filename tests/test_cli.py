@@ -1,18 +1,18 @@
 import os
-from pathlib import Path
 from unittest import mock
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
 import pytest
 import yaml
 from click.testing import CliRunner
+from kedro.framework.startup import ProjectMetadata
 
-from kedro_azureml.cli import compile as cli_compile
-from kedro_azureml.cli import execute, init
+from kedro_azureml import cli
 from kedro_azureml.config import KedroAzureMLConfig
 from kedro_azureml.constants import FILL_IN_DOCKER_IMAGE
 from kedro_azureml.generator import AzureMLPipelineGenerator
+from pathlib import Path
 from tests.utils import create_kedro_conf_dirs
 
 
@@ -26,7 +26,7 @@ def test_can_initialize_basic_plugin_config(
     with patch.object(Path, "cwd", return_value=tmp_path):
         runner = CliRunner()
         result = runner.invoke(
-            init,
+            cli.init,
             [
                 f"resource_group_{unique_id}",
                 f"workspace_name_{unique_id}",
@@ -102,7 +102,7 @@ def test_can_compile_pipeline(
         runner = CliRunner()
         output_path = tmp_path / "pipeline.yml"
         result = runner.invoke(
-            cli_compile,
+            cli.compile,
             ["--output", str(output_path.absolute()), "--params", extra_params],
             obj=cli_context,
         )
@@ -133,7 +133,7 @@ def test_can_invoke_execute_cli(
     ):
         runner = CliRunner()
         result = runner.invoke(
-            execute,
+            cli.execute,
             ["--node", "node1", "--az-output", str(tmp_path)],
             obj=cli_context,
         )
@@ -143,5 +143,104 @@ def test_can_invoke_execute_cli(
         ).exists() and p.stat().st_size > 0, "Output placeholders were not created"
 
 
-def test_can_invoke_run():
-    raise  # TODO :)
+@pytest.mark.parametrize(
+    "wait_for_completion", (False, True), ids=("no wait", "wait for completion")
+)
+@pytest.mark.parametrize(
+    "docker_image",
+    ("", "unit_test_docker_image:latest"),
+    ids=("docker default", "docker overridden"),
+)
+@pytest.mark.parametrize(
+    "use_default_credentials",
+    (False, True),
+    ids=("interactive credentials", "default_credentials"),
+)
+def test_can_invoke_run(
+    patched_kedro_package,
+    cli_context,
+    dummy_pipeline,
+    tmp_path: Path,
+    wait_for_completion: bool,
+    docker_image,
+    use_default_credentials: bool,
+):
+    create_kedro_conf_dirs(tmp_path)
+    with patch.dict(
+        "kedro.framework.project.pipelines", {"__default__": dummy_pipeline}
+    ), patch.object(Path, "cwd", return_value=tmp_path), patch(
+        "kedro_azureml.client.MLClient"
+    ) as ml_client_patched, patch(
+        "kedro_azureml.client.DefaultAzureCredential"
+    ) as default_credentials, patch(
+        "kedro_azureml.client.InteractiveBrowserCredential"
+    ) as interactive_credentials, patch.dict(
+        os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
+    ):
+        if not use_default_credentials:
+            default_credentials.side_effect = ValueError()
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli.run,
+            ["-s", "subscription_id"]
+            + (["--wait-for-completion"] if wait_for_completion else [])
+            + (["-i", docker_image] if docker_image else []),
+            obj=cli_context,
+        )
+        assert result.exit_code == 0
+        ml_client_patched.from_config.assert_called_once()
+        ml_client = ml_client_patched.from_config()
+        ml_client.jobs.create_or_update.assert_called_once()
+        ml_client.compute.get.assert_called_once()
+
+        if wait_for_completion:
+            ml_client.jobs.stream.assert_called_once()
+
+        default_credentials.assert_called_once()
+
+        if not use_default_credentials:
+            interactive_credentials.assert_called_once()
+        else:
+            interactive_credentials.assert_not_called()
+
+
+def test_can_invoke_run_with_failed_pipeline(
+    patched_kedro_package,
+    cli_context,
+    dummy_pipeline,
+    tmp_path: Path,
+):
+    create_kedro_conf_dirs(tmp_path)
+    with patch.dict(
+        "kedro.framework.project.pipelines", {"__default__": dummy_pipeline}
+    ), patch.object(Path, "cwd", return_value=tmp_path), patch(
+        "kedro_azureml.client.MLClient"
+    ) as ml_client_patched, patch(
+        "kedro_azureml.client.DefaultAzureCredential"
+    ), patch.dict(
+        os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
+    ):
+        ml_client = ml_client_patched.from_config()
+        ml_client.jobs.stream.side_effect = ValueError()
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli.commands,
+            [
+                "azureml",
+                "-e",
+                "base",
+                "run",
+                "-s",
+                "subscription_id",
+                "--wait-for-completion",
+            ],
+            obj=ProjectMetadata(
+                tmp_path, "tests", "project", tmp_path, "1.0", Path.cwd()
+            ),
+        )
+        assert result.exit_code == 1
+        ml_client.jobs.create_or_update.assert_called_once()
+        ml_client.compute.get.assert_called_once()
+        ml_client.jobs.stream.assert_called_once()

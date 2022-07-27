@@ -44,9 +44,6 @@ class AzureMLPipelinesClient:
         self.subscription_id = subscription_id
         self.azure_pipeline = azure_pipeline
 
-    def compile(self, output_path: Path):
-        output_path.write_text(str(self.azure_pipeline))
-
     def run(
         self,
         config: AzureMLConfig,
