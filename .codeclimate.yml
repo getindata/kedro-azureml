@@ -7,9 +7,11 @@ plugins:
       languages:
         python:
           python_version: 3
-
-  pylint:
+  pep8:
     enabled: true
-    checks:
-      import-error:
-        enabled: false
+
+  sonar-python:
+    enabled: true
+    config:
+      test_patterns:
+        - tests/**
