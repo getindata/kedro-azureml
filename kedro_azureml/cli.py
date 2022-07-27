@@ -150,7 +150,7 @@ def run(
     params: str,
     wait_for_completion: bool,
 ):
-    """Runs the specified pipeline in Azure ML Pipelines. Additional parameters can be passed from command line.
+    """Runs the specified pipeline in Azure ML Pipelines; Additional parameters can be passed from command line.
     Can be used with --wait-for-completion param to block the caller until the pipeline finishes in Azure ML.
     """
     params = json.dumps(p) if (p := parse_extra_params(params)) else ""
@@ -222,6 +222,7 @@ def run(
 def compile(
     ctx: CliContext, image: Optional[str], pipeline: str, params: list, output: str
 ):
+    """Compiles the pipeline into YAML format"""
     params = json.dumps(p) if (p := parse_extra_params(params)) else ""
     with get_context_and_pipeline(ctx, image, pipeline, params) as (_, az_pipeline):
         Path(output).write_text(str(az_pipeline))
