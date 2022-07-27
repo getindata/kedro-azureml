@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Optional, List
 
 import click
+from kedro.framework.startup import ProjectMetadata
 
 from kedro_azureml.cli_functions import (
     get_context_and_pipeline,
@@ -42,8 +43,8 @@ def commands():
 )
 @click.pass_obj
 @click.pass_context
-def azureml_group(ctx, metadata, env):
-    ctx.ensure_object(dict)
+def azureml_group(ctx, metadata: ProjectMetadata, env):
+    click.echo(metadata)
     ctx.obj = CliContext(env, metadata)
 
 

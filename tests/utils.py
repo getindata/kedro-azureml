@@ -1,5 +1,5 @@
 from pathlib import Path
-
+from shutil import copy
 import yaml
 
 
@@ -24,4 +24,10 @@ def create_kedro_conf_dirs(tmp_path: Path):
             },
             f,
         )
+
+    copy(
+        Path(__file__).absolute().parent / "conf" / "base" / "azureml.yml",
+        config_path / "azureml.yml",
+    )
+
     return config_path
