@@ -43,6 +43,6 @@ jobs:
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CODE_CLIMATE }}
       with:
-        coverageCommand: coverage xml
+        coverageCommand: poetry run coverage xml
         debug: true
         coverageLocations: coverage.xml:coverage.py
