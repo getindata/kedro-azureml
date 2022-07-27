@@ -36,10 +36,11 @@ pip install git+https://github.com/getindata/kedro-azureml.git@develop
 
 ## Available commands
 
-You can check available commands by going into project directory and runnning:
+You can check available commands by going into project directory and running:
 
 ```console
-kedro azureml                                                                                                                                                                                                                                                                                                                                     
+kedro azureml
+
 Usage: kedro azureml [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -47,7 +48,7 @@ Options:
   -h, --help      Show this message and exit.
 
 Commands:
-  compile
-  init
-  run
+  compile  Compiles the pipeline into YAML format
+  init     Creates basic configuration for Kedro AzureML plugin
+  run      Runs the specified pipeline in Azure ML Pipelines
 ```

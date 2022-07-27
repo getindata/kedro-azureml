@@ -21,7 +21,6 @@ For detailed documentation refer to https://kedro-azureml.readthedocs.io/
 ## Usage guide
 
 ```
-kedro azureml                                                                                                                                                                                                                                                                                                                                     
 Usage: kedro azureml [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -29,9 +28,9 @@ Options:
   -h, --help      Show this message and exit.
 
 Commands:
-  compile
-  init
-  run
+  compile  Compiles the pipeline into YAML format
+  init     Creates basic configuration for Kedro AzureML plugin
+  run      Runs the specified pipeline in Azure ML Pipelines
 ```
 
 Follow **quickstart** section on [kedro-azureml.readthedocs.io](https://kedro-vertexai.readthedocs.io/) to get up to speed with plugin usage. 
