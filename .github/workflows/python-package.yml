@@ -39,7 +39,7 @@ jobs:
 
     - name: Report coverage
       if: ${{ matrix.python-version }} == "3.10" && (github.event.pull_request.head.repo.full_name || github.push.repository.full_name) == github.repository
-      uses: paambaati/codeclimate-action@v3.0.0
+      uses: paambaati/codeclimate-action@v2.7.5
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CODE_CLIMATE }}
       with:
