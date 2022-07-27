@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from unittest import mock
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
