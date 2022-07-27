@@ -612,6 +612,9 @@ category = "dev"
 optional = false
 python-versions = ">=3.7"
 
+[package.dependencies]
+tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.11.0a6\" and extra == \"toml\""}
+
 [package.extras]
 toml = ["tomli"]
 
@@ -877,6 +880,14 @@ zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
 [package.extras]
 docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)", "jaraco.tidelift (>=1.4)"]
 testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
+
+[[package]]
+name = "iniconfig"
+version = "1.1.1"
+description = "iniconfig: brain-dead simple config-ini parsing"
+category = "dev"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "isodate"
@@ -1170,14 +1181,6 @@ pipelines = ["scikit-learn (>=1.0)", "pyarrow (>=7.0)", "shap (>=0.40)", "pandas
 sqlserver = ["mlflow-dbstore"]
 
 [[package]]
-name = "more-itertools"
-version = "8.13.0"
-description = "More routines for operating on iterables, beyond itertools"
-category = "dev"
-optional = false
-python-versions = ">=3.5"
-
-[[package]]
 name = "msal"
 version = "1.18.0"
 description = "The Microsoft Authentication Library (MSAL) for Python library enables your app to access the Microsoft Cloud by supporting authentication of users with Microsoft Azure Active Directory accounts (AAD) and Microsoft Accounts (MSA) using industry standard OAuth2 and OpenID Connect."
@@ -1463,7 +1466,7 @@ prometheus-client = "*"
 
 [[package]]
 name = "protobuf"
-version = "4.21.3"
+version = "4.21.4"
 description = ""
 category = "main"
 optional = true
@@ -1611,38 +1614,39 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pytest"
-version = "4.4.2"
+version = "6.2.5"
 description = "pytest: simple powerful testing with Python"
 category = "dev"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+python-versions = ">=3.6"
 
 [package.dependencies]
-atomicwrites = ">=1.0"
-attrs = ">=17.4.0"
+atomicwrites = {version = ">=1.0", markers = "sys_platform == \"win32\""}
+attrs = ">=19.2.0"
 colorama = {version = "*", markers = "sys_platform == \"win32\""}
-more-itertools = {version = ">=4.0.0", markers = "python_version > \"2.7\""}
-pluggy = ">=0.11"
-py = ">=1.5.0"
-six = ">=1.10.0"
+iniconfig = "*"
+packaging = "*"
+pluggy = ">=0.12,<2.0"
+py = ">=1.8.2"
+toml = "*"
 
 [package.extras]
-testing = ["argcomplete", "hypothesis (>=3.56)", "nose", "requests", "mock"]
+testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
 
 [[package]]
 name = "pytest-cov"
-version = "2.9.0"
+version = "3.0.0"
 description = "Pytest plugin for measuring coverage."
 category = "dev"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+python-versions = ">=3.6"
 
 [package.dependencies]
-coverage = ">=4.4"
-pytest = ">=3.6"
+coverage = {version = ">=5.2.1", extras = ["toml"]}
+pytest = ">=4.6"
 
 [package.extras]
-testing = ["fields", "hunter", "process-tests (==2.0.2)", "six", "pytest-xdist", "virtualenv"]
+testing = ["virtualenv", "pytest-xdist", "six", "process-tests", "hunter", "fields"]
 
 [[package]]
 name = "python-dateutil"
@@ -1967,7 +1971,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "virtualenv"
-version = "20.16.0"
+version = "20.16.1"
 description = "Virtual Python Environment builder"
 category = "dev"
 optional = false
@@ -2051,7 +2055,7 @@ mlflow = ["azureml-mlflow", "mlflow"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "7516861f05b2ba5144b09070577a250c2b6fdb4f2a90a327db009860d60da5e5"
+content-hash = "ef601be7d1d892dfe3b0ebefbcc940e5f2b4bfc691d7601d32079f8f0b2636fb"
 
 [metadata.files]
 adal = [
@@ -2622,6 +2626,10 @@ importlib-resources = [
     {file = "importlib_resources-5.9.0-py3-none-any.whl", hash = "sha256:f78a8df21a79bcc30cfd400bdc38f314333de7c0fb619763f6b9dabab8268bb7"},
     {file = "importlib_resources-5.9.0.tar.gz", hash = "sha256:5481e97fb45af8dcf2f798952625591c58fe599d0735d86b10f54de086a61681"},
 ]
+iniconfig = [
+    {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
+    {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
+]
 isodate = [
     {file = "isodate-0.6.1-py2.py3-none-any.whl", hash = "sha256:0751eece944162659049d35f4f549ed815792b38793f07cf73381c1c87cbed96"},
     {file = "isodate-0.6.1.tar.gz", hash = "sha256:48c5881de7e8b0a0d648cb024c8062dc84e7b840ed81e864c7614fd3c127bde9"},
@@ -2719,10 +2727,6 @@ mlflow = [
 mlflow-skinny = [
     {file = "mlflow-skinny-1.27.0.tar.gz", hash = "sha256:77240a1bee2d5bbc2bf8eb9609b22fa43a2381067c3728d8c6539702962a268a"},
     {file = "mlflow_skinny-1.27.0-py3-none-any.whl", hash = "sha256:48462b9675a8365d8bd44357db29886098ee2723dbc925e35b16517e1ca43983"},
-]
-more-itertools = [
-    {file = "more-itertools-8.13.0.tar.gz", hash = "sha256:a42901a0a5b169d925f6f217cd5a190e32ef54360905b9c39ee7db5313bfec0f"},
-    {file = "more_itertools-8.13.0-py3-none-any.whl", hash = "sha256:c5122bffc5f104d37c1626b8615b511f3427aa5389b94d61e5ef8236bfbc3ddb"},
 ]
 msal = [
     {file = "msal-1.18.0-py2.py3-none-any.whl", hash = "sha256:9c10e6cb32e0b6b8eaafc1c9a68bc3b2ff71505e0c5b8200799582d8b9f22947"},
@@ -2910,20 +2914,20 @@ prometheus-flask-exporter = [
     {file = "prometheus_flask_exporter-0.20.2.tar.gz", hash = "sha256:aab05c49880d12b7d4eaabee102cfe998da92ddaacf86ec4f37cfa08c00858da"},
 ]
 protobuf = [
-    {file = "protobuf-4.21.3-cp310-abi3-win32.whl", hash = "sha256:7dfc160de830b96b2c92c10d8f60e582e92252701bf6640ae75dfdecf6fdeb7a"},
-    {file = "protobuf-4.21.3-cp310-abi3-win_amd64.whl", hash = "sha256:5330df7650785c7ffdd1199c04933668d5e2dfefb62250e2b03ec1c1d20e7c2e"},
-    {file = "protobuf-4.21.3-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:dec4cb439e25058518e2cd469c5eb0f4e634b113eb0b1343b55ba9303ab1ad38"},
-    {file = "protobuf-4.21.3-cp37-abi3-manylinux2014_aarch64.whl", hash = "sha256:382c01e2ce14dcc3b4d25b8839f2139cc09c8a4006ad678579dc4080f6be1b29"},
-    {file = "protobuf-4.21.3-cp37-abi3-manylinux2014_x86_64.whl", hash = "sha256:d367e7385cd808ad33b580155bf9694881dd711c4271fe7b6f4e5270a01980b7"},
-    {file = "protobuf-4.21.3-cp37-cp37m-win32.whl", hash = "sha256:174bc835cc639c82164bbce4e28e2af5aa7821285d7fde3162afbe5e226a5a73"},
-    {file = "protobuf-4.21.3-cp37-cp37m-win_amd64.whl", hash = "sha256:cebfd1fb899180c0523955d5cae0e764210961b12dfc39fd96af8fc81fe71ac7"},
-    {file = "protobuf-4.21.3-cp38-cp38-win32.whl", hash = "sha256:9f510e743462899b1e296ac19bbaf4212d3106cdc51260ecde59ee6063f743f9"},
-    {file = "protobuf-4.21.3-cp38-cp38-win_amd64.whl", hash = "sha256:64fd63629f8952d58a41150b242f1c1c30c5062c9b0de8e420c6d3b360ec5d89"},
-    {file = "protobuf-4.21.3-cp39-cp39-win32.whl", hash = "sha256:75aaa6d76a76a6f41f02645f6ebd255d738e9bb14c4d9d8269c676e65d0e0c7c"},
-    {file = "protobuf-4.21.3-cp39-cp39-win_amd64.whl", hash = "sha256:8a2b4976872b71ea56cd3d55d320751d36a53f10220cc6075517806076cf4829"},
-    {file = "protobuf-4.21.3-py2.py3-none-any.whl", hash = "sha256:df5a126706bd1d5072a6a0f6895c633ede67ea6cd679b4268eecce6b438bbe69"},
-    {file = "protobuf-4.21.3-py3-none-any.whl", hash = "sha256:fa22e2413f6fd98ec1b388686aadef5420ea8205e37b35cad825adea7c019625"},
-    {file = "protobuf-4.21.3.tar.gz", hash = "sha256:9130759e719bee1e6d05ca6a3037f7eff66d7a7ff6ba25871917dc40e8f3fbb6"},
+    {file = "protobuf-4.21.4-cp310-abi3-win32.whl", hash = "sha256:e113f3d1629cebc911b107ce704f1a17d7e1589efef5c498e202bd47df223955"},
+    {file = "protobuf-4.21.4-cp310-abi3-win_amd64.whl", hash = "sha256:cb50d93ef748671b7e2537658869e00aaa8175d717d8e73a23fcd58842883229"},
+    {file = "protobuf-4.21.4-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:142ef5d73d6cd1bd8ab539d7d73c3722f31d33e64914e01bb91439cfcef11a9f"},
+    {file = "protobuf-4.21.4-cp37-abi3-manylinux2014_aarch64.whl", hash = "sha256:47b7cf3e542fd50a3a7c24d0da13451bc362a32c0a9b905714942ea8cf35fa11"},
+    {file = "protobuf-4.21.4-cp37-abi3-manylinux2014_x86_64.whl", hash = "sha256:adeccfbffbf4c9d1e77da86dc995d76c837d01387e412066cc803ad037000892"},
+    {file = "protobuf-4.21.4-cp37-cp37m-win32.whl", hash = "sha256:5e47947fbfefd5a1bdc7c28eea1d197ea6dba5812789c2429667831a55ef71b7"},
+    {file = "protobuf-4.21.4-cp37-cp37m-win_amd64.whl", hash = "sha256:d9b0398ff68017015ec2a37fb0ab390363a654362b15ca2e4543d3c82587768f"},
+    {file = "protobuf-4.21.4-cp38-cp38-win32.whl", hash = "sha256:2ea8c841cc6422aea07d0f4f71f0e5e6e130de9a4b6c31a53b9d2a41a75f2d54"},
+    {file = "protobuf-4.21.4-cp38-cp38-win_amd64.whl", hash = "sha256:a8119c029c60cf29b7eea5a9f56648482388e874611243f41cd10aff0a0e5461"},
+    {file = "protobuf-4.21.4-cp39-cp39-win32.whl", hash = "sha256:0275902f8292039d4a022319d3f86e8b231ac4c51d7be4cb797890fb78c16b85"},
+    {file = "protobuf-4.21.4-cp39-cp39-win_amd64.whl", hash = "sha256:5b95c5f515334dd3a811762e3c588b469bf39d4ee7b7f47ac1e0c41dc73809f7"},
+    {file = "protobuf-4.21.4-py2.py3-none-any.whl", hash = "sha256:fd62b6eda64e199b5da651d6be42af2aa8e30805961af1fc5f70292affca78e3"},
+    {file = "protobuf-4.21.4-py3-none-any.whl", hash = "sha256:7e51f6244e53e936abadf624ab3a0f06dc106b27473997374fbb34e6b2eb1e60"},
+    {file = "protobuf-4.21.4.tar.gz", hash = "sha256:5783dc0d6edae631145337fabb18503b4f77274f94cdd22a4b26b9fe5029e718"},
 ]
 py = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
@@ -3050,12 +3054,12 @@ pysocks = [
     {file = "PySocks-1.7.1.tar.gz", hash = "sha256:3f8804571ebe159c380ac6de37643bb4685970655d3bba243530d6558b799aa0"},
 ]
 pytest = [
-    {file = "pytest-4.4.2-py2.py3-none-any.whl", hash = "sha256:136632a40451162cdfc18fe4d7ecc5d169b558a3d4bbb1603d4005308a42fd03"},
-    {file = "pytest-4.4.2.tar.gz", hash = "sha256:62b129bf8368554ca7a942cbdb57ea26aafef46cc65bc317cdac3967e54483a3"},
+    {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},
+    {file = "pytest-6.2.5.tar.gz", hash = "sha256:131b36680866a76e6781d13f101efb86cf674ebb9762eb70d3082b6f29889e89"},
 ]
 pytest-cov = [
-    {file = "pytest-cov-2.9.0.tar.gz", hash = "sha256:b6a814b8ed6247bd81ff47f038511b57fe1ce7f4cc25b9106f1a4b106f1d9322"},
-    {file = "pytest_cov-2.9.0-py2.py3-none-any.whl", hash = "sha256:c87dfd8465d865655a8213859f1b4749b43448b5fae465cb981e16d52a811424"},
+    {file = "pytest-cov-3.0.0.tar.gz", hash = "sha256:e7f0f5b1617d2210a2cabc266dfe2f4c75a8d32fb89eafb7ad9d06f6d076d470"},
+    {file = "pytest_cov-3.0.0-py3-none-any.whl", hash = "sha256:578d5d15ac4a25e5f961c938b85a05b09fdaae9deef3bb6de9a6e766622ca7a6"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
@@ -3262,8 +3266,8 @@ urllib3 = [
     {file = "urllib3-1.26.9.tar.gz", hash = "sha256:aabaf16477806a5e1dd19aa41f8c2b7950dd3c746362d7e3223dbe6de6ac448e"},
 ]
 virtualenv = [
-    {file = "virtualenv-20.16.0-py2.py3-none-any.whl", hash = "sha256:2202dbc33c4f9aaa13289d244d64f2ade8b0169e88d0213b505099b384c5ae04"},
-    {file = "virtualenv-20.16.0.tar.gz", hash = "sha256:6cfedd21e7584124a1d1e8f3b6e74c0bf8aeea44d9884b6d2d7241de5361a73c"},
+    {file = "virtualenv-20.16.1-py2.py3-none-any.whl", hash = "sha256:bde925b831f36053a0fa7a468ca337dee26851c9f0bfc3d72a79d534703102d2"},
+    {file = "virtualenv-20.16.1.tar.gz", hash = "sha256:6cc42cad4d1a15c7ea5ed68e602eb49cc243b52d2eead36e577555cb56bf8705"},
 ]
 waitress = [
     {file = "waitress-2.1.2-py3-none-any.whl", hash = "sha256:7500c9625927c8ec60f54377d590f67b30c8e70ef4b8894214ac6e4cad233d2a"},

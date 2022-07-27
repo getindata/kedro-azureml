@@ -1,6 +1,17 @@
+version: 2
 plugins:
-  pylint:
+  duplication:
     enabled: true
-    checks:
-      import-error:
-        enabled: false
+    config:
+      count_threshold: 3
+      languages:
+        python:
+          python_version: 3
+  pep8:
+    enabled: true
+
+  sonar-python:
+    enabled: true
+    config:
+      test_patterns:
+        - tests/**

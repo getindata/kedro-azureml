@@ -6,8 +6,8 @@
 [![PyPI version](https://badge.fury.io/py/kedro-azureml.svg)](https://pypi.org/project/kedro-azureml/)
 [![Downloads](https://pepy.tech/badge/kedro-azureml)](https://pepy.tech/project/kedro-azureml)
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/a2ef6b63553ed42c9031/maintainability)](https://codeclimate.com/github/getindata/kedro-azureml/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/a2ef6b63553ed42c9031/test_coverage)](https://codeclimate.com/github/getindata/kedro-azureml/test_coverage)
+[![Maintainability](https://api.codeclimate.com/v1/badges/8ecc057c4e66eb565669/maintainability)](https://codeclimate.com/github/getindata/kedro-azureml/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/8ecc057c4e66eb565669/test_coverage)](https://codeclimate.com/github/getindata/kedro-azureml/test_coverage)
 [![Documentation Status](https://readthedocs.org/projects/kedro-vertexai/badge/?version=latest)](https://kedro-azureml.readthedocs.io/en/latest/?badge=latest)
 
 
@@ -33,6 +33,6 @@ Commands:
   run      Runs the specified pipeline in Azure ML Pipelines
 ```
 
-Follow **quickstart** section on [kedro-azureml.readthedocs.io](https://kedro-vertexai.readthedocs.io/) to get up to speed with plugin usage. 
+Follow **quickstart** section on [kedro-azureml.readthedocs.io](https://kedro-azureml.readthedocs.io/) to get up to speed with plugin usage. 
 
 
