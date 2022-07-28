@@ -6,8 +6,12 @@ on:
       - master
       - develop
   pull_request:
+    branches:
+      - master
+      - develop
 
 jobs:
+
   unittest:
     runs-on: ubuntu-latest
     strategy:
