@@ -2,6 +2,7 @@
 name = "kedro-azureml"
 version = "0.0.1"
 description = "Kedro plugin with Azure ML Pipelines support"
+readme = "README.md"
 authors = ["marcin.zablocki <marcin.zablocki@getindata.com>"]
 maintainers = ["GetInData <mlops@getindata.com>"]
 homepage = "https://github.com/getindata/kedro-azureml/"
