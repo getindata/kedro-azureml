@@ -46,7 +46,7 @@ jobs:
 
   sonarcloud:
     runs-on: ubuntu-latest
-    needs: unit
+    needs: unittest
     steps:
 
     - uses: actions/checkout@v2
@@ -68,7 +68,7 @@ jobs:
 
   codeql:
     runs-on: ubuntu-latest
-    needs: unit
+    needs: unittest
     permissions:
       actions: read
       contents: read
