@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 from azure.ai.ml.entities import Job
-from kedro.pipeline import Pipeline
 
 from kedro_azureml.generator import AzureMLPipelineGenerator
 

@@ -1,9 +1,12 @@
-from functools import lru_cache
-from typing import Any, Dict
 import bz2  # TODO: consider zstandard?
-import fsspec
+from functools import lru_cache
+from sys import version_info
+from typing import Any, Dict
+
 import cloudpickle
+import fsspec
 from kedro.io import AbstractDataSet
+
 from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
 
 
@@ -21,6 +24,7 @@ class KedroAzureRunnerDataset(AbstractDataSet):
         self.dataset_name = dataset_name
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
+        self.pickle_protocol = None if version_info[:2] > (3, 8) else 4
 
     @lru_cache()
     def _get_target_path(self):
@@ -45,7 +49,7 @@ class KedroAzureRunnerDataset(AbstractDataSet):
             self._get_target_path(), "wb", **self._get_storage_options()
         ) as f:
             with bz2.open(f, "wb") as stream:
-                cloudpickle.dump(data, stream)
+                cloudpickle.dump(data, stream, protocol=self.pickle_protocol)
 
     def _describe(self) -> Dict[str, Any]:
         return {

@@ -1,8 +1,7 @@
 from kedro.io import DataCatalog, MemoryDataSet
-from kedro.pipeline import Pipeline, pipeline, node
+from kedro.pipeline import Pipeline
 
 from kedro_azureml.runner import AzurePipelinesRunner
-from tests.utils import identity
 
 
 def test_can_invoke_dummy_pipeline(

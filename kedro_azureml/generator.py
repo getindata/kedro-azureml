@@ -1,14 +1,13 @@
 import logging
 import re
-from typing import Optional, Dict
+from typing import Dict, Optional
 from uuid import uuid4
 
-import click
-from azure.ai.ml import MLClient, command, Input, Output
+from azure.ai.ml import Input, Output, command
 from azure.ai.ml.dsl import pipeline as azure_pipeline
 from azure.ai.ml.entities import Environment, Job
 from azure.ai.ml.entities._builders import Command
-from kedro.pipeline import Pipeline, node
+from kedro.pipeline import Pipeline
 from kedro.pipeline.node import Node
 
 from kedro_azureml.config import KedroAzureMLConfig, KedroAzureRunnerConfig
@@ -165,7 +164,7 @@ class AzureMLPipelineGenerator:
             else []
         )
         return (
-            f"cd /home/kedro && kedro azureml -e {self.kedro_environment} execute --pipeline={self.pipeline_name} --node={node.name} "
+            f"cd /home/kedro && kedro azureml -e {self.kedro_environment} execute --pipeline={self.pipeline_name} --node={node.name} "  # noqa
             + " ".join(azure_outputs)
             + (f" --params='{self.params}'" if self.params else "")
         ).strip()

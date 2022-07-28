@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 
 import click
 from kedro.framework.startup import ProjectMetadata
@@ -14,9 +14,9 @@ from kedro_azureml.cli_functions import (
 from kedro_azureml.client import AzureMLPipelinesClient
 from kedro_azureml.config import CONFIG_TEMPLATE_YAML
 from kedro_azureml.constants import (
-    KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
     AZURE_SUBSCRIPTION_ID,
     FILL_IN_DOCKER_IMAGE,
+    KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
 )
 from kedro_azureml.runner import AzurePipelinesRunner
 from kedro_azureml.utils import CliContext, KedroContextManager
@@ -95,7 +95,7 @@ def init(
             click.style(
                 f"It's recommended to set Lifecycle management rule for storage container {storage_container} "
                 f"to avoid costs of long-term storage of the temporary data."
-                f"\nTemporary data will be stored under abfs://{storage_container}/{KEDRO_AZURE_BLOB_TEMP_DIR_NAME} path"
+                f"\nTemporary data will be stored under abfs://{storage_container}/{KEDRO_AZURE_BLOB_TEMP_DIR_NAME} path"  # noqa
                 f"\nSee https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-configure?tabs=azure-portal",  # noqa
                 fg="green",
             )
@@ -150,7 +150,7 @@ def run(
     params: str,
     wait_for_completion: bool,
 ):
-    """Runs the specified pipeline in Azure ML Pipelines. Additional parameters can be passed from command line.
+    """Runs the specified pipeline in Azure ML Pipelines; Additional parameters can be passed from command line.
     Can be used with --wait-for-completion param to block the caller until the pipeline finishes in Azure ML.
     """
     params = json.dumps(p) if (p := parse_extra_params(params)) else ""
@@ -222,6 +222,7 @@ def run(
 def compile(
     ctx: CliContext, image: Optional[str], pipeline: str, params: list, output: str
 ):
+    """Compiles the pipeline into YAML format"""
     params = json.dumps(p) if (p := parse_extra_params(params)) else ""
     with get_context_and_pipeline(ctx, image, pipeline, params) as (_, az_pipeline):
         Path(output).write_text(str(az_pipeline))
