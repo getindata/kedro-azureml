@@ -95,7 +95,8 @@ jobs:
         uses: github/codeql-action/analyze@v2
 
   e2e_tests:
-    needs: unit_tests
+    if: (github.event.pull_request.head.repo.full_name || github.push.repository.full_name) == github.repository
+    needs: [unit_tests, sonarcloud, codeql]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
