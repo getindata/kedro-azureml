@@ -11,91 +11,91 @@ on:
       - develop
 
 jobs:
-  unit_tests:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [ '3.8', '3.9', '3.10']
-
-    steps:
-    - uses: actions/checkout@v2
-    
-    - name: Setup python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2.2.1
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Setup poetry
-      run: |
-        python -V
-        python -m pip install poetry
-   
-    - name: Check pre-commit status
-      run: |
-        poetry install -v
-        poetry run pre-commit run --all-files
-
-    - name: Test with tox
-      run: |
-        pip install tox-pip-version tox-gh-actions
-        tox -v
-
-    - name: Store coverage reports
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage-${{ matrix.python-version }}
-        path: coverage.xml
-        if-no-files-found: error
-
-  sonarcloud:
-    runs-on: ubuntu-latest
-    needs: unit_tests
-    steps:
-
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-
-    - uses: actions/download-artifact@v3
-      with:
-        name: coverage-3.9
-        path: .
-
-    - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@master
-      with:
-        projectBaseDir: ${{ github.workspace }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
-
-  codeql:
-    runs-on: ubuntu-latest
-    needs: unit_tests
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Initializes the CodeQL tools for scanning.
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: python
-          # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+#  unit_tests:
+#    runs-on: ubuntu-latest
+#    strategy:
+#      matrix:
+#        python-version: [ '3.8', '3.9', '3.10']
+#
+#    steps:
+#    - uses: actions/checkout@v2
+#
+#    - name: Setup python ${{ matrix.python-version }}
+#      uses: actions/setup-python@v2.2.1
+#      with:
+#        python-version: ${{ matrix.python-version }}
+#
+#    - name: Setup poetry
+#      run: |
+#        python -V
+#        python -m pip install poetry
+#
+#    - name: Check pre-commit status
+#      run: |
+#        poetry install -v
+#        poetry run pre-commit run --all-files
+#
+#    - name: Test with tox
+#      run: |
+#        pip install tox-pip-version tox-gh-actions
+#        tox -v
+#
+#    - name: Store coverage reports
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: coverage-${{ matrix.python-version }}
+#        path: coverage.xml
+#        if-no-files-found: error
+#
+#  sonarcloud:
+#    runs-on: ubuntu-latest
+#    needs: unit_tests
+#    steps:
+#
+#    - uses: actions/checkout@v2
+#      with:
+#        fetch-depth: 0
+#
+#    - uses: actions/download-artifact@v3
+#      with:
+#        name: coverage-3.9
+#        path: .
+#
+#    - name: SonarCloud Scan
+#      uses: sonarsource/sonarcloud-github-action@master
+#      with:
+#        projectBaseDir: ${{ github.workspace }}
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+#
+#  codeql:
+#    runs-on: ubuntu-latest
+#    needs: unit_tests
+#    permissions:
+#      actions: read
+#      contents: read
+#      security-events: write
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+#
+#      # Initializes the CodeQL tools for scanning.
+#      - name: Initialize CodeQL
+#        uses: github/codeql-action/init@v2
+#        with:
+#          languages: python
+#          # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
+#
+#      - name: Autobuild
+#        uses: github/codeql-action/autobuild@v2
+#
+#      - name: Perform CodeQL Analysis
+#        uses: github/codeql-action/analyze@v2
 
   e2e_tests:
-    needs: unit_tests
+#    needs: unit_tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -103,7 +103,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v2.2.1
         with:
-          python-version: 3.10
+          python-version: "3.10"
 
       - name: Setup poetry
         run: |
