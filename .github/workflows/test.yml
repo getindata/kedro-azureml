@@ -110,45 +110,56 @@ jobs:
           python -V
           python -m pip install poetry
 
-      - name: Install requirements
+      - name: Build the package
         run: |
-          poetry install -v   
+          poetry build -f sdist
 
       - name: Initialize starter project
         run: |
-          poetry run kedro new --starter spaceflights --config tests/conf/starter-config.yml --verbose
-          echo "kedro-azureml @ git+https://github.com/getindata/kedro-azureml.git@$GITHUB_SHA" > src/requirements.txt
+          pip install $(find "./dist" -name "*.tar.gz")
+          kedro new --starter spaceflights --config tests/conf/e2e/starter-config.yml --verbose
+
+      - name: Install starter requirements
+        working-directory: ./spaceflights
+        run: |
+          find "../dist" -name "*.tar.gz" | xargs -I@ cp @ kedro-azureml.tar.gz
+          echo "./kedro-azureml.tar.gz" >> src/requirements.txt
           echo "kedro-docker" >> src/requirements.txt
           sed -i '/kedro-telemetry/d' src/requirements.txt
-          cat src/requirements.txt
-          poetry run pip install -r src/requirements.txt
+          echo $(cat src/requirements.txt)
+          pip install -r src/requirements.txt
 
       - name: Update starter configs
         working-directory: ./spaceflights
         run: |
           echo ${{ secrets.KEDRO_AZUREML_CONFIG_BASE64 }} | base64 -d > conf/base/azureml.yml
           kedro docker init
+          sed -i 's/\(COPY src\/requirements.txt.*\)$/\1\nCOPY kedro-azureml.tar.gz ./g' Dockerfile
+          cat Dockerfile
           echo "!data/01_raw" >> .dockerignore
           rm conf/base/catalog.yml
-          cp ../tests/e2e/catalog.yml conf/base/catalog.yml
+          cp ../tests/conf/e2e/catalog.yml conf/base/catalog.yml
 
       - name: Login via Azure CLI
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Build and push image
+      - name: Login to acr.io
         uses: azure/docker-login@v1
         with:
           login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
           username: ${{ secrets.AZURE_CLIENT_ID }}
           password: ${{ secrets.AZURE_CLIENT_SECRET }}
-      - working-directory: ./spaceflights
+
+      - name: Build and push docker image
+        working-directory: ./spaceflights
         run: |
           docker build --build-arg BASE_IMAGE=python:3.10-buster -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:latest .
           docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:latest
 
       - name: Run on Azure ML Pipelines
+        working-directory: ./spaceflights
         env:
           AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -156,5 +167,4 @@ jobs:
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         run: |
-          cd ./spaceflights
-          poetry run kedro azureml run --wait-for-completion
+          kedro azureml run --wait-for-completion
