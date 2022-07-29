@@ -1,0 +1,14 @@
+companies:
+  type: pandas.CSVDataSet
+  filepath: data/01_raw/companies.csv
+  layer: raw
+
+reviews:
+  type: pandas.CSVDataSet
+  filepath: data/01_raw/reviews.csv
+  layer: raw
+
+shuttles:
+  type: pandas.ExcelDataSet
+  filepath: data/01_raw/shuttles.xlsx
+  layer: raw
