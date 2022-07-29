@@ -1,0 +1,111 @@
+name: Tests
+
+on:
+  push:
+    branches: 
+      - master
+      - develop
+  pull_request:
+
+jobs:
+  unit_tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ '3.8', '3.9', '3.10']
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2.2.1
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Setup poetry
+      run: |
+        python -V
+        python -m pip install poetry
+   
+    - name: Check pre-commit status
+      run: |
+        poetry install -v
+        poetry run pre-commit run --all-files
+
+    - name: Test with tox
+      run: |
+        pip install tox-pip-version tox-gh-actions
+        tox -v 
+
+    - name: Report coverage
+      if: ${{ matrix.python-version }} == "3.10" && (github.event.pull_request.head.repo.full_name || github.push.repository.full_name) == github.repository
+      uses: paambaati/codeclimate-action@v2.7.5
+      env:
+        CC_TEST_REPORTER_ID: ${{ secrets.CODE_CLIMATE }}
+      with:
+        coverageCommand: poetry run coverage xml
+        debug: true
+        coverageLocations: coverage.xml:coverage.py
+  e2e_tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup python
+      uses: actions/setup-python@v2.2.1
+      with:
+        python-version: 3.10
+
+    - name: Setup poetry
+      run: |
+        python -V
+        python -m pip install poetry
+
+    - name: Install requirements
+      run: |
+        poetry install -v   
+
+    - name: Initialize starter project
+      run: |
+        poetry run kedro new --starter spaceflights --config tests/conf/starter-config.yml --verbose
+        echo "kedro-azureml @ git+https://github.com/getindata/kedro-azureml.git@$GITHUB_SHA" > src/requirements.txt
+        echo "kedro-docker" >> src/requirements.txt
+        sed -i '/kedro-telemetry/d' src/requirements.txt
+        cat src/requirements.txt
+        poetry run pip install -r src/requirements.txt
+
+    - name: Update starter configs
+      working-directory: ./spaceflights
+      run: |
+        echo ${{ secrets.KEDRO_AZUREML_CONFIG_BASE64 }} | base64 -d > conf/base/azureml.yml
+        kedro docker init
+        echo "!data/01_raw" >> .dockerignore
+        rm conf/base/catalog.yml
+        cp ../tests/e2e/catalog.yml conf/base/catalog.yml
+
+    - name: Login via Azure CLI
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Build and push image
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+        username: ${{ secrets.AZURE_CLIENT_ID }}
+        password: ${{ secrets.AZURE_CLIENT_SECRET }}
+    - working-directory: ./spaceflights
+      run: |
+        docker build --build-arg BASE_IMAGE=python:3.10-buster -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:latest .
+        docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:latest
+
+    - name: Run on Azure ML Pipelines
+      env:
+        AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        AZURE_TENANT_ID: ${{ secret.AZURE_TENANT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secret.AZURE_CLIENT_SECRET }}
+        AZURE_CLIENT_ID: ${{ secret.AZURE_CLIENT_ID }}
+      run: |
+        cd ./spaceflights
+        poetry run kedro azureml run --wait-for-completion
