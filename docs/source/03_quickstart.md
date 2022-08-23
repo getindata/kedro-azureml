@@ -33,7 +33,7 @@ The project name 'kedro_azureml_demo' has been applied to:
 
 3. Go to the project's directory: `cd kedro-azureml-demo`
 4. Add `kedro-azureml` to `src/requriements.txt`
-5. (optional) Remove `kedro-telemetry` from `src/requirements.txt` or set appopriate settings (https://github.com/kedro-org/kedro-plugins/tree/main/kedro-telemetry).
+5. (optional) Remove `kedro-telemetry` from `src/requirements.txt` or set appropriate settings (https://github.com/kedro-org/kedro-plugins/tree/main/kedro-telemetry).
 6. Install the requirements `pip install -r src/requirements.txt`
 7. Initialize Kedro Azure ML plugin, it requires the Azure resource names as stated above. Experiment name can be anything you like (as long as it's allowed by Azure ML).
 ```console

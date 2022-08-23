@@ -95,3 +95,6 @@ versionable
 virtualenv
 wikipedia
 yaml
+CLI
+azureml
+Jupyter
