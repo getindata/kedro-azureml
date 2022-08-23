@@ -1,6 +1,6 @@
 # Changes here will be overwritten by Copier
-_commit: e9051a1
-_src_path: gid-python-template
+_commit: d04eecb
+_src_path: git@github.com:getindata/python-opensource-template.git
 authors:
 - marcin.zablocki <marcin.zablocki@getindata.com>
 description: Kedro plugin with Azure ML Pipelines support
