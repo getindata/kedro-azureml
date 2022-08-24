@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+-   Improvements in build process, synchronised with getindata `python-opensource-template`
+
 ## [0.1.0] - 2022-07-28
 
 -   Initial plugin release
