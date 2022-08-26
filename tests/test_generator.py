@@ -1,18 +1,27 @@
 from unittest.mock import patch
 
+import pytest
 from azure.ai.ml.entities import Job
 
 from kedro_azureml.generator import AzureMLPipelineGenerator
 
 
-def test_can_generate_azure_pipeline(dummy_pipeline, dummy_plugin_config):
+@pytest.mark.parametrize(
+    "pipeline_name",
+    [
+        ("dummy_pipeline"),
+        ("dummy_pipeline_compute_tag"),
+    ],
+)
+def test_can_generate_azure_pipeline(pipeline_name, dummy_plugin_config, request):
+    pipeline = request.getfixturevalue(pipeline_name)
     with patch.object(
-        AzureMLPipelineGenerator, "get_kedro_pipeline", return_value=dummy_pipeline
+        AzureMLPipelineGenerator, "get_kedro_pipeline", return_value=pipeline
     ):
         env_name = "unit_test_env"
         docker_image = "unit_test/docker_image:latest"
         generator = AzureMLPipelineGenerator(
-            "dummy_pipeline",
+            pipeline_name,
             env_name,
             dummy_plugin_config,
             docker_image=docker_image,
@@ -20,8 +29,7 @@ def test_can_generate_azure_pipeline(dummy_pipeline, dummy_plugin_config):
 
         az_pipeline = generator.generate()
         assert (
-            isinstance(az_pipeline, Job)
-            and az_pipeline.display_name == "dummy_pipeline"
+            isinstance(az_pipeline, Job) and az_pipeline.display_name == pipeline_name
         ), "Invalid basic pipeline data"
         assert all(
             f"kedro azureml -e {env_name} execute" in node.command
@@ -30,6 +38,38 @@ def test_can_generate_azure_pipeline(dummy_pipeline, dummy_plugin_config):
         assert all(
             node.environment.image == docker_image for node in az_pipeline.jobs.values()
         ), "Invalid docker image set on commands"
+
+
+def test_azure_pipeline_with_different_compute(
+    dummy_pipeline_compute_tag, dummy_plugin_config
+):
+    """
+    Test that when a Node in an Azure Pipeline is tagged with a compute tag
+    this gets passed through to the generated azure pipeline
+    """
+    with patch.object(
+        AzureMLPipelineGenerator,
+        "get_kedro_pipeline",
+        return_value=dummy_pipeline_compute_tag,
+    ):
+        env_name = "unit_test_env"
+        docker_image = "unit_test/docker_image:latest"
+        generator = AzureMLPipelineGenerator(
+            "dummy_pipeline_compute_tag",
+            env_name,
+            dummy_plugin_config,
+            docker_image=docker_image,
+        )
+
+        az_pipeline = generator.generate()
+        for node in dummy_pipeline_compute_tag.nodes:
+            if node.tags:
+                for tag in node.tags:
+                    if "azureml.compute" in tag:
+                        compute_value = tag.split(":")[1]
+                        assert (
+                            compute_value == az_pipeline.jobs[node.name]["compute"]
+                        ), "compute setting does not match up"
 
 
 def test_can_get_pipeline_from_kedro(dummy_plugin_config, dummy_pipeline):
