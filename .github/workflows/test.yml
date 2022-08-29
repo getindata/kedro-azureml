@@ -1,15 +1,18 @@
-name: Tests
+name: Test
 
 on:
   push:
     branches: 
       - master
       - develop
+    paths-ignore:
+      - "docs/**"
   pull_request:
     branches:
       - master
       - develop
-
+    paths-ignore:
+      - "docs/**"
 jobs:
   unit_tests:
     runs-on: ubuntu-latest
@@ -19,7 +22,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-
+    
     - name: Setup python ${{ matrix.python-version }}
       uses: actions/setup-python@v2.2.1
       with:
@@ -29,7 +32,7 @@ jobs:
       run: |
         python -V
         python -m pip install poetry
-
+   
     - name: Check pre-commit status
       run: |
         poetry install -v
@@ -86,13 +89,14 @@ jobs:
         uses: github/codeql-action/init@v2
         with:
           languages: python
-          # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v2
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
+
+  ### PROJECT SPECIFIC CONFIGURATION HERE
 
   e2e_tests:
     if: (github.event.pull_request.head.repo.full_name || github.push.repository.full_name) == github.repository
