@@ -98,3 +98,9 @@ yaml
 CLI
 azureml
 Jupyter
+href
+img
+jpg
+kedroazureml
+ly
+svg
