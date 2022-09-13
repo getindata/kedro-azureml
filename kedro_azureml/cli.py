@@ -53,6 +53,7 @@ def azureml_group(ctx, metadata: ProjectMetadata, env):
 @azureml_group.command()
 @click.argument("resource_group")
 @click.argument("workspace_name")
+@click.argument("subscription_id")
 @click.argument("experiment_name")
 @click.argument("cluster_name")
 @click.argument("storage_account_name")
@@ -63,6 +64,7 @@ def init(
     ctx: CliContext,
     resource_group,
     workspace_name,
+    subscription_id,
     experiment_name,
     cluster_name,
     storage_account_name,
@@ -77,6 +79,7 @@ def init(
         **{
             "resource_group": resource_group,
             "workspace_name": workspace_name,
+            "subscription_id": subscription_id,
             "experiment_name": experiment_name,
             "cluster_name": cluster_name,
             "environment_name": environment_name,
@@ -163,9 +166,11 @@ def run(
     Can be used with --wait-for-completion param to block the caller until the pipeline finishes in Azure ML.
     """
     params = json.dumps(p) if (p := parse_extra_params(params)) else ""
-    assert (
-        subscription_id
-    ), f"Please provide Azure Subscription ID or set `{AZURE_SUBSCRIPTION_ID}` env"
+
+    if subscription_id:
+        click.echo(
+            f"Overriding Azure Subscription ID for run to: {AZURE_SUBSCRIPTION_ID}"
+        )
 
     if aml_env:
         click.echo(f"Overriding Azure ML Environment for run by: {aml_env}")

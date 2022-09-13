@@ -41,6 +41,7 @@ class AzureMLConfig(BaseModel):
 
     experiment_name: str
     workspace_name: str
+    subscription_id: str
     resource_group: str
     temporary_storage: AzureTempStorageConfig
     compute: Optional[Dict[str, ComputeConfig]]
@@ -69,6 +70,8 @@ azure:
   resource_group: "{resource_group}"
   # Azure ML Workspace name
   workspace_name: "{workspace_name}"
+  # Azure subscription ID to use
+  subscription_id: "{subscription_id}"
   # Azure ML Environment to use during pipeline execution
   environment_name: "{environment_name}"
   # Path to directory to upload, or null to disable code upload
