@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Ability to overwrite the compute target at a Node level using a [Node tag](https://kedro.readthedocs.io/en/stable/kedro.pipeline.node.html) of the following form: `azureml.compute:<compute_cluster_name>`
+
 ## [0.1.0] - 2022-07-28
 
 -   Initial plugin release

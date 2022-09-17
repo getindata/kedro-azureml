@@ -15,6 +15,10 @@ from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
 
 logger = logging.getLogger(__name__)
 
+# should match node tags with the following pattern: "azureml.key:value"
+# e.g. azureml.compute:cpu-cluster
+AZURE_TAG_REGEX = re.compile(r"azureml\.(?P<key>[\S]*):(?P<value>[\S]*)")
+
 
 class AzureMLPipelineGenerator:
     def __init__(
@@ -71,15 +75,6 @@ class AzureMLPipelineGenerator:
         pipeline: Pipeline = pipelines[self.pipeline_name]
         return pipeline
 
-    @staticmethod
-    def get_azure_settings_from_node_tags(node: Node) -> Dict[str, str]:
-        azure_settings = {}
-        for tag in node.tags:
-            if tag.startswith('azureml') and len(tag.split('.')) == 2:
-                k, v = tag.strip('azureml.').split(':')
-                azure_settings[k] = v
-        return azure_settings
-
     def _sanitize_param_name(self, param_name: str) -> str:
         return re.sub(r"[^a-z0-9_]", "_", param_name.lower())
 
@@ -92,13 +87,11 @@ class AzureMLPipelineGenerator:
         node: Node,
         kedro_azure_run_id: str,
     ):
-        azure_settings = self.get_azure_settings_from_node_tags(node)
         # TODO - config can probably expose compute-per-step setting, to allow different steps to be scheduled on different machine types # noqa
         return command(
             name=self._sanitize_azure_name(node.name),
             display_name=node.name,
             command=self._prepare_command(node),
-            compute=azure_settings.get("compute"),
             environment_variables={
                 KEDRO_AZURE_RUNNER_CONFIG: KedroAzureRunnerConfig(
                     temporary_storage=self.config.azure.temporary_storage,
