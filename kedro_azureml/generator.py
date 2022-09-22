@@ -174,7 +174,7 @@ class AzureMLPipelineGenerator:
             outputs={
                 self._sanitize_param_name(name): Output() for name in node.outputs
             },
-            code=self.config.code_directory,
+            code=self.config.azure.code_directory,
             **command_kwargs,
         )
 
@@ -271,7 +271,13 @@ class AzureMLPipelineGenerator:
             else []
         )
         return (
-            f"kedro azureml -e {self.kedro_environment} execute --pipeline={self.pipeline_name} --node={node.name} "  # noqa
+            (
+                f"cd {self.config.azure.working_directory} && "
+                if self.config.azure.working_directory is not None
+                and self.config.azure.code_directory is None
+                else ""
+            )
+            + f"kedro azureml -e {self.kedro_environment} execute --pipeline={self.pipeline_name} --node={node.name} "  # noqa
             + " ".join(azure_outputs)
             + (f" --params='{self.params}'" if self.params else "")
         ).strip()

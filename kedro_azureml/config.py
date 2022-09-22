@@ -42,6 +42,7 @@ class AzureMLConfig(BaseModel):
     compute: Optional[Dict[str, ComputeConfig]]
     environment_name: str
     code_directory: Optional[str]
+    working_directory: Optional[str]
 
 
 class KedroAzureMLConfig(BaseModel):
@@ -67,6 +68,9 @@ azure:
   environment_name: "{environment_name}"
   # Path to directory to upload, or null to disable code upload
   code_directory: "."
+  # Path to the directory in the Docker image to run the code from
+  # Ignored when code_directory is set
+  working_directory: /home/kedro
 
   # Temporary storage settings - this is used to pass some data between steps
   # if the data is not specified in the catalog directly
