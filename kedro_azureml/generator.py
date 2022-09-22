@@ -12,7 +12,7 @@ from azure.ai.ml import (
     command,
 )
 from azure.ai.ml.dsl import pipeline as azure_pipeline
-from azure.ai.ml.entities import Environment, Job
+from azure.ai.ml.entities import Job
 from azure.ai.ml.entities._builders import Command
 from kedro.pipeline import Pipeline
 from kedro.pipeline.node import Node
@@ -164,9 +164,7 @@ class AzureMLPipelineGenerator:
                     storage_account_key=self.storage_account_key,
                 ).json(),
             },
-            environment=Environment(
-                image=self.docker_image or self.config.docker.image
-            ),
+            environment=self.config.azure.environment_name,  # TODO: check whether Environment exists
             inputs={
                 self._sanitize_param_name(name): (
                     Input(type="string") if name in pipeline.inputs() else Input()
@@ -176,6 +174,7 @@ class AzureMLPipelineGenerator:
             outputs={
                 self._sanitize_param_name(name): Output() for name in node.outputs
             },
+            code=self.config.code_directory,
             **command_kwargs,
         )
 
@@ -272,7 +271,7 @@ class AzureMLPipelineGenerator:
             else []
         )
         return (
-            f"cd /home/kedro && kedro azureml -e {self.kedro_environment} execute --pipeline={self.pipeline_name} --node={node.name} "  # noqa
+            f"kedro azureml -e {self.kedro_environment} execute --pipeline={self.pipeline_name} --node={node.name} "  # noqa
             + " ".join(azure_outputs)
             + (f" --params='{self.params}'" if self.params else "")
         ).strip()

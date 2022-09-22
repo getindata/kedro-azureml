@@ -12,10 +12,6 @@ class DefaultConfigDict(defaultdict):
         return defaults.copy(update=this.dict(exclude_none=True)) if defaults else this
 
 
-class DockerConfig(BaseModel):
-    image: str
-
-
 class AzureTempStorageConfig(BaseModel):
     account_name: str
     container: str
@@ -44,11 +40,12 @@ class AzureMLConfig(BaseModel):
     resource_group: str
     temporary_storage: AzureTempStorageConfig
     compute: Optional[Dict[str, ComputeConfig]]
+    environment_name: str
+    code_directory: Optional[str]
 
 
 class KedroAzureMLConfig(BaseModel):
     azure: AzureMLConfig
-    docker: DockerConfig
 
 
 class KedroAzureRunnerConfig(BaseModel):
@@ -66,6 +63,10 @@ azure:
   resource_group: "{resource_group}"
   # Azure ML Workspace name
   workspace_name: "{workspace_name}"
+  # Azure ML Environment to use during pipeline execution
+  environment_name: "{environment_name}"
+  # Path to directory to upload, or null to disable code upload
+  code_directory: "{code_directory}"
 
   # Temporary storage settings - this is used to pass some data between steps
   # if the data is not specified in the catalog directly
@@ -86,9 +87,6 @@ azure:
       cluster_name: "{cluster_name}"
     # <your_node_tag>:
     #   cluster_name: "<your_cluster_name>"
-docker:
-  # Docker image to use during pipeline execution
-  image: "{docker_image}"
 """.strip()
 
 # This auto-validates the template above during import
