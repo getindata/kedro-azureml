@@ -40,7 +40,7 @@ class AzureMLPipelineGenerator:
         kedro_environment: str,
         config: KedroAzureMLConfig,
         kedro_params: Dict[str, Any],
-        docker_image: Optional[str] = None,
+        aml_env: Optional[str] = None,
         params: Optional[str] = None,
         storage_account_key: Optional[str] = "",
     ):
@@ -49,8 +49,7 @@ class AzureMLPipelineGenerator:
 
         self.params = params
         self.kedro_params = kedro_params
-
-        self.docker_image = docker_image
+        self.aml_env = aml_env
         self.config = config
         self.pipeline_name = pipeline_name
 
@@ -164,7 +163,8 @@ class AzureMLPipelineGenerator:
                     storage_account_key=self.storage_account_key,
                 ).json(),
             },
-            environment=self.config.azure.environment_name,  # TODO: check whether Environment exists
+            environment=self.aml_env
+            or self.config.azure.environment_name,  # TODO: check whether Environment exists
             inputs={
                 self._sanitize_param_name(name): (
                     Input(type="string") if name in pipeline.inputs() else Input()

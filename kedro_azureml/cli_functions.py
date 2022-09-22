@@ -12,10 +12,8 @@ logger = logging.getLogger()
 
 
 @contextmanager
-def get_context_and_pipeline(ctx: CliContext, image: str, pipeline: str, params: str):
-    with KedroContextManager(
-        ctx.metadata.package_name, ctx.env, parse_extra_params(params, True)
-    ) as mgr:
+def get_context_and_pipeline(ctx: CliContext, aml_env: str, pipeline: str, params: str):
+    with KedroContextManager(ctx.metadata.package_name, ctx.env, parse_extra_params(params, True)) as mgr:
         storage_account_key = os.getenv("AZURE_STORAGE_ACCOUNT_KEY", "")
         if not storage_account_key:
             click.echo(
@@ -31,13 +29,7 @@ def get_context_and_pipeline(ctx: CliContext, image: str, pipeline: str, params:
             )
 
         generator = AzureMLPipelineGenerator(
-            pipeline,
-            ctx.env,
-            mgr.plugin_config,
-            mgr.context.params,
-            image,
-            params,
-            storage_account_key,
+            pipeline, ctx.env, mgr.plugin_config, mgr.context.params, aml_env, params, storage_account_key
         )
         az_pipeline = generator.generate()
         yield mgr, az_pipeline

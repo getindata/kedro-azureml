@@ -15,7 +15,6 @@ from kedro_azureml.client import AzureMLPipelinesClient
 from kedro_azureml.config import CONFIG_TEMPLATE_YAML
 from kedro_azureml.constants import (
     AZURE_SUBSCRIPTION_ID,
-    FILL_IN_DOCKER_IMAGE,
     KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
 )
 from kedro_azureml.distributed.utils import is_distributed_master_node
@@ -56,7 +55,7 @@ def azureml_group(ctx, metadata: ProjectMetadata, env):
 @click.argument("cluster_name")
 @click.argument("storage_account_name")
 @click.argument("storage_container")
-@click.option("--acr", help="Azure Container Registry repo name", default="")
+@click.argument("environment_name")
 @click.pass_obj
 def init(
     ctx: CliContext,
@@ -66,49 +65,36 @@ def init(
     cluster_name,
     storage_account_name,
     storage_container,
-    acr,
+    environment_name,
 ):
     """
     Creates basic configuration for Kedro AzureML plugin
     """
-    with KedroContextManager(ctx.metadata.package_name, ctx.env) as mgr:
-        target_path = Path.cwd().joinpath("conf/base/azureml.yml")
-        cfg = CONFIG_TEMPLATE_YAML.format(
-            **{
-                "resource_group": resource_group,
-                "workspace_name": workspace_name,
-                "experiment_name": experiment_name,
-                "cluster_name": cluster_name,
-                "docker_image": (
-                    f"{acr}.azurecr.io/{mgr.context.project_path.name}:latest"
-                    if acr
-                    else FILL_IN_DOCKER_IMAGE
-                ),
-                "storage_container": storage_container,
-                "storage_account_name": storage_account_name,
-            }
+    target_path = Path.cwd().joinpath("conf/base/azureml.yml")
+    cfg = CONFIG_TEMPLATE_YAML.format(
+        **{
+            "resource_group": resource_group,
+            "workspace_name": workspace_name,
+            "experiment_name": experiment_name,
+            "cluster_name": cluster_name,
+            "environment_name": environment_name,
+            "storage_container": storage_container,
+            "storage_account_name": storage_account_name,
+        }
+    )
+    target_path.write_text(cfg)
+
+    click.echo(f"Configuration generated in {target_path}")
+
+    click.echo(
+        click.style(
+            f"It's recommended to set Lifecycle management rule for storage container {storage_container} "
+            f"to avoid costs of long-term storage of the temporary data."
+            f"\nTemporary data will be stored under abfs://{storage_container}/{KEDRO_AZURE_BLOB_TEMP_DIR_NAME} path"  # noqa
+            f"\nSee https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-configure?tabs=azure-portal",  # noqa
+            fg="green",
         )
-        target_path.write_text(cfg)
-
-        click.echo(f"Configuration generated in {target_path}")
-
-        click.echo(
-            click.style(
-                f"It's recommended to set Lifecycle management rule for storage container {storage_container} "
-                f"to avoid costs of long-term storage of the temporary data."
-                f"\nTemporary data will be stored under abfs://{storage_container}/{KEDRO_AZURE_BLOB_TEMP_DIR_NAME} path"  # noqa
-                f"\nSee https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-configure?tabs=azure-portal",  # noqa
-                fg="green",
-            )
-        )
-
-        if not acr:
-            click.echo(
-                click.style(
-                    "Please fill in docker image name before running the pipeline",
-                    fg="yellow",
-                )
-            )
+    )
 
 
 @azureml_group.command()
@@ -120,10 +106,10 @@ def init(
     type=str,
 )
 @click.option(
-    "-i",
-    "--image",
+    "--azureml_environment",
+    "--aml_env",
     type=str,
-    help="Docker image to use for pipeline execution.",
+    help="Azure ML Environment to use for pipeline execution.",
 )
 @click.option(
     "-p",
@@ -146,7 +132,7 @@ def run(
     click_context: click.Context,
     ctx: CliContext,
     subscription_id: str,
-    image: Optional[str],
+    aml_env: Optional[str],
     pipeline: str,
     params: str,
     wait_for_completion: bool,
@@ -159,11 +145,11 @@ def run(
         subscription_id
     ), f"Please provide Azure Subscription ID or set `{AZURE_SUBSCRIPTION_ID}` env"
 
-    if image:
-        click.echo(f"Overriding image for run to: {image}")
+    if aml_env:
+        click.echo(f"Overriding Azure ML Environment for run by: {aml_env}")
 
     mgr: KedroContextManager
-    with get_context_and_pipeline(ctx, image, pipeline, params) as (mgr, az_pipeline):
+    with get_context_and_pipeline(ctx, aml_env, pipeline, params) as (mgr, az_pipeline):
         az_client = AzureMLPipelinesClient(az_pipeline, subscription_id)
 
         is_ok = az_client.run(
@@ -193,10 +179,10 @@ def run(
 
 @azureml_group.command()
 @click.option(
-    "-i",
-    "--image",
+    "--azureml_environment",
+    "--aml_env",
     type=str,
-    help="Docker image to use for pipeline execution.",
+    help="Azure ML Environment to use for pipeline execution.",
 )
 @click.option(
     "-p",
@@ -221,11 +207,11 @@ def run(
 )
 @click.pass_obj
 def compile(
-    ctx: CliContext, image: Optional[str], pipeline: str, params: list, output: str
+    ctx: CliContext, aml_env: Optional[str], pipeline: str, params: list, output: str
 ):
     """Compiles the pipeline into YAML format"""
     params = json.dumps(p) if (p := parse_extra_params(params)) else ""
-    with get_context_and_pipeline(ctx, image, pipeline, params) as (_, az_pipeline):
+    with get_context_and_pipeline(ctx, aml_env, pipeline, params) as (_, az_pipeline):
         Path(output).write_text(str(az_pipeline))
         click.echo(f"Compiled pipeline to {output}")
 

@@ -66,7 +66,7 @@ azure:
   # Azure ML Environment to use during pipeline execution
   environment_name: "{environment_name}"
   # Path to directory to upload, or null to disable code upload
-  code_directory: "{code_directory}"
+  code_directory: "."
 
   # Temporary storage settings - this is used to pass some data between steps
   # if the data is not specified in the catalog directly
