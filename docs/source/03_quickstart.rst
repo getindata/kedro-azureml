@@ -19,7 +19,6 @@ created in Azure and have their **names** ready to input to the plugin:
 -  Azure ML Compute Cluster
 -  Azure Storage Account and Storage Container
 -  Azure Storage Key (will be used to execute the pipeline)
--  Azure Container Registry
 
 1. Make sure that you're logged into Azure (``az login``).
 2. Prepare new virtual environment with Python >=3.8. Install the
@@ -47,21 +46,64 @@ created in Azure and have their **names** ready to input to the plugin:
    - The project's python package in /Users/marcin/Dev/tmp/kedro-azureml-demo/src/kedro_azureml_demo
 
 3. Go to the project's directory: ``cd kedro-azureml-demo``
-4. Add ``kedro-azureml`` to ``src/requriements.txt``
+4. Add ``kedro-azureml`` to ``src/requirements.txt``
 5. (optional) Remove ``kedro-telemetry`` from ``src/requirements.txt``
    or set appopriate settings
    (`https://github.com/kedro-org/kedro-plugins/tree/main/kedro-telemetry <https://github.com/kedro-org/kedro-plugins/tree/main/kedro-telemetry>`__).
 6. Install the requirements ``pip install -r src/requirements.txt``
-7. Initialize Kedro Azure ML plugin, it requires the Azure resource
+7. Create an Azure ML Environment for the project:
+
+For the project's code to run on Azure ML it needs to have an environment
+with the necessary dependencies. Here is it shown how to do this from a
+local Docker build context. Please refer to the
+`Azure ML CLI documentation <https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-environments-v2#create-an-environment>`
+for more options.
+
+Start by executing the following command:
+
+.. code:: console
+
+   kedro docker init
+
+This command creates a several files, including ``Dockerfile`` and 
+``.dockerignore``. These can be adjusted to match the workflow for
+your project.
+
+Depending on whether you want to use code upload when submitting an
+experiment or not, you would need to add the code and any possible input
+data to the Docker image.
+
+   - If using code upload:
+     Everything apart from the section "install project requirements"
+     can be removed from the ``Dockerfile``. You can add a
+     ``.amlignore`` file to specify which files should be uploaded.
+   - If not using code upload:
+     Keep the sections in the ``Dockerfile`` and adjust the ``.dockerignore``
+     file to add any other files to be added to the Docker image,
+     such as ``!data/01_raw`` for the raw data files.
+     
+     Set ``code_directory: null`` in the ``azureml.yml`` config file.
+
+Create or update an Azure ML Environment by running the following command:
+
+.. code:: console
+
+   az ml environment create --name <environment-name> --version <version> --build-context . --dockerfile-path Dockerfile
+
+
+8. Initialize Kedro Azure ML plugin, it requires the Azure resource
    names as stated above. Experiment name can be anything you like (as
-   long as it's allowed by Azure ML).
+   long as it's allowed by Azure ML). The environment name is the name
+   of the Azure ML Environment created in the previous step. You can
+   use the syntax <environment_name>@latest for the latest version or
+   <environment-name>:<version> for a specific version.
 
 .. code:: console
 
    #Usage: kedro azureml init [OPTIONS] RESOURCE_GROUP WORKSPACE_NAME
    #                          EXPERIMENT_NAME CLUSTER_NAME STORAGE_ACCOUNT_NAME
-   #                          STORAGE_CONTAINER
-   kedro azureml init <resource-group-name> <workspace-name> <experiment-name> <compute-cluster-name> <storage-account-name> <storage-container-name> --acr <azure-container-registry-name>
+   #                          STORAGE_CONTAINER ENVIRONMENT_NAME
+   kedro azureml init <resource-group-name> <workspace-name> <experiment-name> <compute-cluster-name> <storage-account-name> <storage-container-name> <environment-name>
 
 .. code:: console
 
@@ -70,7 +112,7 @@ created in Azure and have their **names** ready to input to the plugin:
    Temporary data will be stored under abfs://kedro-azure-storage/kedro-azureml-temp path
    See https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-configure?tabs=azure-portal
 
-8. Adjust the Data Catalog - the default one stores all data locally,
+9. Adjust the Data Catalog - the default one stores all data locally,
    whereas the plugin will automatically use Azure Blob Storage. Only
    input data is required to be read locally. Final
    ``conf/base/catalog.yml`` should look like this:
@@ -92,37 +134,7 @@ created in Azure and have their **names** ready to input to the plugin:
      filepath: data/01_raw/shuttles.xlsx
      layer: raw
 
-8. Build docker image for the project:
-
-.. code:: console
-
-   kedro docker init
-
-This command creates a several files, including ``.dockerignore``. This
-file ensures that transient files are not included in the docker image
-and it requires small adjustment. Open it in your favourite text editor
-and extend the section ``# except the following`` by adding there:
-
-.. code:: console
-
-   !data/01_raw
-
-Invoke docker build
-
-.. code:: console
-
-   kedro docker build --docker-args "--build-arg=BASE_IMAGE=python:3.9" --image=<image tag from conf/base/azureml.yml>
-
-Once finished, push the image:
-
-.. code:: console
-
-   docker push <image tag from conf/base/azureml.yml>
-
-(you will need to authorize to the ACR first, e.g. by
-``az acr login --name <acr repo name>`` )
-
-9. Run the pipeline on Azure ML Pipelines. Here, the *Azure Subscription
+10. Run the pipeline on Azure ML Pipelines. Here, the *Azure Subscription
    ID* and *Storage Account Key* will be used:
 
 .. code:: console
@@ -138,10 +150,9 @@ You will most likely see the following prompt:
 
 Input the storage account key and press [ENTER] (input will be hidden).
 
-10. Plugin will verify the configuration (e.g. the existence of the
+11. Plugin will verify the configuration (e.g. the existence of the
     compute cluster) and then it will create a *Job* in the Azure ML.
     The URL to view the job will be displayed in the console output.
-11.
 
 12. (optional) You can also use
     ``kedro azureml run -s <azure-subscription-id> --wait-for-completion``
