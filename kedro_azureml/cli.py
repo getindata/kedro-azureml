@@ -108,6 +108,7 @@ def init(
 @click.option(
     "--azureml_environment",
     "--aml_env",
+    "aml_env",
     type=str,
     help="Azure ML Environment to use for pipeline execution.",
 )
@@ -181,6 +182,7 @@ def run(
 @click.option(
     "--azureml_environment",
     "--aml_env",
+    "aml_env",
     type=str,
     help="Azure ML Environment to use for pipeline execution.",
 )
