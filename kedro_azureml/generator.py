@@ -77,7 +77,7 @@ class AzureMLPipelineGenerator:
 
     def get_target_resource_from_node_tags(self, node: Node) -> str:
         resource_tags = set(node.tags).intersection(
-            set(self.config.azure.resources.keys())
+            set(self.config.azure.compute.keys())
         )
         if len(resource_tags) > 1:
             raise ConfigException(
@@ -86,9 +86,9 @@ class AzureMLPipelineGenerator:
                 )("a node can only have a maximum of 1 resource")
             )
         elif len(resource_tags) == 1:
-            return self.config.azure.resources[list(resource_tags)[0]]
+            return self.config.azure.compute[list(resource_tags)[0]]
         else:
-            return self.config.azure.resources["__default__"]
+            return self.config.azure.compute["__default__"]
 
     def _sanitize_param_name(self, param_name: str) -> str:
         return re.sub(r"[^a-z0-9_]", "_", param_name.lower())
