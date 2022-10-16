@@ -4,7 +4,7 @@
 
 ### Added
 
-- Ability to overwrite the compute target at a Node level using a [Node tag](https://kedro.readthedocs.io/en/stable/kedro.pipeline.node.html) of the following form: `azureml.compute:<compute_cluster_name>`
+- Ability to overwrite the compute target at a Node level using a [Node tag](https://kedro.readthedocs.io/en/stable/kedro.pipeline.node.html) that references a compute alias defined in the compute section of `azureml.yaml`.
 
 ## [0.1.0] - 2022-07-28
 

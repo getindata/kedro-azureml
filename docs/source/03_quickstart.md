@@ -143,3 +143,45 @@ There is no additional configuration for MLflow required in order to use it with
 
 ![Kedro AzureML MLflow integration](../images/kedro-azureml-mlflow.png)
 
+## Using a different compute cluster for specific nodes
+
+For certain nodes it can make sense to run them on a different compute clusters (e.g. High Memory or GPU). This can be achieved using [Node tags](https://kedro.readthedocs.io/en/stable/kedro.pipeline.node.html) and adding additional compute targets in your `azureml.yml`.
+
+After creating an additional compute cluster in your AzureML workspace, in this case the additional cluster is called `cpu-cluster-8`, we can add it in our `azureml.yml` under an alias (in this case `chunky`).
+
+```
+  compute:
+    __default__:
+      cluster_name: "cpu-cluster"
+    chunky:
+      cluster_name: "cpu-cluster-8"
+```
+
+Now we are able to reference this compute target in our kedro pipelines using kedro node tags:
+
+```
+        [
+            node(
+                func=preprocess_companies,
+                inputs="companies",
+                outputs="preprocessed_companies",
+                name="preprocess_companies_node",
+                tags=["chunky"]
+            ),
+            node(
+                func=preprocess_shuttles,
+                inputs="shuttles",
+                outputs="preprocessed_shuttles",
+                name="preprocess_shuttles_node",
+            ),
+            node(
+                func=create_model_input_table,
+                inputs=["preprocessed_shuttles", "preprocessed_companies", "reviews"],
+                outputs="model_input_table",
+                name="create_model_input_table_node",
+                tags=["chunky"]
+            ),
+        ],
+```
+
+When running our project, `preprocess_companies` and `create_model_input_table` will be run on `cpu-cluster-8` while all other nodes are run on the default `cpu-cluster`.
