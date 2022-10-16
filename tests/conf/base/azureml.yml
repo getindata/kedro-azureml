@@ -1,5 +1,4 @@
 azure:
-  cluster_name: "unit-tests-cluster"
   experiment_name: "kedro-azure-experiment"
   resource_group: "rg"
   workspace_name: "workspace"
@@ -8,3 +7,6 @@ azure:
     container: "container"
 docker:
   image: "dummy:latest"
+compute:
+  __default__:
+    cluster_name: "unit-tests-cluster"

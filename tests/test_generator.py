@@ -3,6 +3,7 @@ from unittest.mock import patch
 import pytest
 from azure.ai.ml.entities import Job
 
+from kedro_azureml.config import ComputeConfig
 from kedro_azureml.generator import AzureMLPipelineGenerator
 
 
@@ -47,6 +48,9 @@ def test_azure_pipeline_with_different_compute(
     Test that when a Node in an Azure Pipeline is tagged with a compute tag
     this gets passed through to the generated azure pipeline
     """
+    dummy_plugin_config.azure.compute["compute-2"] = ComputeConfig(
+        **{"cluster_name": "cpu-cluster-2"}
+    )
     with patch.object(
         AzureMLPipelineGenerator,
         "get_kedro_pipeline",
@@ -64,12 +68,13 @@ def test_azure_pipeline_with_different_compute(
         az_pipeline = generator.generate()
         for node in dummy_pipeline_compute_tag.nodes:
             if node.tags:
-                for tag in node.tags:
-                    if "azureml.compute" in tag:
-                        compute_value = tag.split(":")[1]
-                        assert (
-                            compute_value == az_pipeline.jobs[node.name]["compute"]
-                        ), "compute setting does not match up"
+                assert all(
+                    [
+                        dummy_plugin_config.azure.compute[tag].cluster_name
+                        == az_pipeline.jobs[node.name]["compute"]
+                        for tag in node.tags
+                    ]
+                ), "comupte settings don't match"
 
 
 def test_can_get_pipeline_from_kedro(dummy_plugin_config, dummy_pipeline):
