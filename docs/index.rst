@@ -12,7 +12,7 @@ Welcome to Kedro Azure ML Pipelines plugin documentation!
 
    Introduction <source/01_intro.md>
    Installation <source/02_installation.md>
-   Quickstart <source/03_quickstart.md>
+   Quickstart <source/03_quickstart.rst>
    Development <source/04_development.md>
 
 

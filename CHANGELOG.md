@@ -4,7 +4,8 @@
 
 ### Added
 
-- Ability to overwrite the compute target at a Node level using a [Node tag](https://kedro.readthedocs.io/en/stable/kedro.pipeline.node.html) that references a compute alias defined in the compute section of `azureml.yaml`.
+-   Ability to overwrite the compute target at a Node level using a [Node tag](https://kedro.readthedocs.io/en/stable/kedro.pipeline.node.html) that references a compute alias defined in the compute section of `azureml.yaml`.
+-   Improvements in build process, synchronised with getindata `python-opensource-template`
 
 ## [0.1.0] - 2022-07-28
 
