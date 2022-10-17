@@ -74,7 +74,7 @@ def test_azure_pipeline_with_different_compute(
                         == az_pipeline.jobs[node.name]["compute"]
                         for tag in node.tags
                     ]
-                ), "comupte settings don't match"
+                ), "compute settings don't match"
 
 
 def test_can_get_pipeline_from_kedro(dummy_plugin_config, dummy_pipeline):
