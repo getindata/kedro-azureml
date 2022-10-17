@@ -202,11 +202,11 @@ Using a different compute cluster for specific nodes
 For certain nodes it can make sense to run them on a different
 compute clusters (e.g. High Memory or GPU). This can be achieved
 using `Node tags <https://kedro.readthedocs.io/en/stable/kedro.pipeline.node.html>`_
-and adding additional compute targets in your `azureml.yml`.
+and adding additional compute targets in your ``azureml.yml``.
 
 After creating an additional compute cluster in your AzureML workspace,
-in this case the additional cluster is called `cpu-cluster-8`,
-we can add it in our `azureml.yml` under an alias (in this case `chunky`).
+in this case the additional cluster is called ``cpu-cluster-8``,
+we can add it in our ``azureml.yml`` under an alias (in this case ``chunky``).
 
 .. code:: console
 
@@ -244,4 +244,5 @@ Now we are able to reference this compute target in our kedro pipelines using ke
             ),
         ],
 
-When running our project, `preprocess_companies` and `create_model_input_table` will be run on `cpu-cluster-8` while all other nodes are run on the default `cpu-cluster`.
+When running our project, ``preprocess_companies`` and ``create_model_input_table``
+will be run on ``cpu-cluster-8`` while all other nodes are run on the default ``cpu-cluster``.
