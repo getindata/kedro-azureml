@@ -51,7 +51,10 @@ def test_can_initialize_basic_plugin_config(
         assert config.azure.resource_group == f"resource_group_{unique_id}"
         assert config.azure.workspace_name == f"workspace_name_{unique_id}"
         assert config.azure.experiment_name == f"experiment_name_{unique_id}"
-        assert config.azure.cluster_name == f"cluster_name_{unique_id}"
+        assert (
+            config.azure.compute["__default__"].cluster_name
+            == f"cluster_name_{unique_id}"
+        )
         assert (
             config.azure.temporary_storage.account_name
             == f"storage_account_name_{unique_id}"

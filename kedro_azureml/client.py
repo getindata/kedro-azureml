@@ -52,8 +52,10 @@ class AzureMLPipelinesClient:
     ) -> bool:
         with _get_azureml_client(self.subscription_id, config) as ml_client:
             assert (
-                cluster := ml_client.compute.get(config.cluster_name)
-            ), f"Cluster {config.cluster_name} does not exist"
+                cluster := ml_client.compute.get(
+                    config.compute["__default__"].cluster_name
+                )
+            ), f"Cluster {config.compute['__default__'].cluster_name} does not exist"
 
             logger.info(
                 f"Creating job on cluster {cluster.name} ({cluster.size}, min instances: {cluster.min_instances}, "
@@ -63,7 +65,7 @@ class AzureMLPipelinesClient:
             pipeline_job = ml_client.jobs.create_or_update(
                 self.azure_pipeline,
                 experiment_name=config.experiment_name,
-                compute=config.cluster_name,
+                compute=cluster,
             )
 
             if on_job_scheduled:
