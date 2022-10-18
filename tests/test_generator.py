@@ -25,6 +25,7 @@ def test_can_generate_azure_pipeline(pipeline_name, dummy_plugin_config, request
             pipeline_name,
             env_name,
             dummy_plugin_config,
+            {},
             docker_image=docker_image,
         )
 
@@ -83,9 +84,7 @@ def test_can_get_pipeline_from_kedro(dummy_plugin_config, dummy_pipeline):
         "kedro.framework.project.pipelines", {pipeline_name: dummy_pipeline}
     ):
         generator = AzureMLPipelineGenerator(
-            pipeline_name,
-            "local",
-            dummy_plugin_config,
+            pipeline_name, "local", dummy_plugin_config, {}
         )
         p = generator.get_kedro_pipeline()
         assert p == dummy_pipeline

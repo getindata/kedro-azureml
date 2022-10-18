@@ -1,9 +1,16 @@
 import logging
 import re
-from typing import Dict, Optional
+from typing import Any, Dict, Optional, Type
 from uuid import uuid4
 
-from azure.ai.ml import Input, Output, command
+from azure.ai.ml import (
+    Input,
+    MpiDistribution,
+    Output,
+    PyTorchDistribution,
+    TensorFlowDistribution,
+    command,
+)
 from azure.ai.ml.dsl import pipeline as azure_pipeline
 from azure.ai.ml.entities import Environment, Job
 from azure.ai.ml.entities._builders import Command
@@ -11,7 +18,12 @@ from kedro.pipeline import Pipeline
 from kedro.pipeline.node import Node
 
 from kedro_azureml.config import KedroAzureMLConfig, KedroAzureRunnerConfig
-from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
+from kedro_azureml.constants import (
+    DISTRIBUTED_CONFIG_FIELD,
+    KEDRO_AZURE_RUNNER_CONFIG,
+)
+from kedro_azureml.distributed import DistributedNodeConfig
+from kedro_azureml.distributed.config import Framework
 
 logger = logging.getLogger(__name__)
 
@@ -26,13 +38,17 @@ class AzureMLPipelineGenerator:
         pipeline_name: str,
         kedro_environment: str,
         config: KedroAzureMLConfig,
+        kedro_params: Dict[str, Any],
         docker_image: Optional[str] = None,
         params: Optional[str] = None,
         storage_account_key: Optional[str] = "",
     ):
         self.storage_account_key = storage_account_key
         self.kedro_environment = kedro_environment
+
         self.params = params
+        self.kedro_params = kedro_params
+
         self.docker_image = docker_image
         self.config = config
         self.pipeline_name = pipeline_name
@@ -96,13 +112,44 @@ class AzureMLPipelineGenerator:
     def _sanitize_azure_name(self, name: str) -> str:
         return name.lower().replace(".", "__")
 
+    def _get_kedro_param(
+        self, param_name: str, params: Optional[Dict[str, Any]] = None
+    ):
+        if "." in param_name:
+            name, remainder = param_name.split(".", 1)
+            return self._get_kedro_param(remainder, (params or self.kedro_params)[name])
+        else:
+            return (params or self.kedro_params)[param_name]
+
+    def _from_params_or_value(
+        self,
+        namespace: str,
+        value_to_parse,
+        expected_value_type: Type = int,
+        hint: Optional[str] = None,
+    ):
+        if isinstance(value_to_parse, str) and value_to_parse.startswith("params:"):
+            return self._get_kedro_param(
+                namespace + "." + value_to_parse.replace("params:", "", 1)
+            )
+        elif isinstance(value_to_parse, expected_value_type):
+            return value_to_parse
+        else:
+            msg = f"Expected either `params:` or actual value of type {expected_value_type}"
+            if hint:
+                msg += f" while parsing: {hint}"
+            msg += f", got {value_to_parse}"
+            raise ValueError(msg)
+
     def _construct_azure_command(
         self,
         pipeline: Pipeline,
         node: Node,
         kedro_azure_run_id: str,
     ):
-        # TODO - config can probably expose compute-per-step setting, to allow different steps to be scheduled on different machine types # noqa
+        command_kwargs = {}
+        command_kwargs.update(self._get_distributed_azure_command_kwargs(node))
+
         return command(
             name=self._sanitize_azure_name(node.name),
             display_name=node.name,
@@ -127,7 +174,46 @@ class AzureMLPipelineGenerator:
             outputs={
                 self._sanitize_param_name(name): Output() for name in node.outputs
             },
+            **command_kwargs,
         )
+
+    def _get_distributed_azure_command_kwargs(self, node) -> dict:
+        azure_command_kwargs = {}
+        if hasattr(node.func, DISTRIBUTED_CONFIG_FIELD) and isinstance(
+            distributed_config := getattr(node.func, DISTRIBUTED_CONFIG_FIELD),
+            DistributedNodeConfig,
+        ):
+            distributed_config: DistributedNodeConfig
+            logger.info(
+                f"Using distributed configuration for node {node.name}: {distributed_config}"
+            )
+
+            num_nodes: int = self._from_params_or_value(
+                node.namespace, distributed_config.num_nodes, hint="num_nodes"
+            )
+
+            processes_per_instance: int = (
+                self._from_params_or_value(
+                    node.namespace,
+                    distributed_config.processes_per_node,
+                    hint="processes_per_node",
+                )
+                if distributed_config.processes_per_node is not None
+                else 1
+            )
+
+            azure_command_kwargs["instance_count"] = num_nodes
+            azure_command_kwargs["distribution"] = {
+                Framework.PyTorch: PyTorchDistribution(
+                    process_count_per_instance=processes_per_instance
+                ),
+                # TODO: test tensorflow
+                Framework.TensorFlow: TensorFlowDistribution(worker_count=num_nodes),
+                Framework.MPI: MpiDistribution(
+                    process_count_per_instance=processes_per_instance
+                ),
+            }[distributed_config.framework]
+        return azure_command_kwargs
 
     def _gather_pipeline_outputs(self, pipeline: Pipeline, invoked_components):
         azure_pipeline_outputs = {}

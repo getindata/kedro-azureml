@@ -9,6 +9,7 @@ from kedro.framework.startup import ProjectMetadata
 
 from kedro_azureml.cli_functions import (
     get_context_and_pipeline,
+    is_distributed_master_node,
     parse_extra_params,
 )
 from kedro_azureml.client import AzureMLPipelinesClient
@@ -267,5 +268,9 @@ def execute(
         mgr.session.run(pipeline, node_names=[node], runner=runner)
 
     # 2. Save dummy outputs
-    for dummy_output in azure_outputs:
-        (Path(dummy_output) / "output.txt").write_text("#getindata")
+    # In distributed computing, it will only happen on nodes with rank 0
+    if is_distributed_master_node():
+        for dummy_output in azure_outputs:
+            (Path(dummy_output) / "output.txt").write_text("#getindata")
+    else:
+        logger.info("Skipping saving Azure outputs on non-master distributed nodes")
