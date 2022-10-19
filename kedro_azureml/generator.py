@@ -21,6 +21,7 @@ from kedro_azureml.config import KedroAzureMLConfig, KedroAzureRunnerConfig
 from kedro_azureml.constants import (
     DISTRIBUTED_CONFIG_FIELD,
     KEDRO_AZURE_RUNNER_CONFIG,
+    PARAMS_PREFIX,
 )
 from kedro_azureml.distributed import DistributedNodeConfig
 from kedro_azureml.distributed.config import Framework
@@ -123,21 +124,23 @@ class AzureMLPipelineGenerator:
 
     def _from_params_or_value(
         self,
-        namespace: str,
+        namespace: Optional[str],
         value_to_parse,
+        hint,
         expected_value_type: Type = int,
-        hint: Optional[str] = None,
     ):
-        if isinstance(value_to_parse, str) and value_to_parse.startswith("params:"):
+        if isinstance(value_to_parse, str) and value_to_parse.startswith(PARAMS_PREFIX):
+            prefix = f"{namespace}." if namespace else ""
             return self._get_kedro_param(
-                namespace + "." + value_to_parse.replace("params:", "", 1)
+                prefix + value_to_parse.replace(PARAMS_PREFIX, "", 1)
             )
-        elif isinstance(value_to_parse, expected_value_type):
+        elif (
+            type(value_to_parse) is expected_value_type
+        ):  # this is not isinstance() because isinstance(False, int) returns True...
             return value_to_parse
         else:
             msg = f"Expected either `params:` or actual value of type {expected_value_type}"
-            if hint:
-                msg += f" while parsing: {hint}"
+            msg += f" while parsing: {hint}"
             msg += f", got {value_to_parse}"
             raise ValueError(msg)
 
