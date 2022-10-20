@@ -51,50 +51,10 @@ created in Azure and have their **names** ready to input to the plugin:
    or set appopriate settings
    (`https://github.com/kedro-org/kedro-plugins/tree/main/kedro-telemetry <https://github.com/kedro-org/kedro-plugins/tree/main/kedro-telemetry>`__).
 6. Install the requirements ``pip install -r src/requirements.txt``
-7. Create an Azure ML Environment for the project:
-
-For the project's code to run on Azure ML it needs to have an environment
-with the necessary dependencies. Here is it shown how to do this from a
-local Docker build context. Please refer to the
-`Azure ML CLI documentation <https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-environments-v2#create-an-environment>`
-for more options.
-
-Start by executing the following command:
-
-.. code:: console
-
-   kedro docker init
-
-This command creates a several files, including ``Dockerfile`` and 
-``.dockerignore``. These can be adjusted to match the workflow for
-your project.
-
-Depending on whether you want to use code upload when submitting an
-experiment or not, you would need to add the code and any possible input
-data to the Docker image.
-
-   - If using code upload:
-     Everything apart from the section "install project requirements"
-     can be removed from the ``Dockerfile``. You can add a
-     ``.amlignore`` file to specify which files should be uploaded.
-   - If not using code upload:
-     Keep the sections in the ``Dockerfile`` and adjust the ``.dockerignore``
-     file to add any other files to be added to the Docker image,
-     such as ``!data/01_raw`` for the raw data files.
-     
-     Set ``code_directory: null`` in the ``azureml.yml`` config file.
-
-Create or update an Azure ML Environment by running the following command:
-
-.. code:: console
-
-   az ml environment create --name <environment-name> --version <version> --build-context . --dockerfile-path Dockerfile
-
-
-8. Initialize Kedro Azure ML plugin, it requires the Azure resource
+7. Initialize Kedro Azure ML plugin, it requires the Azure resource
    names as stated above. Experiment name can be anything you like (as
    long as it's allowed by Azure ML). The environment name is the name
-   of the Azure ML Environment created in the previous step. You can
+   of the Azure ML Environment to be created in the next step. You can
    use the syntax <environment_name>@latest for the latest version or
    <environment-name>:<version> for a specific version.
 
@@ -105,12 +65,47 @@ Create or update an Azure ML Environment by running the following command:
    #                          STORAGE_CONTAINER ENVIRONMENT_NAME
    kedro azureml init <resource-group-name> <workspace-name> <experiment-name> <compute-cluster-name> <storage-account-name> <storage-container-name> <environment-name>
 
+
+8. Create an Azure ML Environment for the project:
+
+   For the project's code to run on Azure ML it needs to have an environment
+   with the necessary dependencies. Here is it shown how to do this from a
+   local Docker build context. Please refer to the
+   `Azure ML CLI documentation <https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-environments-v2#create-an-environment>`
+   for more options.
+
+   Start by executing the following command:
+
 .. code:: console
 
-   Configuration generated in /Users/marcin/Dev/tmp/kedro-azureml-demo/conf/base/azureml.yml
-   It's recommended to set Lifecycle management rule for storage container kedro-azure-storage to avoid costs of long-term storage of the temporary data.
-   Temporary data will be stored under abfs://kedro-azure-storage/kedro-azureml-temp path
-   See https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-configure?tabs=azure-portal
+   kedro docker init
+
+   This command creates a several files, including ``Dockerfile`` and 
+   ``.dockerignore``. These can be adjusted to match the workflow for
+   your project.
+
+   Depending on whether you want to use code upload when submitting an
+   experiment or not, you would need to add the code and any possible input
+   data to the Docker image.
+
+   - If using code upload:
+      Everything apart from the section "install project requirements"
+      can be removed from the ``Dockerfile``. You can add a
+      ``.amlignore`` file to specify which files should be uploaded.
+
+      Set ``code_directory: "."`` (or a subdirectory containing the code to upload)
+      in the ``azureml.yml`` config file.
+
+   - If not using code upload:
+      Keep the sections in the ``Dockerfile`` and adjust the ``.dockerignore``
+      file to add any other files to be added to the Docker image,
+      such as ``!data/01_raw`` for the raw data files.
+      
+   Create or update an Azure ML Environment by running the following command:
+
+.. code:: console
+
+   az ml environment create --name <environment-name> --version <version> --build-context . --dockerfile-path Dockerfile
 
 9. Adjust the Data Catalog - the default one stores all data locally,
    whereas the plugin will automatically use Azure Blob Storage. Only

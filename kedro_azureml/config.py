@@ -67,7 +67,7 @@ azure:
   # Azure ML Environment to use during pipeline execution
   environment_name: "{environment_name}"
   # Path to directory to upload, or null to disable code upload
-  code_directory: "."
+  code_directory: null
   # Path to the directory in the Docker image to run the code from
   # Ignored when code_directory is set
   working_directory: /home/kedro
