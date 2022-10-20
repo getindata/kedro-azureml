@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from contextlib import contextmanager
 
@@ -6,6 +7,8 @@ import click
 
 from kedro_azureml.generator import AzureMLPipelineGenerator
 from kedro_azureml.utils import CliContext, KedroContextManager
+
+logger = logging.getLogger()
 
 
 @contextmanager
@@ -53,15 +56,24 @@ def parse_extra_params(params, silent=False):
 
 def is_distributed_master_node() -> bool:
     is_rank_0 = True
-    if "TF_CONFIG" in os.environ:
-        # TensorFlow
-        tf_config = json.loads(os.environ["TF_CONFIG"])
-        worker_type = tf_config["task"]["type"].lower()
-        is_rank_0 = worker_type == "chief" or worker_type == "master"
-    else:
-        # MPI + PyTorch
-        for e in ("OMPI_COMM_WORLD_RANK", "RANK"):
-            if e in os.environ:
-                is_rank_0 = int(os.environ[e]) == 0
-                break
+    try:
+        if "TF_CONFIG" in os.environ:
+            # TensorFlow
+            tf_config = json.loads(os.environ["TF_CONFIG"])
+            worker_type = tf_config["task"]["type"].lower()
+            is_rank_0 = worker_type == "chief" or worker_type == "master"
+        else:
+            # MPI + PyTorch
+            for e in ("OMPI_COMM_WORLD_RANK", "RANK"):
+                if e in os.environ:
+                    is_rank_0 = int(os.environ[e]) == 0
+                    break
+    except:  # noqa
+        logger.error(
+            "Could not parse environment variables related to distributed computing. "
+            "Set appropriate values for one of: RANK, OMPI_COMM_WORLD_RANK or TF_CONFIG",
+            exc_info=True,
+        )
+        logger.warning("Assuming this node is not a master node, due to error.")
+        return False
     return is_rank_0

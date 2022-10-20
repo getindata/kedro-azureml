@@ -246,3 +246,56 @@ Now we are able to reference this compute target in our kedro pipelines using ke
 
 When running our project, ``preprocess_companies`` and ``create_model_input_table``
 will be run on ``cpu-cluster-8`` while all other nodes are run on the default ``cpu-cluster``.
+
+Distributed training
+------------------
+
+The plugins supports distributed training via native Azure ML distributed orchestration, which includes:
+* MPI - https://learn.microsoft.com/en-us/azure/machine-learning/how-to-train-distributed-gpu#mpi
+* PyTorch - https://learn.microsoft.com/en-us/azure/machine-learning/how-to-train-distributed-gpu#pytorch
+* TensorFlow - https://learn.microsoft.com/en-us/azure/machine-learning/how-to-train-distributed-gpu#tensorflow
+
+If one of your Kedro's pipeline nodes requires distributed training (e.g. you train a neural network with PyTorch), you can mark the node with `distributed_job` decorator from `kedro_azureml.distributed.decorators` and use native Kedro parameters to specify the number of nodes you want to spawn for the job.
+An example for PyTorch looks like this:
+
+.. code:: python
+
+    #                   \/ use appropriate framework
+    #                                          \/ specify the number of distributed nodes to spawn for the job
+    @distributed_job(Framework.PyTorch, num_nodes="params:num_nodes")
+    def train_model_pytorch(
+        X_train: pd.DataFrame, y_train: pd.Series, num_nodes: int, max_epochs: int
+    ):
+        # rest of the code
+        pass
+
+In the `pipeline` you would use this node like that:
+
+.. code:: python
+
+    node(
+        func=train_model_pytorch,
+        inputs=["X_train", "y_train", "params:num_nodes", "params:max_epochs"],
+        outputs="regressor",
+        name="train_model_node",
+    ),
+
+and that's it!
+The `params:` you use support namespacing as well as overriding at runtime, e.g. when launching the Azure ML job:
+
+.. code:: console
+
+    kedro azureml run -s <subscription id> --params '{"data_science": {"active_modelling_pipeline": {"num_nodes": 4}}}'
+
+The `distributed_job` decorator also supports "hard-coded" values for number of nodes:
+
+.. code:: python
+
+    @distributed_job(Framework.PyTorch, num_nodes=2) # no need to use Kedro params here
+    def train_model_pytorch(
+        X_train: pd.DataFrame, y_train: pd.Series, num_nodes: int, max_epochs: int
+    ):
+        # rest of the code
+        pass
+
+We have tested the implementation heavily with PyTorch (+PyTorch Lightning) and GPUs. If you encounter any problems, drop us an issue on GitHub!

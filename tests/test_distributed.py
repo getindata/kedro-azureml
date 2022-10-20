@@ -1,10 +1,12 @@
 import json
+import os
 from unittest.mock import patch
 
 import pytest
 from azure.ai.ml.entities import Job
 from kedro.pipeline import node, pipeline
 
+from kedro_azureml.cli_functions import is_distributed_master_node
 from kedro_azureml.constants import DISTRIBUTED_CONFIG_FIELD
 from kedro_azureml.distributed import distributed_job
 from kedro_azureml.distributed.config import Framework
@@ -129,3 +131,25 @@ def test_generator_raises_on_invalid_distributed_config(
 
         with pytest.raises(ValueError):
             generator.generate()
+
+
+@pytest.mark.parametrize(
+    "environment,expected_master",
+    [
+        ({"TF_CONFIG": "ASD"}, False),
+        ({"TF_CONFIG": json.dumps({"my_config": "not valid"})}, False),
+        ({"RANK": "0"}, True),
+        ({"RANK": "1"}, False),
+        ({"RANK": "666"}, False),
+        ({"OMPI_COMM_WORLD_RANK": "0"}, True),
+        ({"OMPI_COMM_WORLD_RANK": "1"}, False),
+        ({"TF_CONFIG": json.dumps({"task": {"type": "master"}})}, True),
+        ({"TF_CONFIG": json.dumps({"task": {"type": "chief"}})}, True),
+        ({"TF_CONFIG": json.dumps({"task": {"type": "worker"}})}, False),
+    ],
+)
+def test_can_detect_distributed_master_node(environment, expected_master):
+    with patch.dict(os.environ, environment, clear=False):
+        assert (
+            status := is_distributed_master_node()
+        ) == expected_master, f"Invalid master node status detected, should be {expected_master} but was {status}"
