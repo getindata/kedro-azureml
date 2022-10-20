@@ -61,7 +61,9 @@ def is_distributed_master_node() -> bool:
             # TensorFlow
             tf_config = json.loads(os.environ["TF_CONFIG"])
             worker_type = tf_config["task"]["type"].lower()
-            is_rank_0 = worker_type == "chief" or worker_type == "master"
+            is_rank_0 = (worker_type == "chief" or worker_type == "master") or (
+                worker_type == "worker" and tf_config["task"]["index"] == 0
+            )
         else:
             # MPI + PyTorch
             for e in ("OMPI_COMM_WORLD_RANK", "RANK"):

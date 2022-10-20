@@ -33,7 +33,13 @@ def test_can_annotate_kedro_node_with_distributed_decorator(framework, num_nodes
 
     assert p is not None and hasattr(
         p.nodes[1].func, DISTRIBUTED_CONFIG_FIELD
-    ), "Distributed note was not marked properly"
+    ), "Distributed node was not marked properly"
+
+    assert all(
+        not hasattr(n.func, DISTRIBUTED_CONFIG_FIELD)
+        for i, n in enumerate(p.nodes)
+        if i != 1
+    ), "Plain nodes contain distributed annotation, which was not expected"
 
     dummy_input = object()
     assert (
@@ -146,10 +152,12 @@ def test_generator_raises_on_invalid_distributed_config(
         ({"TF_CONFIG": json.dumps({"task": {"type": "master"}})}, True),
         ({"TF_CONFIG": json.dumps({"task": {"type": "chief"}})}, True),
         ({"TF_CONFIG": json.dumps({"task": {"type": "worker"}})}, False),
+        ({"TF_CONFIG": json.dumps({"task": {"type": "worker", "index": 1}})}, False),
+        ({"TF_CONFIG": json.dumps({"task": {"type": "worker", "index": 0}})}, True),
     ],
 )
 def test_can_detect_distributed_master_node(environment, expected_master):
-    with patch.dict(os.environ, environment, clear=False):
+    with patch.dict(os.environ, environment):
         assert (
             status := is_distributed_master_node()
         ) == expected_master, f"Invalid master node status detected, should be {expected_master} but was {status}"
