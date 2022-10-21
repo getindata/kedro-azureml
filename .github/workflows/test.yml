@@ -137,13 +137,15 @@ jobs:
       - name: Update starter configs
         working-directory: ./spaceflights
         run: |
-          echo ${{ secrets.KEDRO_AZUREML_CONFIG_BASE64 }} | base64 -d > conf/base/azureml.yml
           kedro docker init
           sed -i 's/\(COPY src\/requirements.txt.*\)$/\1\nCOPY kedro-azureml.tar.gz ./g' Dockerfile
           cat Dockerfile
           echo "!data/01_raw" >> .dockerignore
           rm conf/base/catalog.yml
           cp ../tests/conf/e2e/catalog.yml conf/base/catalog.yml
+          cp ../tests/conf/e2e/azureml.yml conf/base/azureml.yml
+          sed -i 's/{container_registry}/${{ secrets.REGISTRY_LOGIN_SERVER }}/g' conf/base/azureml.yml
+          cat conf/base/azureml.yml
 
       - name: Login via Azure CLI
         uses: azure/login@v1

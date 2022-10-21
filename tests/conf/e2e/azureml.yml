@@ -1,0 +1,30 @@
+azure:
+  # Azure ML Experiment Name
+  experiment_name: "kedro-azureml-e2e-tests"
+  # Azure resource group to use
+  resource_group: "sandbox-ml-ops"
+  # Azure ML Workspace name
+  workspace_name: "ml-ops-sandbox"
+
+  # Temporary storage settings - this is used to pass some data between steps
+  # if the data is not specified in the catalog directly
+  temporary_storage:
+    # Azure Storage account name, where the temp data should be stored
+    # It's recommended to set Lifecycle management rule for storage container, to avoid costs of long-term storage
+    # of the temporary data. Temporary data will be stored under abfs://<containter>/kedro-azureml-temp path
+    # See https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-configure?tabs=azure-portal
+    account_name: "mlopssandbox5305246159"
+    # Name of the storage container
+    container: "kedro-azureml-e2e"
+  compute:
+    # Azure compute used for running kedro jobs.
+    # Additional compute cluster can be defined here. Individual nodes can reference specific compute clusters by adding
+    # the section title (e.g. <your_node_tag>) as a node_tag to their tags list. Nodes without a tag will run on
+    # __default__ cluster.
+    __default__:
+      cluster_name: "kedro-azureml-e2e"
+    # <your_node_tag>:
+    #   cluster_name: "<your_cluster_name>"
+docker:
+  # Docker image to use during pipeline execution
+  image: "{container_registry}/kedro-azureml-e2e:latest"

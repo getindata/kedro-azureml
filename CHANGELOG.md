@@ -6,6 +6,7 @@
 
 -   Ability to overwrite the compute target at a Node level using a [Node tag](https://kedro.readthedocs.io/en/stable/kedro.pipeline.node.html) that references a compute alias defined in the compute section of `azureml.yaml`.
 -   Improvements in build process, synchronised with getindata `python-opensource-template`
+-   Add support for distributed training in PyTorch, TensorFlow and MPI via native Azure ML integration
 
 ## [0.1.0] - 2022-07-28
 
