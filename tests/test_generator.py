@@ -63,6 +63,7 @@ def test_azure_pipeline_with_different_compute(
             "dummy_pipeline_compute_tag",
             env_name,
             dummy_plugin_config,
+            {},
             docker_image=docker_image,
         )
 
