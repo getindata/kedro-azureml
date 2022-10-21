@@ -98,9 +98,8 @@ class AzureMLPipelineGenerator:
         )
         if len(resource_tags) > 1:
             raise ConfigException(
-                (
-                    "Node tags contain two values that are in defined in the resource config,"
-                )("a node can only have a maximum of 1 resource")
+                "Node tags contain two values that are in defined in the resource config,"
+                "a node can only have a maximum of 1 resource"
             )
         elif len(resource_tags) == 1:
             return self.config.azure.compute[list(resource_tags)[0]]
