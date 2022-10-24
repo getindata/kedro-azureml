@@ -12,6 +12,7 @@ on:
     branches:
       - master
       - develop
+      - debug-workflows
     paths-ignore:
       - "docs/**"
 jobs:
