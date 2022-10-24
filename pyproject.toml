@@ -36,7 +36,7 @@ python = ">=3.8,<3.11"
 kedro = ">=0.18.2,<0.19"
 cloudpickle = "^2.1.0"
 adlfs = ">=2022.2.0"
-azure-ai-ml = ">=0.2.0b4"
+azure-ai-ml = ">=0.1.0b4"
 azureml-mlflow = { version = ">=1.42.0", optional = true}
 pydantic = "~=1.9.1"
 mlflow = {version = "^1.27.0", optional = true}
