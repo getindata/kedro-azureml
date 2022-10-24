@@ -100,10 +100,10 @@ jobs:
   ### PROJECT SPECIFIC CONFIGURATION HERE
 
   e2e_tests:
-    if: (github.event.pull_request.head.repo.full_name == github.repository) || (github.event.push.repository.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        if: ${{ (github.event.pull_request.head.repo.full_name == github.repository) || (github.event.push.repository.full_name == github.repository) }}
 
       - name: Setup python
         uses: actions/setup-python@v2.2.1
