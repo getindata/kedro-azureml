@@ -1,10 +1,10 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from azure.ai.ml.entities import Job
 
 from kedro_azureml.config import ComputeConfig
-from kedro_azureml.generator import AzureMLPipelineGenerator
+from kedro_azureml.generator import AzureMLPipelineGenerator, ConfigException
 
 
 @pytest.mark.parametrize(
@@ -89,3 +89,21 @@ def test_can_get_pipeline_from_kedro(dummy_plugin_config, dummy_pipeline):
         )
         p = generator.get_kedro_pipeline()
         assert p == dummy_pipeline
+
+
+def test_get_target_resource_from_node_tags_raises_exception(
+    dummy_plugin_config, dummy_pipeline
+):
+    pipeline_name = "unit_test_pipeline"
+    node = MagicMock()
+    node.tags = ["compute-2", "compute-3"]
+    for t in node.tags:
+        dummy_plugin_config.azure.compute[t] = ComputeConfig(**{"cluster_name": t})
+    with patch.dict(
+        "kedro.framework.project.pipelines", {pipeline_name: dummy_pipeline}
+    ):
+        generator = AzureMLPipelineGenerator(
+            pipeline_name, "local", dummy_plugin_config, {}
+        )
+        with pytest.raises(ConfigException):
+            generator.get_target_resource_from_node_tags(node)
