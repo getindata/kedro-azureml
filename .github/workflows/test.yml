@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.8', '3.9', '3.10']
+        python-version: ['3.10']
 
     steps:
     - uses: actions/checkout@v2
@@ -100,8 +100,7 @@ jobs:
   ### PROJECT SPECIFIC CONFIGURATION HERE
 
   e2e_tests:
-    if: (github.event.pull_request.head.repo.full_name || github.event.push.repository.full_name) == github.repository
-    needs: [unit_tests, sonarcloud]
+    if: (github.event.pull_request.head.repo.full_name == github.repository) || (github.event.push.repository.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
