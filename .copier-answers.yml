@@ -1,0 +1,19 @@
+# Changes here will be overwritten by Copier
+_commit: v1.0.0
+_src_path: git@github.com:getindata/python-opensource-template.git
+authors:
+- marcin.zablocki <marcin.zablocki@getindata.com>
+description: Kedro plugin with Azure ML Pipelines support
+docs_url: https://kedro-azureml.readthedocs.io/
+full_name: Kedro Azure ML Pipelines plugin
+github_url: https://github.com/getindata/kedro-azureml
+initial_version: 0.2.0
+keywords:
+- kedro
+- mlops
+- azureml
+- machinelearning
+maintainers:
+- GetInData MLOPS <mlops@getindata.com>
+module_name: kedro_azureml
+short_name: kedro-azureml

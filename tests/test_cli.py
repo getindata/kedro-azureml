@@ -51,7 +51,10 @@ def test_can_initialize_basic_plugin_config(
         assert config.azure.resource_group == f"resource_group_{unique_id}"
         assert config.azure.workspace_name == f"workspace_name_{unique_id}"
         assert config.azure.experiment_name == f"experiment_name_{unique_id}"
-        assert config.azure.cluster_name == f"cluster_name_{unique_id}"
+        assert (
+            config.azure.compute["__default__"].cluster_name
+            == f"cluster_name_{unique_id}"
+        )
         assert (
             config.azure.temporary_storage.account_name
             == f"storage_account_name_{unique_id}"
@@ -115,7 +118,14 @@ def test_can_compile_pipeline(
             click_prompt.assert_called()
 
 
+@pytest.mark.parametrize(
+    "distributed_env_variables,should_create_output",
+    [({"RANK": "0"}, True), ({"RANK": "2"}, False)],
+    ids=("master node", "worker node"),
+)
 def test_can_invoke_execute_cli(
+    distributed_env_variables,
+    should_create_output,
     patched_kedro_package,
     cli_context,
     dummy_pipeline,
@@ -130,6 +140,8 @@ def test_can_invoke_execute_cli(
         "kedro.framework.project.pipelines", {"__default__": dummy_pipeline}
     ), patch.object(
         Path, "cwd", return_value=tmp_path
+    ), patch.dict(
+        os.environ, distributed_env_variables, clear=False
     ):
         runner = CliRunner()
         result = runner.invoke(
@@ -138,9 +150,13 @@ def test_can_invoke_execute_cli(
             obj=cli_context,
         )
         assert result.exit_code == 0
-        assert (
-            p := tmp_path / "output.txt"
-        ).exists() and p.stat().st_size > 0, "Output placeholders were not created"
+        p = tmp_path / "output.txt"
+        if should_create_output:
+            assert (
+                p.exists() and p.stat().st_size > 0
+            ), "Output placeholders were not created"
+        else:
+            assert not p.exists(), "Output placeholders should not have been created"
 
 
 @pytest.mark.parametrize(

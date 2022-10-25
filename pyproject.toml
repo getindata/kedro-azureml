@@ -1,18 +1,35 @@
 [tool.poetry]
 name = "kedro-azureml"
-version = "0.1.0"
+version = "0.2.0"
 description = "Kedro plugin with Azure ML Pipelines support"
 readme = "README.md"
-authors = ["marcin.zablocki <marcin.zablocki@getindata.com>"]
-maintainers = ["GetInData <mlops@getindata.com>"]
-homepage = "https://github.com/getindata/kedro-azureml/"
-repository = "https://github.com/getindata/kedro-azureml/"
-documentation = "https://readthedocs.org/projects/kedro-azureml/"
-keywords = ["kedro", "mlops", "azureml", "machinelearning"]
+authors = ['marcin.zablocki <marcin.zablocki@getindata.com>']
+maintainers = ['GetInData MLOPS <mlops@getindata.com>']
+homepage = "https://github.com/getindata/kedro-azureml"
+repository = "https://github.com/getindata/kedro-azureml"
+documentation = "https://kedro-azureml.readthedocs.io/"
+keywords = ['kedro', 'mlops', 'azureml', 'machinelearning']
 license = "Apache-2.0"
 classifiers = [
     "Development Status :: 4 - Beta", # license and python versions added automatically
 ]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError"
+]
+
+[tool.isort]
+known_third_party = ["azure", "tabulate", "pydantic","semver","setuptools"]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
@@ -39,7 +56,3 @@ pandas = "^1.4.3"
 
 [tool.poetry.plugins."kedro.project_commands"]
 "azureml" = "kedro_azureml.cli:commands"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"

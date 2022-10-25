@@ -6,10 +6,14 @@
 [![PyPI version](https://badge.fury.io/py/kedro-azureml.svg)](https://pypi.org/project/kedro-azureml/)
 [![Downloads](https://pepy.tech/badge/kedro-azureml)](https://pepy.tech/project/kedro-azureml)
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/8ecc057c4e66eb565669/maintainability)](https://codeclimate.com/github/getindata/kedro-azureml/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/8ecc057c4e66eb565669/test_coverage)](https://codeclimate.com/github/getindata/kedro-azureml/test_coverage)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=getindata_kedro-azureml&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=getindata_kedro-azureml)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=getindata_kedro-azureml&metric=coverage)](https://sonarcloud.io/summary/new_code?id=getindata_kedro-azureml)
 [![Documentation Status](https://readthedocs.org/projects/kedro-vertexai/badge/?version=latest)](https://kedro-azureml.readthedocs.io/en/latest/?badge=latest)
 
+<p align="center">
+  <a href="https://getindata.com/solutions/ml-platform-machine-learning-reliable-explainable-feature-engineering"><img height="150" src="https://getindata.com/img/logo.svg"></a>
+  <h3 align="center">We help companies turn their data into assets</h3>
+</p>
 
 ## About
 Following plugin enables running Kedro pipelines on Azure ML Pipelines service
@@ -33,6 +37,10 @@ Commands:
   run      Runs the specified pipeline in Azure ML Pipelines
 ```
 
-Follow **quickstart** section on [kedro-azureml.readthedocs.io](https://kedro-azureml.readthedocs.io/) to get up to speed with plugin usage. 
+## Quickstart
+Follow **quickstart** section on [kedro-azureml.readthedocs.io](https://kedro-azureml.readthedocs.io/) to get up to speed with plugin usage or watch the video below
 
+<a href="https://bit.ly/kedroazureml">
+    <img src="./docs/images/tutorial-video-yt.jpg" alt="Kedro Azure ML video tutorial" title="Kedro Azure ML video tutorial" />
+</a>
 
