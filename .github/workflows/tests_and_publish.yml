@@ -181,7 +181,7 @@ jobs:
   publish:
     # only run on push to master
     if: github.event.pull_request == null && github.ref == 'refs/heads/master'
-    needs: e2e_tests
+    needs: [e2e_tests, codeql]
     runs-on: ubuntu-latest
     strategy:
       matrix:
