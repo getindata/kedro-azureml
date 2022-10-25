@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Any, Dict
 
@@ -8,7 +9,13 @@ from pluggy import PluginManager
 
 from kedro_azureml.config import KedroAzureRunnerConfig
 from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
-from kedro_azureml.datasets import KedroAzureRunnerDataset
+from kedro_azureml.datasets import (
+    KedroAzureRunnerDataset,
+    KedroAzureRunnerDistributedDataset,
+)
+from kedro_azureml.distributed.utils import is_distributed_environment
+
+logger = logging.getLogger(__name__)
 
 
 class AzurePipelinesRunner(SequentialRunner):
@@ -36,7 +43,12 @@ class AzurePipelinesRunner(SequentialRunner):
     def create_default_data_set(self, ds_name: str) -> AbstractDataSet:
         # TODO: handle credentials better (probably with built-in Kedro credentials
         #  via ConfigLoader (but it's not available here...)
-        return KedroAzureRunnerDataset(
+        dataset_cls = KedroAzureRunnerDataset
+        if is_distributed_environment():
+            logger.info("Using distributed dataset class as a default")
+            dataset_cls = KedroAzureRunnerDistributedDataset
+
+        return dataset_cls(
             self.runner_config.temporary_storage.account_name,
             self.runner_config.temporary_storage.container,
             self.runner_config.storage_account_key,

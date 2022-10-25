@@ -11,7 +11,10 @@ from kedro.framework.startup import ProjectMetadata
 
 from kedro_azureml import cli
 from kedro_azureml.config import KedroAzureMLConfig
-from kedro_azureml.constants import FILL_IN_DOCKER_IMAGE
+from kedro_azureml.constants import (
+    FILL_IN_DOCKER_IMAGE,
+    KEDRO_AZURE_RUNNER_DATASET_MAX_RETIRES,
+)
 from kedro_azureml.generator import AzureMLPipelineGenerator
 from tests.utils import create_kedro_conf_dirs
 
@@ -120,7 +123,10 @@ def test_can_compile_pipeline(
 
 @pytest.mark.parametrize(
     "distributed_env_variables,should_create_output",
-    [({"RANK": "0"}, True), ({"RANK": "2"}, False)],
+    [
+        ({"RANK": "0"}, True),
+        ({"RANK": "2", KEDRO_AZURE_RUNNER_DATASET_MAX_RETIRES: "-10"}, False),
+    ],
     ids=("master node", "worker node"),
 )
 def test_can_invoke_execute_cli(

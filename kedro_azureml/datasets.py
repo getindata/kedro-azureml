@@ -1,13 +1,22 @@
 import bz2  # TODO: consider zstandard?
+import logging
+import os
 from functools import lru_cache
 from sys import version_info
+from time import sleep
 from typing import Any, Dict
 
 import cloudpickle
 import fsspec
 from kedro.io import AbstractDataSet
 
-from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
+from kedro_azureml.constants import (
+    KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
+    KEDRO_AZURE_RUNNER_DATASET_MAX_RETIRES,
+)
+from kedro_azureml.distributed.utils import is_distributed_master_node
+
+logger = logging.getLogger(__name__)
 
 
 class KedroAzureRunnerDataset(AbstractDataSet):
@@ -57,3 +66,22 @@ class KedroAzureRunnerDataset(AbstractDataSet):
             "dataset_name": self.dataset_name,
             "path": self._get_target_path(),
         }
+
+
+class KedroAzureRunnerDistributedDataset(KedroAzureRunnerDataset):
+    def _load(self):
+        max_retires = int(os.environ.get(KEDRO_AZURE_RUNNER_DATASET_MAX_RETIRES, "8"))
+        for i in range(max_retires):
+            try:
+                return super()._load()
+            except Exception:  # noqa
+                logger.debug(f"Retry {i + 1} out of {max_retires}", exc_info=True)
+                sleep(6.0 + 2**i)  # total waiting time for 8 retries would be ~5min
+
+    def _save(self, data: Any) -> None:
+        if is_distributed_master_node():
+            super()._save(data)
+        else:
+            logger.warning(
+                f"DataSet {self.dataset_name} will not be saved on a distributed node"
+            )
