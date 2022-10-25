@@ -101,7 +101,7 @@ jobs:
 
   e2e_tests:
     if: (github.event.pull_request.head.repo.full_name == github.repository || github.event.pull_request == null)
-    needs: [unit_tests, sonarcloud, codeql]
+    needs: [unit_tests, sonarcloud]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
