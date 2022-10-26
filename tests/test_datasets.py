@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Type
 from uuid import uuid4
 
 import numpy as np
@@ -6,12 +7,18 @@ import pandas as pd
 import pytest
 
 from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
-from kedro_azureml.datasets import KedroAzureRunnerDataset
+from kedro_azureml.datasets import (
+    KedroAzureRunnerDataset,
+    KedroAzureRunnerDistributedDataset,
+)
 
 
-def test_azure_dataset_config():
+@pytest.mark.parametrize(
+    "dataset_class", (KedroAzureRunnerDataset, KedroAzureRunnerDistributedDataset)
+)
+def test_azure_dataset_config(dataset_class: Type):
     run_id = uuid4().hex
-    ds = KedroAzureRunnerDataset(
+    ds = dataset_class(
         "storage_acc", "test_container", "key123", "unit_tests_dataset", run_id
     )
     target_path = ds._get_target_path()

@@ -1,13 +1,22 @@
 import bz2  # TODO: consider zstandard?
+import logging
+import os
 from functools import lru_cache
 from sys import version_info
 from typing import Any, Dict
 
+import backoff
 import cloudpickle
 import fsspec
 from kedro.io import AbstractDataSet
 
-from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
+from kedro_azureml.constants import (
+    KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
+    KEDRO_AZURE_RUNNER_DATASET_TIMEOUT,
+)
+from kedro_azureml.distributed.utils import is_distributed_master_node
+
+logger = logging.getLogger(__name__)
 
 
 class KedroAzureRunnerDataset(AbstractDataSet):
@@ -57,3 +66,22 @@ class KedroAzureRunnerDataset(AbstractDataSet):
             "dataset_name": self.dataset_name,
             "path": self._get_target_path(),
         }
+
+
+class KedroAzureRunnerDistributedDataset(KedroAzureRunnerDataset):
+    @backoff.on_exception(
+        backoff.fibo,
+        Exception,
+        max_time=lambda: int(os.environ.get(KEDRO_AZURE_RUNNER_DATASET_TIMEOUT, "300")),
+        raise_on_giveup=False,
+    )
+    def _load(self):
+        return super()._load()
+
+    def _save(self, data: Any) -> None:
+        if is_distributed_master_node():
+            super()._save(data)
+        else:
+            logger.warning(
+                f"DataSet {self.dataset_name} will not be saved on a distributed node"
+            )
