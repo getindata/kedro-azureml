@@ -4,6 +4,8 @@
 
 ## [0.2.2] - 2022-10-26
 
+-   Added sychronization of automatic datasets for distributed training use case
+
 ## [0.2.1] - 2022-10-24
 
 ### Added
