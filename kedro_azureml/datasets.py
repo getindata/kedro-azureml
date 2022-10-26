@@ -3,16 +3,16 @@ import logging
 import os
 from functools import lru_cache
 from sys import version_info
-from time import sleep
 from typing import Any, Dict
 
+import backoff
 import cloudpickle
 import fsspec
 from kedro.io import AbstractDataSet
 
 from kedro_azureml.constants import (
     KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
-    KEDRO_AZURE_RUNNER_DATASET_MAX_RETIRES,
+    KEDRO_AZURE_RUNNER_DATASET_TIMEOUT,
 )
 from kedro_azureml.distributed.utils import is_distributed_master_node
 
@@ -69,14 +69,14 @@ class KedroAzureRunnerDataset(AbstractDataSet):
 
 
 class KedroAzureRunnerDistributedDataset(KedroAzureRunnerDataset):
+    @backoff.on_exception(
+        backoff.fibo,
+        Exception,
+        max_time=lambda: int(os.environ.get(KEDRO_AZURE_RUNNER_DATASET_TIMEOUT, "300")),
+        raise_on_giveup=False,
+    )
     def _load(self):
-        max_retires = int(os.environ.get(KEDRO_AZURE_RUNNER_DATASET_MAX_RETIRES, "8"))
-        for i in range(max_retires):
-            try:
-                return super()._load()
-            except Exception:  # noqa
-                logger.debug(f"Retry {i + 1} out of {max_retires}", exc_info=True)
-                sleep(6.0 + 2**i)  # total waiting time for 8 retries would be ~5min
+        return super()._load()
 
     def _save(self, data: Any) -> None:
         if is_distributed_master_node():

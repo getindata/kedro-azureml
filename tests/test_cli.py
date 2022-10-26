@@ -13,7 +13,7 @@ from kedro_azureml import cli
 from kedro_azureml.config import KedroAzureMLConfig
 from kedro_azureml.constants import (
     FILL_IN_DOCKER_IMAGE,
-    KEDRO_AZURE_RUNNER_DATASET_MAX_RETIRES,
+    KEDRO_AZURE_RUNNER_DATASET_TIMEOUT,
 )
 from kedro_azureml.generator import AzureMLPipelineGenerator
 from tests.utils import create_kedro_conf_dirs
@@ -125,7 +125,7 @@ def test_can_compile_pipeline(
     "distributed_env_variables,should_create_output",
     [
         ({"RANK": "0"}, True),
-        ({"RANK": "2", KEDRO_AZURE_RUNNER_DATASET_MAX_RETIRES: "-10"}, False),
+        ({"RANK": "2", KEDRO_AZURE_RUNNER_DATASET_TIMEOUT: "1"}, False),
     ],
     ids=("master node", "worker node"),
 )
