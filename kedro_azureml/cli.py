@@ -9,7 +9,6 @@ from kedro.framework.startup import ProjectMetadata
 
 from kedro_azureml.cli_functions import (
     get_context_and_pipeline,
-    is_distributed_master_node,
     parse_extra_params,
 )
 from kedro_azureml.client import AzureMLPipelinesClient
@@ -19,6 +18,7 @@ from kedro_azureml.constants import (
     FILL_IN_DOCKER_IMAGE,
     KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
 )
+from kedro_azureml.distributed.utils import is_distributed_master_node
 from kedro_azureml.runner import AzurePipelinesRunner
 from kedro_azureml.utils import CliContext, KedroContextManager
 
