@@ -82,13 +82,13 @@ def test_can_generate_azure_pipeline_with_distributed_node(
 
     with patch.object(AzureMLPipelineGenerator, "get_kedro_pipeline", return_value=p):
         env_name = "unit_test_env"
-        docker_image = "unit_test/docker_image:latest"
+        aml_env = "unit_test/aml_env@latest"
         generator = AzureMLPipelineGenerator(
             "dummy_pipeline",
             env_name,
             dummy_plugin_config,
             kedro_params,
-            docker_image=docker_image,
+            aml_env=aml_env,
         )
 
         az_pipeline = generator.generate()
@@ -126,13 +126,13 @@ def test_generator_raises_on_invalid_distributed_config(
 
     with patch.object(AzureMLPipelineGenerator, "get_kedro_pipeline", return_value=p):
         env_name = "unit_test_env"
-        docker_image = "unit_test/docker_image:latest"
+        aml_env = "unit_test/aml_env@latest"
         generator = AzureMLPipelineGenerator(
             "dummy_pipeline",
             env_name,
             dummy_plugin_config,
             {},
-            docker_image=docker_image,
+            aml_env=aml_env,
         )
 
         with pytest.raises(ValueError):
