@@ -5,6 +5,13 @@ azure:
   resource_group: "sandbox-ml-ops"
   # Azure ML Workspace name
   workspace_name: "ml-ops-sandbox"
+  # Azure ML Environment to use during pipeline execution
+  environment_name: "kedro-azureml-e2e@latest"
+  # Path to directory to upload, or null to disable code upload
+  code_directory: null
+  # Path to the directory in the Docker image to run the code from
+  # Ignored when code_directory is set
+  working_directory: /home/kedro
 
   # Temporary storage settings - this is used to pass some data between steps
   # if the data is not specified in the catalog directly
@@ -25,6 +32,3 @@ azure:
       cluster_name: "kedro-azureml-e2e"
     # <your_node_tag>:
     #   cluster_name: "<your_cluster_name>"
-docker:
-  # Docker image to use during pipeline execution
-  image: "{container_registry}/kedro-azureml-e2e:latest"
