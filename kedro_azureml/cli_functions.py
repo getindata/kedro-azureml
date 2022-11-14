@@ -12,7 +12,7 @@ logger = logging.getLogger()
 
 
 @contextmanager
-def get_context_and_pipeline(ctx: CliContext, image: str, pipeline: str, params: str):
+def get_context_and_pipeline(ctx: CliContext, aml_env: str, pipeline: str, params: str):
     with KedroContextManager(
         ctx.metadata.package_name, ctx.env, parse_extra_params(params, True)
     ) as mgr:
@@ -35,7 +35,7 @@ def get_context_and_pipeline(ctx: CliContext, image: str, pipeline: str, params:
             ctx.env,
             mgr.plugin_config,
             mgr.context.params,
-            image,
+            aml_env,
             params,
             storage_account_key,
         )

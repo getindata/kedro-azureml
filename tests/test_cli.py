@@ -11,17 +11,15 @@ from kedro.framework.startup import ProjectMetadata
 
 from kedro_azureml import cli
 from kedro_azureml.config import KedroAzureMLConfig
-from kedro_azureml.constants import (
-    FILL_IN_DOCKER_IMAGE,
-    KEDRO_AZURE_RUNNER_DATASET_TIMEOUT,
-)
+from kedro_azureml.constants import KEDRO_AZURE_RUNNER_DATASET_TIMEOUT
 from kedro_azureml.generator import AzureMLPipelineGenerator
 from tests.utils import create_kedro_conf_dirs
 
 
-@pytest.mark.parametrize("with_acr", (True, False), ids=("with ACR", "without ACR"))
 def test_can_initialize_basic_plugin_config(
-    patched_kedro_package, cli_context, tmp_path: Path, with_acr: bool
+    patched_kedro_package,
+    cli_context,
+    tmp_path: Path,
 ):
 
     config_path = create_kedro_conf_dirs(tmp_path)
@@ -37,8 +35,8 @@ def test_can_initialize_basic_plugin_config(
                 f"cluster_name_{unique_id}",
                 f"storage_account_name_{unique_id}",
                 f"storage_container_{unique_id}",
-            ]
-            + ([f"--acr", f"unit_test_acr_{unique_id}"] if with_acr else []),  # noqa
+                f"environment_name_{unique_id}",
+            ],
             obj=cli_context,
         )
         assert result.exit_code == 0
@@ -65,14 +63,7 @@ def test_can_initialize_basic_plugin_config(
         assert (
             config.azure.temporary_storage.container == f"storage_container_{unique_id}"
         )
-        if with_acr:
-            assert (
-                config.docker.image.startswith(f"unit_test_acr_{unique_id}")
-                and "azurecr.io" in config.docker.image
-                and config.docker.image.endswith(":latest")
-            )
-        else:
-            assert config.docker.image == FILL_IN_DOCKER_IMAGE
+        assert config.azure.environment_name == f"environment_name_{unique_id}"
 
 
 @pytest.mark.parametrize(
@@ -169,9 +160,9 @@ def test_can_invoke_execute_cli(
     "wait_for_completion", (False, True), ids=("no wait", "wait for completion")
 )
 @pytest.mark.parametrize(
-    "docker_image",
-    ("", "unit_test_docker_image:latest"),
-    ids=("docker default", "docker overridden"),
+    "aml_env",
+    ("", "unit_test_aml_env@latest"),
+    ids=("aml_env default", "aml_env overridden"),
 )
 @pytest.mark.parametrize(
     "use_default_credentials",
@@ -184,7 +175,7 @@ def test_can_invoke_run(
     dummy_pipeline,
     tmp_path: Path,
     wait_for_completion: bool,
-    docker_image,
+    aml_env: str,
     use_default_credentials: bool,
 ):
     create_kedro_conf_dirs(tmp_path)
@@ -207,7 +198,7 @@ def test_can_invoke_run(
             cli.run,
             ["-s", "subscription_id"]
             + (["--wait-for-completion"] if wait_for_completion else [])
-            + (["-i", docker_image] if docker_image else []),
+            + (["--aml_env", aml_env] if aml_env else []),
             obj=cli_context,
         )
         assert result.exit_code == 0

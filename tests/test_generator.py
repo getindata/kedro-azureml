@@ -20,13 +20,13 @@ def test_can_generate_azure_pipeline(pipeline_name, dummy_plugin_config, request
         AzureMLPipelineGenerator, "get_kedro_pipeline", return_value=pipeline
     ):
         env_name = "unit_test_env"
-        docker_image = "unit_test/docker_image:latest"
+        aml_env = "unit_test/aml_env@latest"
         generator = AzureMLPipelineGenerator(
             pipeline_name,
             env_name,
             dummy_plugin_config,
             {},
-            docker_image=docker_image,
+            aml_env=aml_env,
         )
 
         az_pipeline = generator.generate()
@@ -38,8 +38,8 @@ def test_can_generate_azure_pipeline(pipeline_name, dummy_plugin_config, request
             for node in az_pipeline.jobs.values()
         ), "Commands seems invalid"
         assert all(
-            node.environment.image == docker_image for node in az_pipeline.jobs.values()
-        ), "Invalid docker image set on commands"
+            node.environment == aml_env for node in az_pipeline.jobs.values()
+        ), "Invalid Azure ML Environment name set on commands"
 
 
 def test_azure_pipeline_with_different_compute(
@@ -58,13 +58,13 @@ def test_azure_pipeline_with_different_compute(
         return_value=dummy_pipeline_compute_tag,
     ):
         env_name = "unit_test_env"
-        docker_image = "unit_test/docker_image:latest"
+        aml_env = "unit_test/aml_env@latest"
         generator = AzureMLPipelineGenerator(
             "dummy_pipeline_compute_tag",
             env_name,
             dummy_plugin_config,
             {},
-            docker_image=docker_image,
+            aml_env=aml_env,
         )
 
         az_pipeline = generator.generate()
