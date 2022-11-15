@@ -14,19 +14,23 @@ from kedro_azureml.generator import AzureMLPipelineGenerator, ConfigException
         ("dummy_pipeline_compute_tag"),
     ],
 )
-def test_can_generate_azure_pipeline(pipeline_name, dummy_plugin_config, request):
+@pytest.mark.parametrize(
+    "generator_kwargs",
+    [
+        {"aml_env": "unit_test/aml_env@latest"},
+        {"docker_image": "unit/tests/docker/image:latest"},
+    ],
+)
+def test_can_generate_azure_pipeline(
+    pipeline_name, dummy_plugin_config, generator_kwargs: dict, request
+):
     pipeline = request.getfixturevalue(pipeline_name)
     with patch.object(
         AzureMLPipelineGenerator, "get_kedro_pipeline", return_value=pipeline
     ):
         env_name = "unit_test_env"
-        aml_env = "unit_test/aml_env@latest"
         generator = AzureMLPipelineGenerator(
-            pipeline_name,
-            env_name,
-            dummy_plugin_config,
-            {},
-            aml_env=aml_env,
+            pipeline_name, env_name, dummy_plugin_config, {}, **generator_kwargs
         )
 
         az_pipeline = generator.generate()
@@ -37,9 +41,18 @@ def test_can_generate_azure_pipeline(pipeline_name, dummy_plugin_config, request
             f"kedro azureml -e {env_name} execute" in node.command
             for node in az_pipeline.jobs.values()
         ), "Commands seems invalid"
-        assert all(
-            node.environment == aml_env for node in az_pipeline.jobs.values()
-        ), "Invalid Azure ML Environment name set on commands"
+
+        if "aml_env" in generator_kwargs:
+            assert all(
+                node.environment == generator_kwargs["aml_env"]
+                for node in az_pipeline.jobs.values()
+            ), "Invalid Azure ML Environment name set on commands"
+        else:
+            # For backward compatibility
+            assert all(
+                node.environment.image == generator_kwargs["docker_image"]
+                for node in az_pipeline.jobs.values()
+            ), "Invalid docker image set on commands"
 
 
 def test_azure_pipeline_with_different_compute(

@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from contextlib import contextmanager
+from typing import Optional
 
 import click
 
@@ -12,7 +13,13 @@ logger = logging.getLogger()
 
 
 @contextmanager
-def get_context_and_pipeline(ctx: CliContext, aml_env: str, pipeline: str, params: str):
+def get_context_and_pipeline(
+    ctx: CliContext,
+    docker_image: Optional[str],
+    pipeline: str,
+    params: str,
+    aml_env: Optional[str] = None,
+):
     with KedroContextManager(
         ctx.metadata.package_name, ctx.env, parse_extra_params(params, True)
     ) as mgr:
@@ -36,6 +43,7 @@ def get_context_and_pipeline(ctx: CliContext, aml_env: str, pipeline: str, param
             mgr.plugin_config,
             mgr.context.params,
             aml_env,
+            docker_image,
             params,
             storage_account_key,
         )

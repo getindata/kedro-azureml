@@ -21,6 +21,10 @@ class ComputeConfig(BaseModel):
     cluster_name: str
 
 
+class DockerConfig(BaseModel):
+    image: Optional[str] = None
+
+
 class AzureMLConfig(BaseModel):
     @staticmethod
     def _create_default_dict_with(
@@ -40,13 +44,14 @@ class AzureMLConfig(BaseModel):
     resource_group: str
     temporary_storage: AzureTempStorageConfig
     compute: Optional[Dict[str, ComputeConfig]]
-    environment_name: str
+    environment_name: Optional[str]
     code_directory: Optional[str]
     working_directory: Optional[str]
 
 
 class KedroAzureMLConfig(BaseModel):
     azure: AzureMLConfig
+    docker: Optional[DockerConfig] = None
 
 
 class KedroAzureRunnerConfig(BaseModel):
@@ -91,6 +96,12 @@ azure:
       cluster_name: "{cluster_name}"
     # <your_node_tag>:
     #   cluster_name: "<your_cluster_name>"
+docker:
+  # This option is for backward compatibility and will be removed in the future versions
+  # We suggest using the Azure environment instead
+  # See https://kedro-azureml.readthedocs.io/en/0.2.1/source/03_quickstart.html
+  # Docker image to use during pipeline execution
+  image: ~
 """.strip()
 
 # This auto-validates the template above during import

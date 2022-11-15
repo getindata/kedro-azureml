@@ -6,7 +6,7 @@ azure:
   # Azure ML Workspace name
   workspace_name: "ml-ops-sandbox"
   # Azure ML Environment to use during pipeline execution
-  environment_name: "kedro-azureml-e2e@latest"
+  environment_name: ~
   # Path to directory to upload, or null to disable code upload
   code_directory: null
   # Path to the directory in the Docker image to run the code from
@@ -32,3 +32,6 @@ azure:
       cluster_name: "kedro-azureml-e2e"
     # <your_node_tag>:
     #   cluster_name: "<your_cluster_name>"
+docker:
+  # Docker image to use during pipeline execution
+  image: "{container_registry}/kedro-azureml-e2e:latest"

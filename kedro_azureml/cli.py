@@ -113,6 +113,12 @@ def init(
     help="Azure ML Environment to use for pipeline execution.",
 )
 @click.option(
+    "-i",
+    "--image",
+    type=str,
+    help="Docker image to use for pipeline execution.",
+)
+@click.option(
     "-p",
     "--pipeline",
     "pipeline",
@@ -134,6 +140,7 @@ def run(
     ctx: CliContext,
     subscription_id: str,
     aml_env: Optional[str],
+    image: Optional[str],
     pipeline: str,
     params: str,
     wait_for_completion: bool,
@@ -150,7 +157,10 @@ def run(
         click.echo(f"Overriding Azure ML Environment for run by: {aml_env}")
 
     mgr: KedroContextManager
-    with get_context_and_pipeline(ctx, aml_env, pipeline, params) as (mgr, az_pipeline):
+    with get_context_and_pipeline(ctx, image, pipeline, params, aml_env) as (
+        mgr,
+        az_pipeline,
+    ):
         az_client = AzureMLPipelinesClient(az_pipeline, subscription_id)
 
         is_ok = az_client.run(
@@ -187,6 +197,12 @@ def run(
     help="Azure ML Environment to use for pipeline execution.",
 )
 @click.option(
+    "-i",
+    "--image",
+    type=str,
+    help="Docker image to use for pipeline execution.",
+)
+@click.option(
     "-p",
     "--pipeline",
     "pipeline",
@@ -209,11 +225,19 @@ def run(
 )
 @click.pass_obj
 def compile(
-    ctx: CliContext, aml_env: Optional[str], pipeline: str, params: list, output: str
+    ctx: CliContext,
+    aml_env: Optional[str],
+    image: Optional[str],
+    pipeline: str,
+    params: list,
+    output: str,
 ):
     """Compiles the pipeline into YAML format"""
     params = json.dumps(p) if (p := parse_extra_params(params)) else ""
-    with get_context_and_pipeline(ctx, aml_env, pipeline, params) as (_, az_pipeline):
+    with get_context_and_pipeline(ctx, image, pipeline, params, aml_env) as (
+        _,
+        az_pipeline,
+    ):
         Path(output).write_text(str(az_pipeline))
         click.echo(f"Compiled pipeline to {output}")
 
