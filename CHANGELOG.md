@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+-   Fix default configuration, to make code upload as default
 
 ## [0.3.0] - 2022-11-16
 
