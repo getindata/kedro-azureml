@@ -169,6 +169,8 @@ def test_can_invoke_execute_cli(
     (False, True),
     ids=("interactive credentials", "default_credentials"),
 )
+@pytest.mark.parametrize("amlignore", ("empty", "missing", "filled"))
+@pytest.mark.parametrize("gitignore", ("empty", "missing", "filled"))
 def test_can_invoke_run(
     patched_kedro_package,
     cli_context,
@@ -177,6 +179,8 @@ def test_can_invoke_run(
     wait_for_completion: bool,
     aml_env: str,
     use_default_credentials: bool,
+    amlignore: str,
+    gitignore: str,
 ):
     create_kedro_conf_dirs(tmp_path)
     with patch.dict(
@@ -192,6 +196,16 @@ def test_can_invoke_run(
     ):
         if not use_default_credentials:
             default_credentials.side_effect = ValueError()
+
+        if amlignore != "missing":
+            Path.cwd().joinpath(".amlignore").write_text(
+                "" if amlignore == "empty" else "unittest"
+            )
+
+        if gitignore != "missing":
+            Path.cwd().joinpath(".gitignore").write_text(
+                "" if gitignore == "empty" else "unittest"
+            )
 
         runner = CliRunner()
         result = runner.invoke(
