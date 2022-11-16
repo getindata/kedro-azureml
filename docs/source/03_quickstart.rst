@@ -19,7 +19,7 @@ created in Azure and have their **names** ready to input to the plugin:
 -  Azure ML Compute Cluster
 -  Azure Storage Account and Storage Container
 -  Azure Storage Key (will be used to execute the pipeline)
--  Azure Container Registry
+-  Azure Container Registry (optional)
 
 1. Make sure that you're logged into Azure (``az login``).
 2. Prepare new virtual environment with Python >=3.8. Install the
@@ -47,30 +47,120 @@ created in Azure and have their **names** ready to input to the plugin:
    - The project's python package in /Users/marcin/Dev/tmp/kedro-azureml-demo/src/kedro_azureml_demo
 
 3. Go to the project's directory: ``cd kedro-azureml-demo``
-4. Add ``kedro-azureml`` to ``src/requriements.txt``
+4. Add ``kedro-azureml`` to ``src/requirements.txt``
 5. (optional) Remove ``kedro-telemetry`` from ``src/requirements.txt``
    or set appopriate settings
    (`https://github.com/kedro-org/kedro-plugins/tree/main/kedro-telemetry <https://github.com/kedro-org/kedro-plugins/tree/main/kedro-telemetry>`__).
 6. Install the requirements ``pip install -r src/requirements.txt``
 7. Initialize Kedro Azure ML plugin, it requires the Azure resource
    names as stated above. Experiment name can be anything you like (as
-   long as it's allowed by Azure ML).
+   long as it's allowed by Azure ML). The environment name is the name
+   of the Azure ML Environment to be created in the next step. You can
+   use the syntax <environment_name>@latest for the latest version or
+   <environment-name>:<version> for a specific version.
 
 .. code:: console
 
    #Usage: kedro azureml init [OPTIONS] RESOURCE_GROUP WORKSPACE_NAME
    #                          EXPERIMENT_NAME CLUSTER_NAME STORAGE_ACCOUNT_NAME
-   #                          STORAGE_CONTAINER
-   kedro azureml init <resource-group-name> <workspace-name> <experiment-name> <compute-cluster-name> <storage-account-name> <storage-container-name> --acr <azure-container-registry-name>
+   #                          STORAGE_CONTAINER ENVIRONMENT_NAME
+   kedro azureml init <resource-group-name> <workspace-name> <experiment-name> <compute-cluster-name> <storage-account-name> <storage-container-name> <environment-name>
+
+
+8. Create an Azure ML Environment for the project:
+
+   For the project's code to run on Azure ML it needs to have an environment
+   with the necessary dependencies. Here is it shown how to do this from a
+   local Docker build context. Please refer to the
+   `Azure ML CLI documentation <https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-environments-v2#create-an-environment>`__
+   for more options.
+
+   Start by executing the following command:
 
 .. code:: console
 
-   Configuration generated in /Users/marcin/Dev/tmp/kedro-azureml-demo/conf/base/azureml.yml
-   It's recommended to set Lifecycle management rule for storage container kedro-azure-storage to avoid costs of long-term storage of the temporary data.
-   Temporary data will be stored under abfs://kedro-azure-storage/kedro-azureml-temp path
-   See https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-configure?tabs=azure-portal
+   kedro docker init
 
-8. Adjust the Data Catalog - the default one stores all data locally,
+This command creates a several files, including ``Dockerfile`` and
+``.dockerignore``. These can be adjusted to match the workflow for
+your project.
+
+You have 3 options for executing your pipeline in Azure ML
+    1. Use code upload (default) - more suitable for Data Scientists' experimentation and pipeline development
+    2. Use docker image flow (shown in the Quickstart video) - more suitable for MLOps processes with better experiment repeatability guarantees
+    3. Use docker flow with Azure ML CLI - suitable for workflows where docker is not available on the machine (Azure ML builds the image in this case)
+
+Depending on whether you want to use code upload when submitting an
+experiment or not, you would need to add the code and any possible input
+data to the Docker image.
+
+8.1. **If using code upload (default)**
+
+Everything apart from the section "install project requirements"
+can be removed from the ``Dockerfile``. This plugin automatically creates empty ``.amlignore`` file (`see the official docs <https://learn.microsoft.com/en-us/azure/machine-learning/how-to-save-write-experiment-files#storage-limits-of-experiment-snapshots>`__)
+which means that all of the files (including potentially sensitive ones!) will be uploaded to Azure ML. Modify this file if needed.
+
+Set ``code_directory: "."`` in the ``azureml.yml`` config file.
+
+.. warning::
+
+    | Make sure that you have the latest version of Azure CLI before running this command.
+    | We observed some issues with the command behaviour, so make sure that you have
+    | `azure-cli` >= 2.42.0 and `ml` extension >= 2.11.0.
+    | You can check installed versions by running `az --version`.
+
+\Run the command:
+
+.. code:: console
+
+   az ml environment create --name <environment-name> --version <version> --build-context . --dockerfile-path Dockerfile
+
+
+8.2. **If using docker image flow**
+
+Ensure that in the ``azureml.yml`` you have ``code_directory`` set to null, and ``docker.image`` is filled:
+
+.. code:: yaml
+
+   code_directory: ~
+   # rest of the azureml.yml file
+   docker:
+      image: your-container-registry.azurecr.io/kedro-azureml:latest
+
+\
+Keep the sections in the ``Dockerfile`` and adjust the ``.dockerignore``
+file to include any other files to be added to the Docker image,
+such as ``!data/01_raw`` for the raw data files.
+
+Invoke docker build
+
+.. code:: console
+
+   kedro docker build --docker-args "--build-arg=BASE_IMAGE=python:3.9" --image=<image tag from conf/base/azureml.yml>
+
+Once finished, push the image:
+
+.. code:: console
+
+   docker push <image tag from conf/base/azureml.yml>
+
+(you will need to authorize to the ACR first, e.g. by
+``az acr login --name <acr repo name>`` ).
+
+
+8.3. **If using docker flow with Azure ML CLI**
+
+In this flow, the docker image will be built in the Azure, not locally.
+Keep the sections in the ``Dockerfile`` and adjust the ``.dockerignore``
+file to include any other files to be added to the Docker image,
+such as ``!data/01_raw`` for the raw data files.
+
+.. code:: console
+
+   az ml environment create --name <environment-name> --version <version> --build-context . --dockerfile-path Dockerfile
+\
+
+9. Adjust the Data Catalog - the default one stores all data locally,
    whereas the plugin will automatically use Azure Blob Storage. Only
    input data is required to be read locally. Final
    ``conf/base/catalog.yml`` should look like this:
@@ -92,38 +182,7 @@ created in Azure and have their **names** ready to input to the plugin:
      filepath: data/01_raw/shuttles.xlsx
      layer: raw
 
-8. Build docker image for the project:
-
-.. code:: console
-
-   kedro docker init
-
-This command creates a several files, including ``.dockerignore``. This
-file ensures that transient files are not included in the docker image
-and it requires small adjustment. Open it in your favourite text editor
-and extend the section ``# except the following`` by adding there:
-
-.. code:: console
-
-   !data/01_raw
-
-Invoke docker build
-
-.. code:: console
-
-   kedro docker build --docker-args "--build-arg=BASE_IMAGE=python:3.9" --image=<image tag from conf/base/azureml.yml>
-
-Once finished, push the image:
-
-.. code:: console
-
-   docker push <image tag from conf/base/azureml.yml>
-
-(you will need to authorize to the ACR first, e.g. by
-``az acr login --name <acr repo name>`` )
-
-9. Run the pipeline on Azure ML Pipelines. Here, the *Azure Subscription
-   ID* and *Storage Account Key* will be used:
+10. Run the pipeline on Azure ML Pipelines. Here, the *Azure Subscription ID* and *Storage Account Key* will be used:
 
 .. code:: console
 
@@ -138,10 +197,9 @@ You will most likely see the following prompt:
 
 Input the storage account key and press [ENTER] (input will be hidden).
 
-10. Plugin will verify the configuration (e.g. the existence of the
+11. Plugin will verify the configuration (e.g. the existence of the
     compute cluster) and then it will create a *Job* in the Azure ML.
     The URL to view the job will be displayed in the console output.
-11.
 
 12. (optional) You can also use
     ``kedro azureml run -s <azure-subscription-id> --wait-for-completion``
@@ -195,6 +253,8 @@ by the Azure ML service.
 
 .. |Kedro AzureML Pipeline execution| image:: ../images/azureml_running_pipeline.gif
 .. |Kedro AzureML MLflow integration| image:: ../images/kedro-azureml-mlflow.png
+
+------------
 
 Using a different compute cluster for specific nodes
 ------------------
@@ -251,17 +311,18 @@ Distributed training
 ------------------
 
 The plugins supports distributed training via native Azure ML distributed orchestration, which includes:
-* MPI - https://learn.microsoft.com/en-us/azure/machine-learning/how-to-train-distributed-gpu#mpi
-* PyTorch - https://learn.microsoft.com/en-us/azure/machine-learning/how-to-train-distributed-gpu#pytorch
-* TensorFlow - https://learn.microsoft.com/en-us/azure/machine-learning/how-to-train-distributed-gpu#tensorflow
 
-If one of your Kedro's pipeline nodes requires distributed training (e.g. you train a neural network with PyTorch), you can mark the node with `distributed_job` decorator from `kedro_azureml.distributed.decorators` and use native Kedro parameters to specify the number of nodes you want to spawn for the job.
+- MPI - https://learn.microsoft.com/en-us/azure/machine-learning/how-to-train-distributed-gpu#mpi
+- PyTorch - https://learn.microsoft.com/en-us/azure/machine-learning/how-to-train-distributed-gpu#pytorch
+- TensorFlow - https://learn.microsoft.com/en-us/azure/machine-learning/how-to-train-distributed-gpu#tensorflow
+
+If one of your Kedro's pipeline nodes requires distributed training (e.g. you train a neural network with PyTorch), you can mark the node with ``distributed_job`` decorator from ``kedro_azureml.distributed.decorators`` and use native Kedro parameters to specify the number of nodes you want to spawn for the job.
 An example for PyTorch looks like this:
 
 .. code:: python
 
-    #                   \/ use appropriate framework
-    #                                          \/ specify the number of distributed nodes to spawn for the job
+    #                    | use appropriate framework
+    #                   \|/                      \/ specify the number of distributed nodes to spawn for the job
     @distributed_job(Framework.PyTorch, num_nodes="params:num_nodes")
     def train_model_pytorch(
         X_train: pd.DataFrame, y_train: pd.Series, num_nodes: int, max_epochs: int
@@ -269,7 +330,7 @@ An example for PyTorch looks like this:
         # rest of the code
         pass
 
-In the `pipeline` you would use this node like that:
+In the ``pipeline`` you would use this node like that:
 
 .. code:: python
 
@@ -281,13 +342,13 @@ In the `pipeline` you would use this node like that:
     ),
 
 and that's it!
-The `params:` you use support namespacing as well as overriding at runtime, e.g. when launching the Azure ML job:
+The ``params:`` you use support namespacing as well as overriding at runtime, e.g. when launching the Azure ML job:
 
 .. code:: console
 
     kedro azureml run -s <subscription id> --params '{"data_science": {"active_modelling_pipeline": {"num_nodes": 4}}}'
 
-The `distributed_job` decorator also supports "hard-coded" values for number of nodes:
+The ``distributed_job`` decorator also supports "hard-coded" values for number of nodes:
 
 .. code:: python
 

@@ -1,6 +1,7 @@
 import logging
 import re
-from typing import Any, Dict, Optional, Type
+import warnings
+from typing import Any, Dict, Optional, Type, Union
 from uuid import uuid4
 
 from azure.ai.ml import (
@@ -17,7 +18,11 @@ from azure.ai.ml.entities._builders import Command
 from kedro.pipeline import Pipeline
 from kedro.pipeline.node import Node
 
-from kedro_azureml.config import KedroAzureMLConfig, KedroAzureRunnerConfig
+from kedro_azureml.config import (
+    ComputeConfig,
+    KedroAzureMLConfig,
+    KedroAzureRunnerConfig,
+)
 from kedro_azureml.constants import (
     DISTRIBUTED_CONFIG_FIELD,
     KEDRO_AZURE_RUNNER_CONFIG,
@@ -40,6 +45,7 @@ class AzureMLPipelineGenerator:
         kedro_environment: str,
         config: KedroAzureMLConfig,
         kedro_params: Dict[str, Any],
+        aml_env: Optional[str] = None,
         docker_image: Optional[str] = None,
         params: Optional[str] = None,
         storage_account_key: Optional[str] = "",
@@ -49,7 +55,7 @@ class AzureMLPipelineGenerator:
 
         self.params = params
         self.kedro_params = kedro_params
-
+        self.aml_env = aml_env
         self.docker_image = docker_image
         self.config = config
         self.pipeline_name = pipeline_name
@@ -92,7 +98,7 @@ class AzureMLPipelineGenerator:
         pipeline: Pipeline = pipelines[self.pipeline_name]
         return pipeline
 
-    def get_target_resource_from_node_tags(self, node: Node) -> str:
+    def get_target_resource_from_node_tags(self, node: Node) -> ComputeConfig:
         resource_tags = set(node.tags).intersection(
             set(self.config.azure.compute.keys())
         )
@@ -102,7 +108,7 @@ class AzureMLPipelineGenerator:
                 "a node can only have a maximum of 1 resource"
             )
         elif len(resource_tags) == 1:
-            return self.config.azure.compute[list(resource_tags)[0]]
+            return self.config.azure.compute[resource_tags.pop()]
         else:
             return self.config.azure.compute["__default__"]
 
@@ -120,6 +126,20 @@ class AzureMLPipelineGenerator:
             return self._get_kedro_param(remainder, (params or self.kedro_params)[name])
         else:
             return (params or self.kedro_params)[param_name]
+
+    def _resolve_azure_environment(self) -> Union[Environment, str]:
+        if image := (
+            self.docker_image
+            or (self.config.docker.image if self.config.docker else None)
+        ):
+            warnings.warn(
+                f"Using docker image: {image} to run the pipeline."
+                f"\nWe recommend to use Azure Environments instead, follow the updated Quickstart documentation",
+                DeprecationWarning,
+            )
+            return Environment(image=image)
+        else:
+            return self.aml_env or self.config.azure.environment_name
 
     def _from_params_or_value(
         self,
@@ -164,9 +184,7 @@ class AzureMLPipelineGenerator:
                     storage_account_key=self.storage_account_key,
                 ).json(),
             },
-            environment=Environment(
-                image=self.docker_image or self.config.docker.image
-            ),
+            environment=self._resolve_azure_environment(),  # TODO: check whether Environment exists
             inputs={
                 self._sanitize_param_name(name): (
                     Input(type="string") if name in pipeline.inputs() else Input()
@@ -176,6 +194,7 @@ class AzureMLPipelineGenerator:
             outputs={
                 self._sanitize_param_name(name): Output() for name in node.outputs
             },
+            code=self.config.azure.code_directory,
             **command_kwargs,
         )
 
@@ -272,7 +291,13 @@ class AzureMLPipelineGenerator:
             else []
         )
         return (
-            f"cd /home/kedro && kedro azureml -e {self.kedro_environment} execute --pipeline={self.pipeline_name} --node={node.name} "  # noqa
+            (
+                f"cd {self.config.azure.working_directory} && "
+                if self.config.azure.working_directory is not None
+                and self.config.azure.code_directory is None
+                else ""
+            )
+            + f"kedro azureml -e {self.kedro_environment} execute --pipeline={self.pipeline_name} --node={node.name} "  # noqa
             + " ".join(azure_outputs)
             + (f" --params='{self.params}'" if self.params else "")
         ).strip()

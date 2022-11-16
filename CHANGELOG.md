@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2022-11-16
+
+-   Added support for execution via code upload for faster development cycles https://github.com/getindata/kedro-azureml/pull/15
+-   Quickstart documentation improvements
+
 ## [0.2.2] - 2022-10-26
 
 -   Added sychronization of automatic datasets for distributed training use case
@@ -18,7 +23,9 @@
 
 -   Initial plugin release
 
-[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.2.2...HEAD
+[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.3.0...HEAD
+
+[0.3.0]: https://github.com/getindata/kedro-azureml/compare/0.2.2...0.3.0
 
 [0.2.2]: https://github.com/getindata/kedro-azureml/compare/0.2.1...0.2.2
 

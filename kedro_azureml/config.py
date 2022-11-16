@@ -12,10 +12,6 @@ class DefaultConfigDict(defaultdict):
         return defaults.copy(update=this.dict(exclude_none=True)) if defaults else this
 
 
-class DockerConfig(BaseModel):
-    image: str
-
-
 class AzureTempStorageConfig(BaseModel):
     account_name: str
     container: str
@@ -23,6 +19,10 @@ class AzureTempStorageConfig(BaseModel):
 
 class ComputeConfig(BaseModel):
     cluster_name: str
+
+
+class DockerConfig(BaseModel):
+    image: Optional[str] = None
 
 
 class AzureMLConfig(BaseModel):
@@ -44,11 +44,14 @@ class AzureMLConfig(BaseModel):
     resource_group: str
     temporary_storage: AzureTempStorageConfig
     compute: Optional[Dict[str, ComputeConfig]]
+    environment_name: Optional[str]
+    code_directory: Optional[str]
+    working_directory: Optional[str]
 
 
 class KedroAzureMLConfig(BaseModel):
     azure: AzureMLConfig
-    docker: DockerConfig
+    docker: Optional[DockerConfig] = None
 
 
 class KedroAzureRunnerConfig(BaseModel):
@@ -66,6 +69,13 @@ azure:
   resource_group: "{resource_group}"
   # Azure ML Workspace name
   workspace_name: "{workspace_name}"
+  # Azure ML Environment to use during pipeline execution
+  environment_name: "{environment_name}"
+  # Path to directory to upload, or null to disable code upload
+  code_directory: null
+  # Path to the directory in the Docker image to run the code from
+  # Ignored when code_directory is set
+  working_directory: /home/kedro
 
   # Temporary storage settings - this is used to pass some data between steps
   # if the data is not specified in the catalog directly
@@ -87,8 +97,11 @@ azure:
     # <your_node_tag>:
     #   cluster_name: "<your_cluster_name>"
 docker:
+  # This option is for backward compatibility and will be removed in the future versions
+  # We suggest using the Azure environment instead
+  # See https://kedro-azureml.readthedocs.io/en/0.2.1/source/03_quickstart.html
   # Docker image to use during pipeline execution
-  image: "{docker_image}"
+  image: ~
 """.strip()
 
 # This auto-validates the template above during import
