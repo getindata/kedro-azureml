@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 -   Fix default configuration, to make code upload as default
+-   Improved documentation and quickstart related to the code upload feature
 
 ## [0.3.0] - 2022-11-16
 

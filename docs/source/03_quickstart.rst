@@ -19,7 +19,7 @@ created in Azure and have their **names** ready to input to the plugin:
 -  Azure ML Compute Cluster
 -  Azure Storage Account and Storage Container
 -  Azure Storage Key (will be used to execute the pipeline)
--  Azure Container Registry (optional)
+-  Azure Container Registry
 
 1. Make sure that you're logged into Azure (``az login``).
 2. Prepare new virtual environment with Python >=3.8. Install the
@@ -49,15 +49,15 @@ created in Azure and have their **names** ready to input to the plugin:
 3. Go to the project's directory: ``cd kedro-azureml-demo``
 4. Add ``kedro-azureml`` to ``src/requirements.txt``
 5. (optional) Remove ``kedro-telemetry`` from ``src/requirements.txt``
-   or set appopriate settings
+   or set appropriate settings
    (`https://github.com/kedro-org/kedro-plugins/tree/main/kedro-telemetry <https://github.com/kedro-org/kedro-plugins/tree/main/kedro-telemetry>`__).
 6. Install the requirements ``pip install -r src/requirements.txt``
 7. Initialize Kedro Azure ML plugin, it requires the Azure resource
    names as stated above. Experiment name can be anything you like (as
    long as it's allowed by Azure ML). The environment name is the name
-   of the Azure ML Environment to be created in the next step. You can
-   use the syntax <environment_name>@latest for the latest version or
-   <environment-name>:<version> for a specific version.
+   of the Azure ML Environment to be created in the next steps. You can
+   use the syntax ``<environment_name>@latest`` for the latest version or
+   ``<environment-name>:<version>`` for a specific version.
 
 .. code:: console
 
@@ -66,101 +66,7 @@ created in Azure and have their **names** ready to input to the plugin:
    #                          STORAGE_CONTAINER ENVIRONMENT_NAME
    kedro azureml init <resource-group-name> <workspace-name> <experiment-name> <compute-cluster-name> <storage-account-name> <storage-container-name> <environment-name>
 
-
-8. Create an Azure ML Environment for the project:
-
-   For the project's code to run on Azure ML it needs to have an environment
-   with the necessary dependencies. Here is it shown how to do this from a
-   local Docker build context. Please refer to the
-   `Azure ML CLI documentation <https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-environments-v2#create-an-environment>`__
-   for more options.
-
-   Start by executing the following command:
-
-.. code:: console
-
-   kedro docker init
-
-This command creates a several files, including ``Dockerfile`` and
-``.dockerignore``. These can be adjusted to match the workflow for
-your project.
-
-You have 3 options for executing your pipeline in Azure ML
-    1. Use code upload (default) - more suitable for Data Scientists' experimentation and pipeline development
-    2. Use docker image flow (shown in the Quickstart video) - more suitable for MLOps processes with better experiment repeatability guarantees
-    3. Use docker flow with Azure ML CLI - suitable for workflows where docker is not available on the machine (Azure ML builds the image in this case)
-
-Depending on whether you want to use code upload when submitting an
-experiment or not, you would need to add the code and any possible input
-data to the Docker image.
-
-8.1. **If using code upload (default)**
-
-Everything apart from the section "install project requirements"
-can be removed from the ``Dockerfile``. This plugin automatically creates empty ``.amlignore`` file (`see the official docs <https://learn.microsoft.com/en-us/azure/machine-learning/how-to-save-write-experiment-files#storage-limits-of-experiment-snapshots>`__)
-which means that all of the files (including potentially sensitive ones!) will be uploaded to Azure ML. Modify this file if needed.
-
-Set ``code_directory: "."`` in the ``azureml.yml`` config file.
-
-.. warning::
-
-    | Make sure that you have the latest version of Azure CLI before running this command.
-    | We observed some issues with the command behaviour, so make sure that you have
-    | `azure-cli` >= 2.42.0 and `ml` extension >= 2.11.0.
-    | You can check installed versions by running `az --version`.
-
-\Run the command:
-
-.. code:: console
-
-   az ml environment create --name <environment-name> --version <version> --build-context . --dockerfile-path Dockerfile
-
-
-8.2. **If using docker image flow**
-
-Ensure that in the ``azureml.yml`` you have ``code_directory`` set to null, and ``docker.image`` is filled:
-
-.. code:: yaml
-
-   code_directory: ~
-   # rest of the azureml.yml file
-   docker:
-      image: your-container-registry.azurecr.io/kedro-azureml:latest
-
-\
-Keep the sections in the ``Dockerfile`` and adjust the ``.dockerignore``
-file to include any other files to be added to the Docker image,
-such as ``!data/01_raw`` for the raw data files.
-
-Invoke docker build
-
-.. code:: console
-
-   kedro docker build --docker-args "--build-arg=BASE_IMAGE=python:3.9" --image=<image tag from conf/base/azureml.yml>
-
-Once finished, push the image:
-
-.. code:: console
-
-   docker push <image tag from conf/base/azureml.yml>
-
-(you will need to authorize to the ACR first, e.g. by
-``az acr login --name <acr repo name>`` ).
-
-
-8.3. **If using docker flow with Azure ML CLI**
-
-In this flow, the docker image will be built in the Azure, not locally.
-Keep the sections in the ``Dockerfile`` and adjust the ``.dockerignore``
-file to include any other files to be added to the Docker image,
-such as ``!data/01_raw`` for the raw data files.
-
-.. code:: console
-
-   az ml environment create --name <environment-name> --version <version> --build-context . --dockerfile-path Dockerfile
-\
-
-9. Adjust the Data Catalog - the default one stores all data locally,
+8. Adjust the Data Catalog - the default one stores all data locally,
    whereas the plugin will automatically use Azure Blob Storage. Only
    input data is required to be read locally. Final
    ``conf/base/catalog.yml`` should look like this:
@@ -181,6 +87,100 @@ such as ``!data/01_raw`` for the raw data files.
      type: pandas.ExcelDataSet
      filepath: data/01_raw/shuttles.xlsx
      layer: raw
+
+9. Prepare an Azure ML Environment for the project:
+
+   For the project's code to run on Azure ML it needs to have an environment
+   with the necessary dependencies.
+
+You have 2 options for executing your pipeline in Azure ML
+    1. Use code upload (default) - more suitable for Data Scientists' experimentation and pipeline development
+    2. Use docker image flow (shown in the Quickstart video) - more suitable for MLOps processes with better experiment repeatability guarantees
+
+Start by executing the following command:
+
+.. code:: console
+
+   kedro docker init
+
+This command creates a several files, including ``Dockerfile`` and
+``.dockerignore``. These can be adjusted to match the workflow for
+your project.
+
+
+Depending on whether you want to use code upload when submitting an
+experiment or not, you would need to add the code and any possible input
+data to the Docker image.
+
+9.1. **If using code upload** (default)
+
+Everything apart from the section "install project requirements"
+can be removed from the ``Dockerfile``. This plugin automatically creates empty ``.amlignore`` file (`see the official docs <https://learn.microsoft.com/en-us/azure/machine-learning/how-to-save-write-experiment-files#storage-limits-of-experiment-snapshots>`__)
+which means that all of the files (including potentially sensitive ones!) will be uploaded to Azure ML. Modify this file if needed.
+
+Ensure ``code_directory: "."`` is set in the ``azureml.yml`` config file (it's set by default).
+
+\Build the image:
+
+.. code:: console
+
+    kedro docker build --docker-args "--build-arg=BASE_IMAGE=python:3.9" --image=<acr repo name>.azurecr.io/kedro-base-image:latest
+
+\Login to ACR and push the image:
+
+.. code:: console
+
+    az acr login --name <acr repo name>
+    docker push <acr repo name>.azurecr.io/kedro-base-image:latest
+
+\Register the Azure ML Environment:
+
+.. code:: console
+
+    az ml environment create --name <environment-name> --image <acr repo name>.azurecr.io/kedro-base-image:latest
+
+\
+Now you can re-use this environment and run the pipeline without the need to build the docker image again (unless you add some dependencies to your environment, obviously :-) ).
+
+9.2. **If using docker image flow** (shown in the Quickstart video)
+
+.. note::
+    | Note that using docker image flow means that every time you change your pipeline's code,
+    | you will need to build and push the docker image to ACR again.
+    | We recommend this option for CI/CD-automated MLOps workflows.
+
+Ensure that in the ``azureml.yml`` you have ``code_directory`` set to null, and ``docker.image`` is filled:
+
+.. code:: yaml
+
+   code_directory: ~
+   # rest of the azureml.yml file
+   docker:
+      image: your-container-registry.azurecr.io/kedro-azureml:latest
+
+\
+Keep the sections in the ``Dockerfile`` and adjust the ``.dockerignore``
+file to include any other files to be added to the Docker image,
+such as ``!data/01_raw`` for the raw data files.
+
+Invoke docker build:
+
+.. code:: console
+
+   kedro docker build --docker-args "--build-arg=BASE_IMAGE=python:3.9" --image=<image tag from conf/base/azureml.yml>
+
+\Once finished, login to ACR:
+
+.. code:: console
+
+    az acr login --name <acr repo name>
+
+\and push the image:
+
+.. code:: console
+
+   docker push <image tag from conf/base/azureml.yml>
+
 
 10. Run the pipeline on Azure ML Pipelines. Here, the *Azure Subscription ID* and *Storage Account Key* will be used:
 
