@@ -16,7 +16,11 @@
 </p>
 
 ## About
-Following plugin enables running Kedro pipelines on Azure ML Pipelines service
+Following plugin enables running Kedro pipelines on Azure ML Pipelines service.
+
+We support 2 native Azure Machine Learning types of workflows:
+* For Data Scientists: fast, iterative development with code upload 
+* For MLOps: stable, repeatable workflows with Docker 
 
 ## Documentation 
 
