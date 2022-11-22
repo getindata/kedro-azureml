@@ -10,6 +10,8 @@ from kedro.framework.startup import ProjectMetadata
 from kedro_azureml.cli_functions import (
     get_context_and_pipeline,
     parse_extra_params,
+    verify_configuration_directory_for_azure,
+    warn_about_ignore_files,
 )
 from kedro_azureml.client import AzureMLPipelinesClient
 from kedro_azureml.config import CONFIG_TEMPLATE_YAML
@@ -168,29 +170,9 @@ def run(
     if aml_env:
         click.echo(f"Overriding Azure ML Environment for run by: {aml_env}")
 
-    aml_ignore = Path.cwd().joinpath(".amlignore")
-    git_ignore = Path.cwd().joinpath(".gitignore")
-    if aml_ignore.exists():
-        ignore_contents = aml_ignore.read_text().strip()
-        if not ignore_contents:
-            click.echo(
-                click.style(
-                    f".amlignore file is empty, which means all of the files from {Path.cwd()}"
-                    "\nwill be uploaded to Azure ML. Make sure that you excluded sensitive files first!",
-                    fg="yellow",
-                )
-            )
-    elif git_ignore.exists():
-        ignore_contents = git_ignore.read_text().strip()
-        if ignore_contents:
-            click.echo(
-                click.style(
-                    ".gitignore file detected, ignored files will not be uploaded to Azure ML"
-                    "\nWe recommend to use .amlignore instead of .gitignore when working with Azure ML"
-                    "\nSee https://github.com/MicrosoftDocs/azure-docs/blob/047cb7f625920183438f3e66472014ac2ebab098/includes/machine-learning-amlignore-gitignore.md",  # noqa
-                    fg="yellow",
-                )
-            )
+    warn_about_ignore_files()
+
+    verify_configuration_directory_for_azure(click_context, ctx)
 
     mgr: KedroContextManager
     with get_context_and_pipeline(ctx, image, pipeline, params, aml_env) as (

@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+-   Add a control gate for Kedro environments before starting the pipeline in Azure ML (https://github.com/getindata/kedro-azureml/issues/33)
 
 ## [0.3.1] - 2022-11-18
 
