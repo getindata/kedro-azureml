@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Optional
 
 import click
@@ -60,3 +61,71 @@ def parse_extra_params(params, silent=False):
     else:
         parameters = None
     return parameters
+
+
+def warn_about_ignore_files():
+    aml_ignore = Path.cwd().joinpath(".amlignore")
+    git_ignore = Path.cwd().joinpath(".gitignore")
+    if aml_ignore.exists():
+        ignore_contents = aml_ignore.read_text().strip()
+        if not ignore_contents:
+            click.echo(
+                click.style(
+                    f".amlignore file is empty, which means all of the files from {Path.cwd()}"
+                    "\nwill be uploaded to Azure ML. Make sure that you excluded sensitive files first!",
+                    fg="yellow",
+                )
+            )
+    elif git_ignore.exists():
+        ignore_contents = git_ignore.read_text().strip()
+        if ignore_contents:
+            click.echo(
+                click.style(
+                    ".gitignore file detected, ignored files will not be uploaded to Azure ML"
+                    "\nWe recommend to use .amlignore instead of .gitignore when working with Azure ML"
+                    "\nSee https://github.com/MicrosoftDocs/azure-docs/blob/047cb7f625920183438f3e66472014ac2ebab098/includes/machine-learning-amlignore-gitignore.md",  # noqa
+                    # noqa
+                    fg="yellow",
+                )
+            )
+
+
+def verify_configuration_directory_for_azure(click_context, ctx: CliContext):
+    """
+    Checks whether the Kedro conf directory of used environment contains only empty files or is empty.
+    If it is, prompts the user to continue or exit, as continuing might break execution in Azure ML.
+    :param click_context:
+    :param ctx:
+    :return:
+    """
+    conf_dir = Path.cwd().joinpath(f"conf/{ctx.env}")
+
+    exists = conf_dir.exists() and conf_dir.is_dir()
+    is_empty = True
+    has_only_empty_files = True
+
+    if exists:
+        for p in conf_dir.iterdir():
+            is_empty = False
+            if p.is_file():
+                has_only_empty_files = p.lstat().st_size == 0
+
+            if not has_only_empty_files:
+                break
+
+    msg = f"Configuration folder for your Kedro environment {conf_dir} "
+    if not exists:
+        msg += "does not exist or is not a directory,"
+    if is_empty:
+        msg += "is empty,"
+    elif has_only_empty_files:
+        msg += "contains only empty files,"
+
+    if is_empty or has_only_empty_files:
+        msg += (
+            "\nwhich might cause issues when running in Azure ML."
+            + "\nEither use different environment or provide non-empty configuration for your env."
+            + "\nContinue?"
+        )
+        if not click.confirm(click.style(msg, fg="yellow")):
+            click_context.exit(2)
