@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from unittest import mock
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
@@ -13,6 +13,7 @@ from kedro_azureml import cli
 from kedro_azureml.config import KedroAzureMLConfig
 from kedro_azureml.constants import KEDRO_AZURE_RUNNER_DATASET_TIMEOUT
 from kedro_azureml.generator import AzureMLPipelineGenerator
+from kedro_azureml.utils import CliContext
 from tests.utils import create_kedro_conf_dirs
 
 
@@ -230,6 +231,52 @@ def test_can_invoke_run(
             interactive_credentials.assert_called_once()
         else:
             interactive_credentials.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "kedro_environment_name",
+    ("empty", "non_existing", "gitkeep", "nested"),
+)
+@pytest.mark.parametrize("confirm", (True, False))
+def test_run_is_interrupted_if_used_on_empty_env(
+    confirm,
+    patched_kedro_package,
+    cli_context,
+    dummy_pipeline,
+    tmp_path: Path,
+    kedro_environment_name: str,
+):
+    metadata = MagicMock()
+    metadata.package_name = "tests"
+    cli_context = CliContext(env=kedro_environment_name, metadata=metadata)
+
+    create_kedro_conf_dirs(tmp_path)  # for base env
+
+    # setup Kedro env to handle test case
+    cfg_path = tmp_path / "conf" / kedro_environment_name
+    if kedro_environment_name == "empty":
+        cfg_path.mkdir(parents=True)
+    elif kedro_environment_name == "gitkeep":
+        cfg_path.mkdir(parents=True)
+        (cfg_path / ".gitkeep").touch()
+    elif kedro_environment_name == "nested":
+        (cfg_path / "nested2").mkdir(parents=True)
+    else:
+        pass  # nothing to do for non_existing environment, do not remove this empty block
+
+    with patch.dict(
+        "kedro.framework.project.pipelines", {"__default__": dummy_pipeline}
+    ), patch.object(Path, "cwd", return_value=tmp_path), patch.dict(
+        os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
+    ), patch(
+        "click.confirm", return_value=confirm
+    ) as click_confirm:
+        runner = CliRunner()
+        result = runner.invoke(cli.run, ["-s", "subscription_id"], obj=cli_context)
+        assert result.exit_code == (
+            1 if confirm else 2
+        ), "run should have exited with code: 1 if confirmed, 2 if stopped"
+        click_confirm.assert_called_once()
 
 
 def test_can_invoke_run_with_failed_pipeline(

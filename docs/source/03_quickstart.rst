@@ -120,6 +120,20 @@ which means that all of the files (including potentially sensitive ones!) will b
 
 Ensure ``code_directory: "."`` is set in the ``azureml.yml`` config file (it's set by default).
 
+
+.. collapse:: See example Dockerfile for code upload flow
+
+    .. code-block:: dockerfile
+
+        ARG BASE_IMAGE=python:3.9
+        FROM $BASE_IMAGE
+
+        # install project requirements
+        COPY src/requirements.txt /tmp/requirements.txt
+        RUN pip install -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
+
+\
+
 \Build the image:
 
 .. code:: console
@@ -141,6 +155,15 @@ Ensure ``code_directory: "."`` is set in the ``azureml.yml`` config file (it's s
 
 \
 Now you can re-use this environment and run the pipeline without the need to build the docker image again (unless you add some dependencies to your environment, obviously :-) ).
+
+.. warning::
+    | Azure Code upload feature has issues with empty folders as identified in `GitHub #33 <https://github.com/getindata/kedro-azureml/issues/33>`__, where empty folders or folders with empty files might not get uploaded to Azure ML, which might result in the failing pipeline.
+    | We recommend to:
+    | - make sure that Kedro environments you intent to use in Azure have at least one non-empty file specified
+    | - gracefully handle folder creation in your pipeline's code (e.g. if your code depends on an existence of some folder)
+    |
+    | The plugin will do it's best to handle some of the edge-cases, but the fact that some of your files might not be captured by Azure ML SDK is out of our reach.
+
 
 9.2. **If using docker image flow** (shown in the Quickstart video)
 
