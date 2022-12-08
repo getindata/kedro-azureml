@@ -129,8 +129,8 @@ jobs:
         working-directory: ./spaceflights
         run: |
           find "../dist" -name "*.tar.gz" | xargs -I@ cp @ kedro-azureml.tar.gz
-          echo "./kedro-azureml.tar.gz" >> src/requirements.txt
-          echo "kedro-docker" >> src/requirements.txt
+          echo -e "\n./kedro-azureml.tar.gz\n" >> src/requirements.txt
+          echo -e "kedro-docker\n" >> src/requirements.txt
           sed -i '/kedro-telemetry/d' src/requirements.txt
           echo $(cat src/requirements.txt)
           pip install -r src/requirements.txt
