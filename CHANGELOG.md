@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.3.3] - 2022-12-08
+
 -   Upgrade `azure-ai-ml` to `>=1.2.0` to adress code upload file ignore issues (see <https://github.com/Azure/azure-sdk-for-python/pull/27338#issuecomment-1337454472> and <https://github.com/getindata/kedro-azureml/issues/33>).
 
 ## [0.3.2] - 2022-12-02
@@ -33,7 +36,9 @@
 
 -   Initial plugin release
 
-[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.3.2...HEAD
+[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.3.3...HEAD
+
+[0.3.3]: https://github.com/getindata/kedro-azureml/compare/0.3.2...0.3.3
 
 [0.3.2]: https://github.com/getindata/kedro-azureml/compare/0.3.1...0.3.2
 
