@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+-   Add lazy initialization and cache to Kedro's context in the `KedroContextManager` class to prevent re-loading
 
 ## [0.3.3] - 2022-12-08
 
