@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.3.4] - 2022-12-30
+
 -   Add lazy initialization and cache to Kedro's context in the `KedroContextManager` class to prevent re-loading
 
 ## [0.3.3] - 2022-12-08
@@ -37,7 +40,9 @@
 
 -   Initial plugin release
 
-[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.3.3...HEAD
+[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.3.4...HEAD
+
+[0.3.4]: https://github.com/getindata/kedro-azureml/compare/0.3.3...0.3.4
 
 [0.3.3]: https://github.com/getindata/kedro-azureml/compare/0.3.2...0.3.3
 
