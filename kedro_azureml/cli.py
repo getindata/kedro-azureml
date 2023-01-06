@@ -51,9 +51,9 @@ def azureml_group(ctx, metadata: ProjectMetadata, env):
 
 
 @azureml_group.command()
+@click.argument("subscription_id")
 @click.argument("resource_group")
 @click.argument("workspace_name")
-@click.argument("subscription_id")
 @click.argument("experiment_name")
 @click.argument("cluster_name")
 @click.argument("storage_account_name")
@@ -62,9 +62,9 @@ def azureml_group(ctx, metadata: ProjectMetadata, env):
 @click.pass_obj
 def init(
     ctx: CliContext,
+    subscription_id,
     resource_group,
     workspace_name,
-    subscription_id,
     experiment_name,
     cluster_name,
     storage_account_name,
@@ -77,14 +77,14 @@ def init(
     target_path = Path.cwd().joinpath("conf/base/azureml.yml")
     cfg = CONFIG_TEMPLATE_YAML.format(
         **{
+            "subscription_id": subscription_id,
             "resource_group": resource_group,
             "workspace_name": workspace_name,
-            "subscription_id": subscription_id,
             "experiment_name": experiment_name,
             "cluster_name": cluster_name,
-            "environment_name": environment_name,
-            "storage_container": storage_container,
             "storage_account_name": storage_account_name,
+            "storage_container": storage_container,
+            "environment_name": environment_name,
         }
     )
     target_path.write_text(cfg)
