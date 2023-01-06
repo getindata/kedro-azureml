@@ -5,6 +5,8 @@ azure:
   resource_group: "sandbox-ml-ops"
   # Azure ML Workspace name
   workspace_name: "ml-ops-sandbox"
+  # Azure subscription ID to use
+  subscription_id: "00000000-0000-0000-0000-000000000000"
   # Azure ML Environment to use during pipeline execution
   environment_name: ~
   # Path to directory to upload, or null to disable code upload

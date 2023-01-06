@@ -32,6 +32,7 @@ def test_can_initialize_basic_plugin_config(
             [
                 f"resource_group_{unique_id}",
                 f"workspace_name_{unique_id}",
+                f"subscription_id_{unique_id}",
                 f"experiment_name_{unique_id}",
                 f"cluster_name_{unique_id}",
                 f"storage_account_name_{unique_id}",
@@ -52,6 +53,7 @@ def test_can_initialize_basic_plugin_config(
         )
         assert config.azure.resource_group == f"resource_group_{unique_id}"
         assert config.azure.workspace_name == f"workspace_name_{unique_id}"
+        assert config.azure.subscription_id == f"subscription_id_{unique_id}"
         assert config.azure.experiment_name == f"experiment_name_{unique_id}"
         assert (
             config.azure.compute["__default__"].cluster_name
