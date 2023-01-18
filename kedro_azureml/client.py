@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 @contextmanager
-def _get_azureml_client(subscription_id: str, config: AzureMLConfig):
+def _get_azureml_client(subscription_id: Optional[str], config: AzureMLConfig):
     client_config = {
-        "subscription_id": subscription_id,
+        "subscription_id": subscription_id or config.subscription_id,
         "resource_group": config.resource_group,
         "workspace_name": config.workspace_name,
     }

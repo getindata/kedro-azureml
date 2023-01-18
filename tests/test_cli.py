@@ -30,6 +30,7 @@ def test_can_initialize_basic_plugin_config(
         result = runner.invoke(
             cli.init,
             [
+                f"subscription_id_{unique_id}",
                 f"resource_group_{unique_id}",
                 f"workspace_name_{unique_id}",
                 f"experiment_name_{unique_id}",
@@ -50,6 +51,7 @@ def test_can_initialize_basic_plugin_config(
         config: KedroAzureMLConfig = KedroAzureMLConfig.parse_obj(
             yaml.safe_load(azureml_config_path.read_text())
         )
+        assert config.azure.subscription_id == f"subscription_id_{unique_id}"
         assert config.azure.resource_group == f"resource_group_{unique_id}"
         assert config.azure.workspace_name == f"workspace_name_{unique_id}"
         assert config.azure.experiment_name == f"experiment_name_{unique_id}"

@@ -1,4 +1,6 @@
 azure:
+  # Azure subscription ID to use
+  subscription_id: "00000000-0000-0000-0000-000000000000"
   # Azure ML Experiment Name
   experiment_name: "kedro-azureml-e2e-tests"
   # Azure resource group to use

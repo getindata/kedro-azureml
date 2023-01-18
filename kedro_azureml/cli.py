@@ -51,6 +51,7 @@ def azureml_group(ctx, metadata: ProjectMetadata, env):
 
 
 @azureml_group.command()
+@click.argument("subscription_id")
 @click.argument("resource_group")
 @click.argument("workspace_name")
 @click.argument("experiment_name")
@@ -61,6 +62,7 @@ def azureml_group(ctx, metadata: ProjectMetadata, env):
 @click.pass_obj
 def init(
     ctx: CliContext,
+    subscription_id,
     resource_group,
     workspace_name,
     experiment_name,
@@ -75,13 +77,14 @@ def init(
     target_path = Path.cwd().joinpath("conf/base/azureml.yml")
     cfg = CONFIG_TEMPLATE_YAML.format(
         **{
+            "subscription_id": subscription_id,
             "resource_group": resource_group,
             "workspace_name": workspace_name,
             "experiment_name": experiment_name,
             "cluster_name": cluster_name,
-            "environment_name": environment_name,
-            "storage_container": storage_container,
             "storage_account_name": storage_account_name,
+            "storage_container": storage_container,
+            "environment_name": environment_name,
         }
     )
     target_path.write_text(cfg)
@@ -163,9 +166,9 @@ def run(
     Can be used with --wait-for-completion param to block the caller until the pipeline finishes in Azure ML.
     """
     params = json.dumps(p) if (p := parse_extra_params(params)) else ""
-    assert (
-        subscription_id
-    ), f"Please provide Azure Subscription ID or set `{AZURE_SUBSCRIPTION_ID}` env"
+
+    if subscription_id:
+        click.echo(f"Overriding Azure Subscription ID for run to: {subscription_id}")
 
     if aml_env:
         click.echo(f"Overriding Azure ML Environment for run by: {aml_env}")

@@ -61,10 +61,10 @@ created in Azure and have their **names** ready to input to the plugin:
 
 .. code:: console
 
-   #Usage: kedro azureml init [OPTIONS] RESOURCE_GROUP WORKSPACE_NAME
+   #Usage: kedro azureml init [OPTIONS] SUBSCRIPTION_ID RESOURCE_GROUP WORKSPACE_NAME
    #                          EXPERIMENT_NAME CLUSTER_NAME STORAGE_ACCOUNT_NAME
    #                          STORAGE_CONTAINER ENVIRONMENT_NAME
-   kedro azureml init <resource-group-name> <workspace-name> <experiment-name> <compute-cluster-name> <storage-account-name> <storage-container-name> <environment-name>
+   kedro azureml init <subscription-id> <resource-group-name> <workspace-name> <experiment-name> <compute-cluster-name> <storage-account-name> <storage-container-name> <environment-name>
 
 8. Adjust the Data Catalog - the default one stores all data locally,
    whereas the plugin will automatically use Azure Blob Storage. Only
