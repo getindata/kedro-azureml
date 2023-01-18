@@ -168,9 +168,7 @@ def run(
     params = json.dumps(p) if (p := parse_extra_params(params)) else ""
 
     if subscription_id:
-        click.echo(
-            f"Overriding Azure Subscription ID for run to: {AZURE_SUBSCRIPTION_ID}"
-        )
+        click.echo(f"Overriding Azure Subscription ID for run to: {subscription_id}")
 
     if aml_env:
         click.echo(f"Overriding Azure ML Environment for run by: {aml_env}")
