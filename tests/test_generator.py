@@ -121,9 +121,8 @@ def test_get_target_resource_from_node_tags_raises_exception(
         with pytest.raises(ConfigException):
             generator.get_target_resource_from_node_tags(node)
 
-def test_azure_pipeline_with_custom_env_vars(
-    dummy_plugin_config, dummy_pipeline
-):
+
+def test_azure_pipeline_with_custom_env_vars(dummy_plugin_config, dummy_pipeline):
     pipeline_name = "unit_test_pipeline"
     node = MagicMock()
     node.tags = ["compute-2", "compute-3"]
@@ -133,9 +132,9 @@ def test_azure_pipeline_with_custom_env_vars(
         "kedro.framework.project.pipelines", {pipeline_name: dummy_pipeline}
     ):
         generator = AzureMLPipelineGenerator(
-                pipeline_name, "local", dummy_plugin_config, {}, extra_env={'ABC': 'def'}
+            pipeline_name, "local", dummy_plugin_config, {}, extra_env={"ABC": "def"}
         )
 
         for node in generator.generate().jobs.values():
-            assert 'ABC' in node.environment_variables
-            assert node.environment_variables['ABC'] == 'def'
+            assert "ABC" in node.environment_variables
+            assert node.environment_variables["ABC"] == "def"

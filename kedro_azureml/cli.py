@@ -2,17 +2,17 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 import click
 from kedro.framework.startup import ProjectMetadata
 
 from kedro_azureml.cli_functions import (
     get_context_and_pipeline,
+    parse_extra_env_params,
     parse_extra_params,
     verify_configuration_directory_for_azure,
     warn_about_ignore_files,
-    parse_extra_env_params,
 )
 from kedro_azureml.client import AzureMLPipelinesClient
 from kedro_azureml.config import CONFIG_TEMPLATE_YAML
@@ -150,7 +150,12 @@ def init(
     help="Parameters override in form of JSON string",
 )
 @click.option("--wait-for-completion", type=bool, is_flag=True, default=False)
-@click.option('--env-var', type=str, multiple=True, help="Environment variables to be injected in the steps, format: KEY=VALUE")
+@click.option(
+    "--env-var",
+    type=str,
+    multiple=True,
+    help="Environment variables to be injected in the steps, format: KEY=VALUE",
+)
 @click.pass_obj
 @click.pass_context
 def run(

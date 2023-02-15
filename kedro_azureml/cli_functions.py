@@ -4,7 +4,7 @@ import os
 import re
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 import click
 
@@ -133,9 +133,10 @@ def verify_configuration_directory_for_azure(click_context, ctx: CliContext):
         if not click.confirm(click.style(msg, fg="yellow")):
             click_context.exit(2)
 
+
 def parse_extra_env_params(extra_env):
     for entry in extra_env:
         if not re.match(".+=.*", entry):
             raise Exception(f"Invalid env-var: {entry}, expected format: KEY=VALUE")
 
-    return {entry.split('=')[0]: entry.split('=')[1] for entry in extra_env}
+    return {entry.split("=")[0]: entry.split("=")[1] for entry in extra_env}

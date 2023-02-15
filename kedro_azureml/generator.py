@@ -1,7 +1,7 @@
 import logging
 import re
 import warnings
-from typing import Any, Dict, Optional, Type, Union, Dict
+from typing import Any, Dict, Optional, Type, Union
 from uuid import uuid4
 
 from azure.ai.ml import (
