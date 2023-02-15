@@ -130,7 +130,7 @@ jobs:
         run: |
           find "../dist" -name "*.tar.gz" | xargs -I@ cp @ kedro-azureml.tar.gz
           echo -e "\n./kedro-azureml.tar.gz\n" >> src/requirements.txt
-          echo -e "kedro-docker==0.3.0\n" >> src/requirements.txt
+          echo -e "kedro-docker\n" >> src/requirements.txt
           sed -i '/kedro-telemetry/d' src/requirements.txt
           echo $(cat src/requirements.txt)
           pip install -r src/requirements.txt
