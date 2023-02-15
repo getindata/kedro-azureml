@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import Tuple, Optional
 
 import click
 from kedro.framework.startup import ProjectMetadata
@@ -12,6 +12,7 @@ from kedro_azureml.cli_functions import (
     parse_extra_params,
     verify_configuration_directory_for_azure,
     warn_about_ignore_files,
+    parse_extra_env_params,
 )
 from kedro_azureml.client import AzureMLPipelinesClient
 from kedro_azureml.config import CONFIG_TEMPLATE_YAML
@@ -46,7 +47,6 @@ def commands():
 @click.pass_obj
 @click.pass_context
 def azureml_group(ctx, metadata: ProjectMetadata, env):
-    click.echo(metadata)
     ctx.obj = CliContext(env, metadata)
 
 
@@ -150,6 +150,7 @@ def init(
     help="Parameters override in form of JSON string",
 )
 @click.option("--wait-for-completion", type=bool, is_flag=True, default=False)
+@click.option('--env-var', type=str, multiple=True, help="Environment variables to be injected in the steps, format: KEY=VALUE")
 @click.pass_obj
 @click.pass_context
 def run(
@@ -161,6 +162,7 @@ def run(
     pipeline: str,
     params: str,
     wait_for_completion: bool,
+    env_var: Tuple[str],
 ):
     """Runs the specified pipeline in Azure ML Pipelines; Additional parameters can be passed from command line.
     Can be used with --wait-for-completion param to block the caller until the pipeline finishes in Azure ML.
@@ -178,7 +180,8 @@ def run(
     verify_configuration_directory_for_azure(click_context, ctx)
 
     mgr: KedroContextManager
-    with get_context_and_pipeline(ctx, image, pipeline, params, aml_env) as (
+    extra_env = parse_extra_env_params(env_var)
+    with get_context_and_pipeline(ctx, image, pipeline, params, aml_env, extra_env) as (
         mgr,
         az_pipeline,
     ):
@@ -290,7 +293,7 @@ def compile(
 )
 @click.pass_obj
 def execute(
-    ctx: CliContext, pipeline: str, node: str, params: str, azure_outputs: List[str]
+    ctx: CliContext, pipeline: str, node: str, params: str, azure_outputs: Tuple[str]
 ):
     # 1. Run kedro
     parameters = parse_extra_params(params)

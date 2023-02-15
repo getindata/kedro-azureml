@@ -1,7 +1,7 @@
 import logging
 import re
 import warnings
-from typing import Any, Dict, Optional, Type, Union
+from typing import Any, Dict, Optional, Type, Union, Dict
 from uuid import uuid4
 
 from azure.ai.ml import (
@@ -49,6 +49,7 @@ class AzureMLPipelineGenerator:
         docker_image: Optional[str] = None,
         params: Optional[str] = None,
         storage_account_key: Optional[str] = "",
+        extra_env: Dict[str, str] = {},
     ):
         self.storage_account_key = storage_account_key
         self.kedro_environment = kedro_environment
@@ -59,6 +60,7 @@ class AzureMLPipelineGenerator:
         self.docker_image = docker_image
         self.config = config
         self.pipeline_name = pipeline_name
+        self.extra_env = extra_env
 
     def generate(self) -> Job:
         pipeline = self.get_kedro_pipeline()
@@ -183,6 +185,7 @@ class AzureMLPipelineGenerator:
                     run_id=kedro_azure_run_id,
                     storage_account_key=self.storage_account_key,
                 ).json(),
+                **self.extra_env,
             },
             environment=self._resolve_azure_environment(),  # TODO: check whether Environment exists
             inputs={

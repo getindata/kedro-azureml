@@ -174,6 +174,7 @@ def test_can_invoke_execute_cli(
 )
 @pytest.mark.parametrize("amlignore", ("empty", "missing", "filled"))
 @pytest.mark.parametrize("gitignore", ("empty", "missing", "filled"))
+@pytest.mark.parametrize("extra_env", (([], {}), (["A=B", "C="], {'A': 'B', 'C': ''})))
 def test_can_invoke_run(
     patched_kedro_package,
     cli_context,
@@ -184,6 +185,7 @@ def test_can_invoke_run(
     use_default_credentials: bool,
     amlignore: str,
     gitignore: str,
+    extra_env: list,
 ):
     create_kedro_conf_dirs(tmp_path)
     with patch.dict(
@@ -215,7 +217,8 @@ def test_can_invoke_run(
             cli.run,
             ["-s", "subscription_id"]
             + (["--wait-for-completion"] if wait_for_completion else [])
-            + (["--aml_env", aml_env] if aml_env else []),
+            + (["--aml_env", aml_env] if aml_env else [])
+            + (sum([['--env-var', k] for k in extra_env[0]], [])),
             obj=cli_context,
         )
         assert result.exit_code == 0
@@ -233,6 +236,11 @@ def test_can_invoke_run(
             interactive_credentials.assert_called_once()
         else:
             interactive_credentials.assert_not_called()
+
+        created_pipeline = ml_client.jobs.create_or_update.call_args[0][0]
+        populated_env_vars = list(created_pipeline.jobs.values())[0].environment_variables
+        del populated_env_vars['KEDRO_AZURE_RUNNER_CONFIG']
+        assert populated_env_vars == extra_env[1]
 
 
 @pytest.mark.parametrize(
@@ -320,3 +328,27 @@ def test_can_invoke_run_with_failed_pipeline(
         ml_client.jobs.create_or_update.assert_called_once()
         ml_client.compute.get.assert_called_once()
         ml_client.jobs.stream.assert_called_once()
+
+def test_fail_if_invalid_env_provided_in_run(
+    patched_kedro_package,
+    cli_context,
+    dummy_pipeline,
+    tmp_path: Path,
+):
+    create_kedro_conf_dirs(tmp_path)
+    with patch.dict(
+        "kedro.framework.project.pipelines", {"__default__": dummy_pipeline}
+    ), patch.object(Path, "cwd", return_value=tmp_path), patch(
+        "kedro_azureml.client.MLClient"
+    ) as ml_client_patched, patch(
+        "kedro_azureml.client.DefaultAzureCredential"
+    ), patch.dict(
+        os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
+    ):
+        ml_client = ml_client_patched.from_config()
+        ml_client.jobs.stream.side_effect = ValueError()
+
+        runner = CliRunner()
+        result = runner.invoke(cli.run, ["--env-var", "INVALID"], obj=cli_context)
+        assert result.exit_code == 1
+        assert str(result.exception) == 'Invalid env-var: INVALID, expected format: KEY=VALUE'
