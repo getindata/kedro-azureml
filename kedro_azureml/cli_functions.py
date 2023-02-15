@@ -136,7 +136,7 @@ def verify_configuration_directory_for_azure(click_context, ctx: CliContext):
 
 def parse_extra_env_params(extra_env):
     for entry in extra_env:
-        if not re.match(".+=.*", entry):
+        if not re.match("[A-Za-z0-9_]+=.*", entry):
             raise Exception(f"Invalid env-var: {entry}, expected format: KEY=VALUE")
 
-    return {entry.split("=")[0]: entry.split("=")[1] for entry in extra_env}
+    return {(e := entry.split("="))[0]: e[1] for entry in extra_env}

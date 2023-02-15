@@ -332,11 +332,13 @@ def test_can_invoke_run_with_failed_pipeline(
         ml_client.jobs.stream.assert_called_once()
 
 
+@pytest.mark.parametrize("env_var", ("INVALID", "2+2=4"))
 def test_fail_if_invalid_env_provided_in_run(
     patched_kedro_package,
     cli_context,
     dummy_pipeline,
     tmp_path: Path,
+    env_var: str,
 ):
     create_kedro_conf_dirs(tmp_path)
     with patch.dict(
@@ -352,9 +354,9 @@ def test_fail_if_invalid_env_provided_in_run(
         ml_client.jobs.stream.side_effect = ValueError()
 
         runner = CliRunner()
-        result = runner.invoke(cli.run, ["--env-var", "INVALID"], obj=cli_context)
+        result = runner.invoke(cli.run, ["--env-var", env_var], obj=cli_context)
         assert result.exit_code == 1
         assert (
             str(result.exception)
-            == "Invalid env-var: INVALID, expected format: KEY=VALUE"
+            == f"Invalid env-var: {env_var}, expected format: KEY=VALUE"
         )
