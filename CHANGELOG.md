@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+-   Ability to pass extra environment variables to the Kedro nodes using `--env-var` option
+-   Default configuration for docker-flow adjusted for the latest kedro-docker plugin
+
 ## [0.3.4] - 2022-12-30
 
 -   Add lazy initialization and cache to Kedro's context in the `KedroContextManager` class to prevent re-loading

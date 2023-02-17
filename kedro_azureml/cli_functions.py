@@ -1,9 +1,10 @@
 import json
 import logging
 import os
+import re
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 import click
 
@@ -20,6 +21,7 @@ def get_context_and_pipeline(
     pipeline: str,
     params: str,
     aml_env: Optional[str] = None,
+    extra_env: Dict[str, str] = {},
 ):
     with KedroContextManager(
         ctx.metadata.package_name, ctx.env, parse_extra_params(params, True)
@@ -47,6 +49,7 @@ def get_context_and_pipeline(
             docker_image,
             params,
             storage_account_key,
+            extra_env,
         )
         az_pipeline = generator.generate()
         yield mgr, az_pipeline
@@ -129,3 +132,11 @@ def verify_configuration_directory_for_azure(click_context, ctx: CliContext):
         )
         if not click.confirm(click.style(msg, fg="yellow")):
             click_context.exit(2)
+
+
+def parse_extra_env_params(extra_env):
+    for entry in extra_env:
+        if not re.match("[A-Za-z0-9_]+=.*", entry):
+            raise Exception(f"Invalid env-var: {entry}, expected format: KEY=VALUE")
+
+    return {(e := entry.split("="))[0]: e[1] for entry in extra_env}
