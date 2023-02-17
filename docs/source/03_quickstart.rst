@@ -394,4 +394,4 @@ In case you need to customize pipeline run context, modifying configuration file
 - ``--image`` modifies the Docker image used during the execution,
 - ``--pipeline`` allows to select a pipeline to run (by default, the ``__default__`` pipeline is started),
 - ``--params`` takes a JSON string with parameters override (JSONed version of ``conf/*/parameters.yml``, not the Kedro's ``params:`` syntax),
-- ``--env-var KEY=VALUE`` sets the OS environment variable injected to the steps during runtime.
+- ``--env-var KEY=VALUE`` sets the OS environment variable injected to the steps during runtime (can be used multiple times).
