@@ -4,6 +4,7 @@
 
 -   Ability to pass extra environment variables to the Kedro nodes using `--env-var` option
 -   Default configuration for docker-flow adjusted for the latest kedro-docker plugin
+-   Fix authorization issues on AzureML Compute Instance (<https://github.com/getindata/kedro-azureml/pull/47>) by [@j0rd1smit](https://github.com/j0rd1smit)
 
 ## [0.3.4] - 2022-12-30
 
