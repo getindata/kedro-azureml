@@ -175,7 +175,7 @@ jobs:
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         run: |
-          kedro azureml run --wait-for-completion
+          kedro azureml run --wait-for-completion --env-var 'GETINDATA=ROCKS!'
 
 
   publish:

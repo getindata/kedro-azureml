@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -15,15 +16,21 @@ logger = logging.getLogger(__name__)
 
 
 @contextmanager
-def _get_azureml_client(subscription_id: str, config: AzureMLConfig):
+def _get_azureml_client(subscription_id: Optional[str], config: AzureMLConfig):
     client_config = {
-        "subscription_id": subscription_id,
+        "subscription_id": subscription_id or config.subscription_id,
         "resource_group": config.resource_group,
         "workspace_name": config.workspace_name,
     }
 
     try:
-        credential = DefaultAzureCredential()
+        # On a AzureML compute instance, the managed identity will take precedence,
+        # while it does not have enough permissions.
+        # So, if we are on an AzureML compute instance, we disable the managed identity.
+        is_azureml_managed_identity = "MSI_ENDPOINT" in os.environ
+        credential = DefaultAzureCredential(
+            exclude_managed_identity_credential=is_azureml_managed_identity
+        )
         # Check if given credential can get token successfully.
         credential.get_token("https://management.azure.com/.default")
     except Exception:

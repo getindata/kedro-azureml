@@ -39,11 +39,12 @@ class AzureMLConfig(BaseModel):
             value, ComputeConfig(cluster_name="{cluster_name}")
         )
 
-    experiment_name: str
-    workspace_name: str
+    subscription_id: str
     resource_group: str
-    temporary_storage: AzureTempStorageConfig
+    workspace_name: str
+    experiment_name: str
     compute: Optional[Dict[str, ComputeConfig]]
+    temporary_storage: AzureTempStorageConfig
     environment_name: Optional[str]
     code_directory: Optional[str]
     working_directory: Optional[str]
@@ -63,6 +64,8 @@ class KedroAzureRunnerConfig(BaseModel):
 
 CONFIG_TEMPLATE_YAML = """
 azure:
+  # Azure subscription ID to use
+  subscription_id: "{subscription_id}"
   # Azure ML Experiment Name
   experiment_name: "{experiment_name}"
   # Azure resource group to use
@@ -75,7 +78,7 @@ azure:
   code_directory: "."
   # Path to the directory in the Docker image to run the code from
   # Ignored when code_directory is set
-  working_directory: /home/kedro
+  working_directory: /home/kedro_docker
 
   # Temporary storage settings - this is used to pass some data between steps
   # if the data is not specified in the catalog directly

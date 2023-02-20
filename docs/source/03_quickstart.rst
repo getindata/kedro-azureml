@@ -61,10 +61,10 @@ created in Azure and have their **names** ready to input to the plugin:
 
 .. code:: console
 
-   #Usage: kedro azureml init [OPTIONS] RESOURCE_GROUP WORKSPACE_NAME
+   #Usage: kedro azureml init [OPTIONS] SUBSCRIPTION_ID RESOURCE_GROUP WORKSPACE_NAME
    #                          EXPERIMENT_NAME CLUSTER_NAME STORAGE_ACCOUNT_NAME
    #                          STORAGE_CONTAINER ENVIRONMENT_NAME
-   kedro azureml init <resource-group-name> <workspace-name> <experiment-name> <compute-cluster-name> <storage-account-name> <storage-container-name> <environment-name>
+   kedro azureml init <subscription-id> <resource-group-name> <workspace-name> <experiment-name> <compute-cluster-name> <storage-account-name> <storage-container-name> <environment-name>
 
 8. Adjust the Data Catalog - the default one stores all data locally,
    whereas the plugin will automatically use Azure Blob Storage. Only
@@ -383,3 +383,15 @@ The ``distributed_job`` decorator also supports "hard-coded" values for number o
         pass
 
 We have tested the implementation heavily with PyTorch (+PyTorch Lightning) and GPUs. If you encounter any problems, drop us an issue on GitHub!
+
+Run customization
+-----------------
+
+In case you need to customize pipeline run context, modifying configuration files is not always the most convinient option. Therefore, ``kedro azureml run`` command provides a few additional options you may find useful:
+
+- ``--subscription_id`` overrides Azure Subscription ID,
+- ``--azureml_environment`` overrides the configured Azure ML Environment,
+- ``--image`` modifies the Docker image used during the execution,
+- ``--pipeline`` allows to select a pipeline to run (by default, the ``__default__`` pipeline is started),
+- ``--params`` takes a JSON string with parameters override (JSONed version of ``conf/*/parameters.yml``, not the Kedro's ``params:`` syntax),
+- ``--env-var KEY=VALUE`` sets the OS environment variable injected to the steps during runtime (can be used multiple times).
