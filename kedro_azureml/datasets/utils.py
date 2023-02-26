@@ -1,4 +1,4 @@
-from azureml.core import Workspace, Run
+from azureml.core import Run, Workspace
 from azureml.exceptions import UserErrorException
 
 
