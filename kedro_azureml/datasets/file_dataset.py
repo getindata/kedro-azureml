@@ -191,15 +191,20 @@ class AzureMLFileDataSet(PartitionedDataSet):
             **self._azureml_dataset_save_args,
         )
 
-    def _load(self) -> t.Dict[str, t.Callable[[], t.Any]]:
+    def _list_partitions(self) -> t.List[str]:
+        """
+        `PartitionedDataSet._load` is using `_list_partitions`, which will list all files in the blob storage.
+        however, we want to load the files listed in the azureml file-azureml_dataset, not the ones in the blob
+        storage. therefore, override existing `_list_partitions` method to return `partitioned_paths`,
+        so that we can utilize the existing `PartitionedDataSet._load` method to load the data.
+        """
 
-        # get paths from azureml file-azureml_dataset
         dataset = Dataset.get_by_name(
             self._workspace,
             name=self._azureml_dataset,
             **self._azureml_dataset_load_args,
         )
-        steps = dataset._dataflow._get_steps()
+        steps = dataset._dataflow._get_steps()  # noqa
         step_arguments = steps[0].arguments
         azureml_paths = [blob["path"] for blob in step_arguments["datastores"]]
 
@@ -207,20 +212,4 @@ class AzureMLFileDataSet(PartitionedDataSet):
         container = self._workspace.datastores[self._azureml_datastore].container_name
         partitioned_paths = [f"{container}/{p}" for p in azureml_paths]
 
-        # `PartitionedDataSet._load` is using `_list_partitions`, which will list all files in the blob storage.
-        # however, we want to load the files listed in the azureml file-azureml_dataset, not the ones in the blob
-        # storage. therefore, override existing `_list_partitions` method to return `partitioned_paths`,
-        # so that we can utilize the existing `PartitionedDataSet._load` method to load the data.
-        original_list_partitions = self._list_partitions
-
-        def override_list_partitions():
-            return partitioned_paths
-
-        try:
-            self._list_partitions = override_list_partitions
-            res = super()._load()
-        except Exception as e:
-            raise e
-        finally:
-            self._list_partitions = original_list_partitions
-        return res
+        return partitioned_paths
