@@ -48,6 +48,7 @@ class AzureMLConfig(BaseModel):
     environment_name: Optional[str]
     code_directory: Optional[str]
     working_directory: Optional[str]
+    native_data_passing: bool = False
 
 
 class KedroAzureMLConfig(BaseModel):
@@ -79,6 +80,8 @@ azure:
   # Path to the directory in the Docker image to run the code from
   # Ignored when code_directory is set
   working_directory: /home/kedro_docker
+  # Use Azure ML native data passing instead of temporary storage
+  native_data_passing: false
 
   # Temporary storage settings - this is used to pass some data between steps
   # if the data is not specified in the catalog directly
