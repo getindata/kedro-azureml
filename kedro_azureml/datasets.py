@@ -1,14 +1,22 @@
 import bz2  # TODO: consider zstandard?
 import logging
 import os
+from copy import deepcopy
 from functools import lru_cache
 from sys import version_info
-from typing import Any, Dict
+from typing import Any, Dict, Type, Union
+from warnings import warn
 
 import backoff
 import cloudpickle
 import fsspec
-from kedro.io import AbstractDataSet
+from kedro.io.core import (
+    VERSION_KEY,
+    VERSIONED_FLAG_KEY,
+    AbstractDataSet,
+    DataSetError,
+    parse_dataset_definition,
+)
 
 from kedro_azureml.constants import (
     KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
@@ -85,3 +93,84 @@ class KedroAzureRunnerDistributedDataset(KedroAzureRunnerDataset):
             logger.warning(
                 f"DataSet {self.dataset_name} will not be saved on a distributed node"
             )
+
+
+# TODO: First make work in AML, then also locally
+# TODO: Switch to File dataset?
+class AzureMLFolderDataset(AbstractDataSet):
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        path: str,
+        dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
+        filepath_arg: str = "filepath",
+    ):
+        """Creates a new instance of ``PartitionedDataSet``.
+
+        Args:
+            path: Path to the folder containing partitioned data.
+                If path starts with the protocol (e.g., ``s3://``) then the
+                corresponding ``fsspec`` concrete filesystem implementation will
+                be used. If protocol is not specified,
+                ``fsspec.implementations.local.LocalFileSystem`` will be used.
+                **Note:** Some concrete implementations are bundled with ``fsspec``,
+                while others (like ``s3`` or ``gcs``) must be installed separately
+                prior to usage of the ``PartitionedDataSet``.
+            dataset: Underlying dataset definition.
+                Accepted formats are:
+                a) object of a class that inherits from ``AbstractDataSet``
+                b) a string representing a fully qualified class name to such class
+                c) a dictionary with ``type`` key pointing to a string from b),
+                other keys are passed to the Dataset initializer.
+                Credentials for the dataset can be explicitly specified in
+                this configuration.
+            filepath_arg: Underlying dataset initializer argument that will
+                contain a path to each corresponding partition file.
+                If unspecified, defaults to "filepath".
+
+        Raises:
+            DataSetError: If versioning is enabled for the underlying dataset.
+        """
+
+        super().__init__()
+
+        self.path = path
+
+        dataset = dataset if isinstance(dataset, dict) else {"type": dataset}
+        self._dataset_type, self._dataset_config = parse_dataset_definition(dataset)
+
+        # TODO: remove and disable versioning?
+        if VERSION_KEY in self._dataset_config:
+            raise DataSetError(
+                f"'{self.__class__.__name__}' does not support versioning of the "
+                f"underlying dataset. Please remove '{VERSIONED_FLAG_KEY}' flag from "
+                f"the dataset definition."
+            )
+
+        self._filepath_arg = filepath_arg
+        if self._filepath_arg in self._dataset_config:
+            warn(
+                f"'{self._filepath_arg}' key must not be specified in the dataset "
+                f"definition as it will be overwritten by path argument"
+            )
+
+    def _construct_dataset(self):
+        kwargs = deepcopy(self._dataset_config)
+        kwargs[self._filepath_arg] = self.path
+        dataset = self._dataset_type(**kwargs)
+        return dataset
+
+    def _load(self) -> Any:
+        return self._construct_dataset().load()
+
+    def _save(self, data: Any) -> None:
+        self._construct_dataset().save(data)
+
+    def _describe(self) -> Dict[str, Any]:
+        return {
+            "path": self.path,
+            "dataset_type": self._dataset_type.__name__,
+            "dataset_config": self._dataset_config,
+        }
+
+    def _exists(self) -> bool:
+        return self._construct_dataset().exists()
