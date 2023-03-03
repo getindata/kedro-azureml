@@ -285,9 +285,24 @@ class AzureMLPipelineGenerator:
         return invoked_components
 
     def _prepare_command(self, node):
-        azure_outputs = (
+        input_data_paths = (
             [
-                "--az-output=${{outputs." + self._sanitize_param_name(name) + "}}"
+                f"--data-path={name} "
+                + "${{inputs."
+                + self._sanitize_param_name(name)
+                + "}}"
+                for name in node.inputs
+                if "params:" not in name
+            ]
+            if node.inputs
+            else []
+        )
+        output_data_paths = (
+            [
+                f"--data-path={name} "
+                + "${{outputs."
+                + self._sanitize_param_name(name)
+                + "}}"
                 for name in node.outputs
             ]
             if node.outputs
@@ -301,6 +316,6 @@ class AzureMLPipelineGenerator:
                 else ""
             )
             + f"kedro azureml -e {self.kedro_environment} execute --pipeline={self.pipeline_name} --node={node.name} "  # noqa
-            + " ".join(azure_outputs)
+            + " ".join(input_data_paths + output_data_paths)
             + (f" --params='{self.params}'" if self.params else "")
         ).strip()
