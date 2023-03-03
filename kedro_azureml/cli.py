@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import click
 from kedro.framework.startup import ProjectMetadata
@@ -290,28 +290,35 @@ def compile(
     help="Parameters override in form of `key=value`",
 )
 @click.option(
-    "--az-output",
-    "azure_outputs",
-    type=str,
+    "--data-path",
+    "data_paths",
+    type=(str, click.Path(exists=True, file_okay=False, dir_okay=True)),
     multiple=True,
-    help="Paths of Azure ML Pipeline outputs to save dummy data into",
+    help="Paths of Azure ML Pipeline inputs and outputs",
 )
 @click.pass_obj
 def execute(
-    ctx: CliContext, pipeline: str, node: str, params: str, azure_outputs: Tuple[str]
+    ctx: CliContext,
+    pipeline: str,
+    node: str,
+    params: str,
+    data_paths: List[Tuple[str, str]],
 ):
     # 1. Run kedro
     parameters = parse_extra_params(params)
+    data_paths = {ds_name: data_path for ds_name, data_path in data_paths}
+
     with KedroContextManager(
         ctx.metadata.package_name, env=ctx.env, extra_params=parameters
     ) as mgr:
-        runner = AzurePipelinesRunner()
+        native_data_passing = mgr.plugin_config.azure.native_data_passing
+        runner = AzurePipelinesRunner(data_paths=data_paths)
         mgr.session.run(pipeline, node_names=[node], runner=runner)
 
     # 2. Save dummy outputs
     # In distributed computing, it will only happen on nodes with rank 0
-    if is_distributed_master_node():
-        for dummy_output in azure_outputs:
-            (Path(dummy_output) / "output.txt").write_text("#getindata")
+    if not native_data_passing and is_distributed_master_node():
+        for data_path in data_paths.values():
+            (Path(data_path) / "output.txt").write_text("#getindata")
     else:
         logger.info("Skipping saving Azure outputs on non-master distributed nodes")

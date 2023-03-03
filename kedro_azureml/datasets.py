@@ -174,3 +174,6 @@ class AzureMLFolderDataset(AbstractDataSet):
 
     def _exists(self) -> bool:
         return self._construct_dataset().exists()
+
+
+# TODO: Add distributed dataset version
