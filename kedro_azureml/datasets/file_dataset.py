@@ -33,89 +33,100 @@ class AzureMLFileDataSet(PartitionedDataSet):
     Can be used to save (register) data stored in azure blob storage as an AzureML file dataset.
     The data can then be loaded from the AzureML file dataset into a convenient format (e.g. pandas, pillow image etc).
 
-    Args:
-        azureml_dataset: Name of the AzureML file dataset.
-        azureml_datastore: Name of the AzureML datastore. If not provided, the default datastore will be used.
-        azureml_dataset_save_args: Additional arguments to pass to `AbstractDataset.register` method.
-            make sure to pass `create_new_version=True` to create a new version of an existing dataset.
+    Args
+    ----
+
+     | - ``azureml_dataset``: Name of the AzureML file dataset.
+     | - ``azureml_datastore``: Name of the AzureML datastore. If not provided, the default datastore will be used.
+     | - ``azureml_dataset_save_args``: Additional arguments to pass to ``AbstractDataset.register`` method.
+            make sure to pass ``create_new_version=True`` to create a new version of an existing dataset.
             note: if there's no difference in file paths, a new version will not be created and the existing version
-            will be overwritten, even if `create_new_version=True`.
-            please read more here: https://learn.microsoft.com/en-us/python/api/azureml-core/azureml.data.abstract_dataset.abstractdataset?view=azure-ml-py#azureml-data-abstract-dataset-abstractdataset-register # noqa
-        azureml_dataset_load_args: Additional arguments to pass to `azureml.core.Dataset.get_by_name` method.
-            please read more here: https://learn.microsoft.com/en-us/python/api/azureml-core/azureml.core.dataset.dataset?view=azure-ml-py#azureml-core-dataset-dataset-get-by-name # noqa
-        workspace: AzureML Workspace. If not specified, will attempt to load the workspace automatically.
-        workspace_args: Additional arguments to pass to `utils.get_workspace()`.
-        kwargs: Additional arguments to pass to `PartitionedDataSet` constructor.
-            make sure to not pass `path` argument, as it will be built from `azureml_datastore` argument.
+            will be overwritten, even if ``create_new_version=True``.
+            Read more: `AbstractDataset.register`_.
+     | - ``azureml_dataset_load_args``: Additional arguments to pass to `azureml.core.Dataset.get_by_name` method.
+            Read more: `azureml.core.Dataset.get_by_name`_.
+     | - ``workspace``: AzureML Workspace. If not specified, will attempt to load the workspace automatically.
+     | - ``workspace_args``: Additional arguments to pass to ``utils.get_workspace()``.
+     | - ``kwargs``: Additional arguments to pass to ``PartitionedDataSet`` constructor.
+            make sure to not pass `path` argument, as it will be built from ``azureml_datastore`` argument.
 
-    Example :
+    .. _`AbstractDataset.register`: https://learn.microsoft.com/en-us/python/api/azureml-core/azureml.data.
+        abstract_dataset.abstractdataset?view=azure-ml-py#azureml-data-abstract-dataset-abstractdataset-register
+    .. _`azureml.core.Dataset.get_by_name`: https://learn.microsoft.com/en-us/python/api/azureml-core/azureml.core.
+        dataset.dataset?view=azure-ml-py#azureml-core-dataset-dataset-get-by-name
 
-        Example of a catalog.yml:
+    Example
+    -------
 
-            ```yaml
-            processed_images:
-              type: kedro_azureml.datasets.AzureMLFileDataSet
-              dataset: pillow.ImageDataSet
-              filename_suffix: '.png'
-              azureml_dataset: processed_images
-              azureml_dataset_save_args:
-                create_new_version: true
+    Example of a catalog.yml enry:
 
-              # if version is not provided, the latest dataset version will be used
-              azureml_dataset_load_args:
-                version: 1
+    .. code-block:: yaml
 
-              # optional, if not provided, the environment variable
-              # `AZURE_STORAGE_ACCOUNT_NAME` and `AZURE_STORAGE_ACCOUNT_KEY` will be used
-              credentials:
-                account_name: my_storage_account_name
-                account_key: my_storage_account_key
-            ```
+        processed_images:
+          type: kedro_azureml.datasets.AzureMLFileDataSet
+          dataset: pillow.ImageDataSet
+          filename_suffix: '.png'
+          azureml_dataset: processed_images
+          azureml_dataset_save_args:
+            create_new_version: true
 
-        Example of python API:
+          # if version is not provided, the latest dataset version will be used
+          azureml_dataset_load_args:
+            version: 1
 
-            >>> import pandas as pd
-            >>>
-            >>> # create dummy data
-            >>> dict_df = {}
-            >>> dict_df['path/in/azure/blob/storage/file_1'] = pd.DataFrame({'a': [1,2], 'b': [3,4]})
-            >>> dict_df['path/in/azure/blob/storage/file_2'] = pd.DataFrame({'c': [3,4], 'd': [5,6]})
-            >>>
-            >>> # init AzureMLFileDataSet
-            >>> data_set = AzureMLFileDataSet(
-            >>>     azureml_dataset='my_azureml_file_dataset_name',
-            >>>     azureml_datastore='my_azureml_datastore_name',  # optional, if not provided, the default datastore will be used  # noqa
-            >>>     dataset='pandas.CSVDataSet',
-            >>>     filename_suffix='.csv',  # optional, will add this suffix to the file names (file_1.csv, file_2.csv)
-            >>>
-            >>>     # optional - if not provided, will use the environment variables
-            >>>     # AZURE_STORAGE_ACCOUNT_NAME and AZURE_STORAGE_ACCOUNT_KEY
-            >>>     credentials={
-            >>>         'account_name': 'my_storage_account_name',
-            >>>         'account_key': 'my_storage_account_key',
-            >>>     },
-            >>>
-            >>>     # create version if the dataset already exists (otherwise, when trying to save, will get an error)
-            >>>     azureml_dataset_save_args={
-            >>>         'create_new_version': True,
-            >>>     }
-            >>> )
-            >>>
-            >>> # this will create 2 blobs, one for each dataframe, in the following paths:
-            >>> # <my_storage_account_name/my_container/path/in/azure/blob/storage/file_1.csv>
-            >>> # <my_storage_account_name/my_container/path/in/azure/blob/storage/file_2.csv>
-            >>> # also, it will register a corresponding AzureML file-dataset under the name <my_azureml_file_dataset_name> # noqa
-            >>> data_set.save(dict_df)
-            >>>
-            >>> # this will create lazy load functions instead of loading data into memory immediately.
-            >>> loaded = data_set.load()
-            >>>
-            >>> # load all the partitions
-            >>> for file_path, load_func in loaded.items():
-            >>>     df = load_func()
-            >>>
-            >>>     # process pandas dataframe
-            >>>     # ...
+          # optional, if not provided, the environment variable
+          # `AZURE_STORAGE_ACCOUNT_NAME` and `AZURE_STORAGE_ACCOUNT_KEY` will be used
+          credentials:
+            account_name: my_storage_account_name
+            account_key: my_storage_account_key
+
+
+    Example of Python API usage:
+
+    .. code-block:: python
+
+        import pandas as pd
+
+        # create dummy data
+        dict_df = {}
+        dict_df['path/in/azure/blob/storage/file_1'] = pd.DataFrame({'a': [1,2], 'b': [3,4]})
+        dict_df['path/in/azure/blob/storage/file_2'] = pd.DataFrame({'c': [3,4], 'd': [5,6]})
+
+        # init AzureMLFileDataSet
+        data_set = AzureMLFileDataSet(
+            azureml_dataset='my_azureml_file_dataset_name',
+            azureml_datastore='my_azureml_datastore_name',  # optional, if not provided, the default datastore will be used  # noqa
+            dataset='pandas.CSVDataSet',
+            filename_suffix='.csv',  # optional, will add this suffix to the file names (file_1.csv, file_2.csv)
+
+            # optional - if not provided, will use the environment variables
+            # AZURE_STORAGE_ACCOUNT_NAME and AZURE_STORAGE_ACCOUNT_KEY
+            credentials={
+                'account_name': 'my_storage_account_name',
+                'account_key': 'my_storage_account_key',
+            },
+
+            # create version if the dataset already exists (otherwise, when trying to save, will get an error)
+            azureml_dataset_save_args={
+                'create_new_version': True,
+            }
+        )
+
+        # this will create 2 blobs, one for each dataframe, in the following paths:
+        # <my_storage_account_name/my_container/path/in/azure/blob/storage/file_1.csv>
+        # <my_storage_account_name/my_container/path/in/azure/blob/storage/file_2.csv>
+        # also, it will register a corresponding AzureML file-dataset under the name <my_azureml_file_dataset_name> # noqa
+        data_set.save(dict_df)
+
+        # this will create lazy load functions instead of loading data into memory immediately.
+        loaded = data_set.load()
+
+        # load all the partitions
+        for file_path, load_func in loaded.items():
+            df = load_func()
+
+            # process pandas dataframe
+            # ...
     """
 
     def __init__(

@@ -13,31 +13,40 @@ class AzureMLPandasDataSet(AbstractDataSet):
     AzureML tabular dataset integration with Pandas DataFrame and kedro.
     Can be used to save Pandas DataFrame to AzureML tabular dataset, and load it back to Pandas DataFrame.
 
-    Args:
-        azureml_dataset: Name of the AzureML file azureml_dataset.
-        azureml_datastore: Name of the AzureML azureml_datastore. If not provided, the default azureml_datastore will
-            be used.
-        azureml_dataset_save_args: Additional arguments to pass to `TabularDatasetFactory.register_pandas_dataframe`
-            method.
-            please read more here: https://learn.microsoft.com/en-us/python/api/azureml-core/azureml.data.dataset_factory.tabulardatasetfactory?view=azure-ml-py#azureml-data-dataset-factory-tabulardatasetfactory-register-pandas-dataframe # noqa
-        azureml_dataset_load_args: Additional arguments to pass to `azureml.core.Dataset.get_by_name` method.
-            please read more here: https://learn.microsoft.com/en-us/python/api/azureml-core/azureml.core.dataset.dataset?view=azure-ml-py#azureml-core-dataset-dataset-get-by-name # noqa
-        workspace: AzureML Workspace. If not specified, will attempt to load the workspace automatically.
-        workspace_args: Additional arguments to pass to `utils.get_workspace()`.
+    Args
+    ----
 
-    Example:
+     | - ``azureml_dataset``: Name of the AzureML file azureml_dataset.
+     | - ``azureml_datastore``: Name of the AzureML azureml_datastore. If not provided, the default azureml_datastore
+        will be used.
+     | - ``azureml_dataset_save_args``: Additional arguments to pass to
+        ``TabularDatasetFactory.register_pandas_dataframe`` method. Read more: `register_pandas_dataframe`_
+     | - ``azureml_dataset_load_args``: Additional arguments to pass to ``azureml.core.Dataset.get_by_name`` method.
+        Read more: `Dataset.get_by_name`_
+     | - ``workspace``: AzureML Workspace. If not specified, will attempt to load the workspace automatically.
+     | - ``workspace_args``: Additional arguments to pass to ``utils.get_workspace()``.
 
-        Example of a catalog.yml:
+    .. _`register_pandas_dataframe`: https://learn.microsoft.com/en-us/python/api/azureml-core/
+        azureml.data.dataset_factory.tabulardatasetfactory?view=azure-ml-py#azureml-data-dataset-factory-
+        tabulardatasetfactory-register-pandas-dataframe
 
-            ```yaml
-            my_pandas_dataframe_dataset:
-              type: kedro_azureml.datasets.AzureMLPandasDataSet
-              azureml_dataset: my_new_azureml_dataset
+    .. _`Dataset.get_by_name`: https://learn.microsoft.com/en-us/python/api/azureml-core/azureml.core.dataset.dataset?
+        view=azure-ml-py#azureml-core-dataset-dataset-get-by-name
 
-              # if version is not provided, the latest dataset version will be used
-              azureml_dataset_load_args:
-                version: 1
-            ```
+    Example
+    -------
+
+    Example of a catalog.yml entry:
+
+    .. code-block:: yaml
+
+        my_pandas_dataframe_dataset:
+          type: kedro_azureml.datasets.AzureMLPandasDataSet
+          azureml_dataset: my_new_azureml_dataset
+
+          # if version is not provided, the latest dataset version will be used
+          azureml_dataset_load_args:
+            version: 1
     """
 
     def __init__(
