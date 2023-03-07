@@ -192,7 +192,9 @@ class AzureMLPipelineGenerator:
             environment=self._resolve_azure_environment(),  # TODO: check whether Environment exists
             inputs={
                 self._sanitize_param_name(name): (
-                    Input(type="string") if name in pipeline.inputs() else Input()
+                    Input(type="string")
+                    if (name in pipeline.inputs() and name.startswith("params:"))
+                    else Input()
                 )
                 for name in node.inputs
             },
