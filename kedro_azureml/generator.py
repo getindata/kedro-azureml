@@ -177,7 +177,7 @@ class AzureMLPipelineGenerator:
         return command(
             name=self._sanitize_azure_name(node.name),
             display_name=node.name,
-            command=self._prepare_command(node),
+            command=self._prepare_command(node, pipeline),
             compute=self.get_target_resource_from_node_tags(node).cluster_name,
             environment_variables={
                 KEDRO_AZURE_RUNNER_CONFIG: KedroAzureRunnerConfig(
@@ -192,9 +192,7 @@ class AzureMLPipelineGenerator:
             environment=self._resolve_azure_environment(),  # TODO: check whether Environment exists
             inputs={
                 self._sanitize_param_name(name): (
-                    Input(type="string")
-                    if (name in pipeline.inputs() and name.startswith("params:"))
-                    else Input()
+                    Input(type="string") if name in pipeline.inputs() else Input()
                 )
                 for name in node.inputs
             },
@@ -288,7 +286,7 @@ class AzureMLPipelineGenerator:
             invoked_components[node.name] = commands[node.name](**azure_inputs)
         return invoked_components
 
-    def _prepare_command(self, node):
+    def _prepare_command(self, node, pipeline):
         input_data_paths = (
             [
                 f"--data-path={name} "
@@ -296,7 +294,7 @@ class AzureMLPipelineGenerator:
                 + self._sanitize_param_name(name)
                 + "}}"
                 for name in node.inputs
-                if "params:" not in name
+                if not name.startswith("params:") and name not in pipeline.inputs()
             ]
             if node.inputs
             else []
