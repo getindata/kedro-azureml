@@ -27,7 +27,7 @@ def get_context_and_pipeline(
         ctx.metadata.package_name, ctx.env, parse_extra_params(params, True)
     ) as mgr:
         storage_account_key = os.getenv("AZURE_STORAGE_ACCOUNT_KEY", "")
-        if not storage_account_key:
+        if not mgr.plugin_config.azure.native_data_passing and not storage_account_key:
             click.echo(
                 click.style(
                     "Environment variable AZURE_STORAGE_ACCOUNT_KEY not set, falling back to CLI prompt",

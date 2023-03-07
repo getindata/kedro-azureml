@@ -184,7 +184,9 @@ class AzureMLPipelineGenerator:
                     temporary_storage=self.config.azure.temporary_storage,
                     run_id=kedro_azure_run_id,
                     storage_account_key=self.storage_account_key,
-                ).json(),
+                ).json()
+                if not self.config.azure.native_data_passing
+                else "",
                 **self.extra_env,
             },
             environment=self._resolve_azure_environment(),  # TODO: check whether Environment exists

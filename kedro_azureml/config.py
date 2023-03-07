@@ -44,7 +44,7 @@ class AzureMLConfig(BaseModel):
     workspace_name: str
     experiment_name: str
     compute: Optional[Dict[str, ComputeConfig]]
-    temporary_storage: AzureTempStorageConfig
+    temporary_storage: Optional[AzureTempStorageConfig]
     environment_name: Optional[str]
     code_directory: Optional[str]
     working_directory: Optional[str]
