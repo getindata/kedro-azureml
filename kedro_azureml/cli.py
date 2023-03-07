@@ -312,7 +312,9 @@ def execute(
         ctx.metadata.package_name, env=ctx.env, extra_params=parameters
     ) as mgr:
         native_data_passing = mgr.plugin_config.azure.native_data_passing
-        runner = AzurePipelinesRunner(data_paths=data_paths)
+        runner = AzurePipelinesRunner(
+            data_paths=data_paths, native_data_passing=native_data_passing
+        )
         mgr.session.run(pipeline, node_names=[node], runner=runner)
 
     # 2. Save dummy outputs
