@@ -30,12 +30,14 @@ class AzurePipelinesRunner(SequentialRunner):
         native_data_passing: bool = False,
     ):
         super().__init__(is_async)
+        self.native_data_passing = native_data_passing
         self.runner_config_raw = os.environ.get(KEDRO_AZURE_RUNNER_CONFIG)
-        self.runner_config: KedroAzureRunnerConfig = KedroAzureRunnerConfig.parse_raw(
-            self.runner_config_raw
+        self.runner_config: KedroAzureRunnerConfig = (
+            KedroAzureRunnerConfig.parse_raw(self.runner_config_raw)
+            if not self.native_data_passing
+            else None
         )
         self.data_paths = data_paths
-        self.native_data_passing = native_data_passing
 
     def run(
         self,
