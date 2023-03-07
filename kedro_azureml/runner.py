@@ -13,6 +13,7 @@ from kedro_azureml.config import KedroAzureRunnerConfig
 from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
 from kedro_azureml.datasets import (
     AzureMLFolderDataset,
+    AzureMLFolderDistributedDataset,
     KedroAzureRunnerDataset,
     KedroAzureRunnerDistributedDataset,
 )
@@ -53,7 +54,12 @@ class AzurePipelinesRunner(SequentialRunner):
     def create_default_data_set(self, ds_name: str) -> AbstractDataSet:
         if self.native_data_passing:
             path = str(Path(self.data_paths[ds_name]) / f"{ds_name}.pickle")
-            return AzureMLFolderDataset(path, PickleDataSet)
+            dataset_cls = AzureMLFolderDataset
+            if is_distributed_environment():
+                logger.info("Using distributed dataset class as a default")
+                dataset_cls = AzureMLFolderDistributedDataset
+
+            return dataset_cls(path, PickleDataSet)
         else:
             # TODO: handle credentials better (probably with built-in Kedro credentials
             #  via ConfigLoader (but it's not available here...)

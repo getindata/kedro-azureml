@@ -98,31 +98,22 @@ class KedroAzureRunnerDistributedDataset(KedroAzureRunnerDataset):
 # TODO: First make work in AML, then also locally
 # TODO: Switch to File dataset?
 class AzureMLFolderDataset(AbstractDataSet):
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         path: str,
         dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
         filepath_arg: str = "filepath",
     ):
-        """Creates a new instance of ``PartitionedDataSet``.
+        """Creates a new instance of ``AzureMLFolderDataset``.
 
         Args:
-            path: Path to the folder containing partitioned data.
-                If path starts with the protocol (e.g., ``s3://``) then the
-                corresponding ``fsspec`` concrete filesystem implementation will
-                be used. If protocol is not specified,
-                ``fsspec.implementations.local.LocalFileSystem`` will be used.
-                **Note:** Some concrete implementations are bundled with ``fsspec``,
-                while others (like ``s3`` or ``gcs``) must be installed separately
-                prior to usage of the ``PartitionedDataSet``.
+            path: Path to the file containing the data.
             dataset: Underlying dataset definition.
                 Accepted formats are:
                 a) object of a class that inherits from ``AbstractDataSet``
                 b) a string representing a fully qualified class name to such class
                 c) a dictionary with ``type`` key pointing to a string from b),
                 other keys are passed to the Dataset initializer.
-                Credentials for the dataset can be explicitly specified in
-                this configuration.
             filepath_arg: Underlying dataset initializer argument that will
                 contain a path to each corresponding partition file.
                 If unspecified, defaults to "filepath".
@@ -176,4 +167,11 @@ class AzureMLFolderDataset(AbstractDataSet):
         return self._construct_dataset().exists()
 
 
-# TODO: Add distributed dataset version
+class AzureMLFolderDistributedDataset(AzureMLFolderDataset):
+    def _save(self, data: Any) -> None:
+        if is_distributed_master_node():
+            super()._save(data)
+        else:
+            logger.warning(
+                f"DataSet {self.dataset_name} will not be saved on a distributed node"
+            )
