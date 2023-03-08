@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.3.6] - 2023-03-08
+
 ## [0.3.5] - 2023-02-20
 
 -   Ability to pass extra environment variables to the Kedro nodes using `--env-var` option
@@ -46,7 +48,9 @@
 
 -   Initial plugin release
 
-[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.3.5...HEAD
+[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.3.6...HEAD
+
+[0.3.6]: https://github.com/getindata/kedro-azureml/compare/0.3.5...0.3.6
 
 [0.3.5]: https://github.com/getindata/kedro-azureml/compare/0.3.4...0.3.5
 

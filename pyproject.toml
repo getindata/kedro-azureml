@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kedro-azureml"
-version = "0.3.5"
+version = "0.3.6"
 description = "Kedro plugin with Azure ML Pipelines support"
 readme = "README.md"
 authors = ['marcin.zablocki <marcin.zablocki@getindata.com>']
