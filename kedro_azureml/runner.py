@@ -54,7 +54,7 @@ class AzurePipelinesRunner(SequentialRunner):
             if ds_name in catalog_set:
                 ds = catalog._get_dataset(ds_name)
                 if isinstance(ds, AzureMLFolderDataset):
-                    ds.path = Path(ds_path) / Path(ds.path).name
+                    ds.path = str(Path(ds_path) / Path(ds.path).name)
                     catalog.add(ds_name, ds, replace=True)
             else:
                 catalog.add(ds_name, self.create_default_data_set(ds_name))
