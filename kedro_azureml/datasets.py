@@ -95,8 +95,7 @@ class KedroAzureRunnerDistributedDataset(KedroAzureRunnerDataset):
             )
 
 
-# TODO: First make work in AML, then also locally
-# TODO: Switch to File dataset?
+# TODO: Switch to use Azure ML File dataset?
 class AzureMLFolderDataset(AbstractDataSet):
     def __init__(
         self,
