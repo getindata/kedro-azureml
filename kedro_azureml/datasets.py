@@ -128,7 +128,7 @@ class AzureMLFolderDataset(AbstractDataSet):
         dataset = dataset if isinstance(dataset, dict) else {"type": dataset}
         self._dataset_type, self._dataset_config = parse_dataset_definition(dataset)
 
-        # TODO: remove and disable versioning?
+        # TODO: remove and disable versioning in Azure ML runner?
         if VERSION_KEY in self._dataset_config:
             raise DataSetError(
                 f"'{self.__class__.__name__}' does not support versioning of the "
