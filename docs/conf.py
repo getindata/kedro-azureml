@@ -33,7 +33,7 @@ version = re.match(r"^([0-9]+\.[0-9]+).*", release).group(1)
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    # "sphinx.ext.autodoc",
+    "sphinx.ext.autodoc",
     # "sphinx.ext.napoleon",
     # "sphinx_autodoc_typehints",
     # "sphinx.ext.doctest",
@@ -58,6 +58,7 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
+autodoc_mock_imports = ["azureml", "pandas"]
 
 # -- Options for HTML output -------------------------------------------------
 
