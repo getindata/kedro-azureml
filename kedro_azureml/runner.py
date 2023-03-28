@@ -50,11 +50,11 @@ class AzurePipelinesRunner(SequentialRunner):
         catalog_set = set(catalog.list())
 
         # Loop over datasets in arguments to set their paths
-        for ds_name, ds_path in self.data_paths.items():
+        for ds_name, ds_mount_path in self.data_paths.items():
             if ds_name in catalog_set:
                 ds = catalog._get_dataset(ds_name)
                 if isinstance(ds, AzureMLPipelineDataSet):
-                    ds.path = str(Path(ds_path) / Path(ds.path).name)
+                    ds.path = str(Path(ds_mount_path) / Path(ds.path).name)
                     catalog.add(ds_name, ds, replace=True)
             else:
                 catalog.add(ds_name, self.create_default_data_set(ds_name))
