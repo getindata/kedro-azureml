@@ -49,11 +49,12 @@ class AzurePipelinesRunner(SequentialRunner):
         catalog_set = set(catalog.list())
 
         # Loop over datasets in arguments to set their paths
-        for ds_name, ds_mount_path in self.data_paths.items():
+        for ds_name, azure_dataset_folder in self.data_paths.items():
             if ds_name in catalog_set:
                 ds = catalog._get_dataset(ds_name)
                 if isinstance(ds, AzureMLPipelineDataSet):
-                    ds.path = str(Path(ds_mount_path) / Path(ds.path).name)
+                    file_name = Path(ds.path).name
+                    ds.path = str(Path(azure_dataset_folder) / file_name)
                     catalog.add(ds_name, ds, replace=True)
             else:
                 catalog.add(ds_name, self.create_default_data_set(ds_name))
@@ -69,7 +70,7 @@ class AzurePipelinesRunner(SequentialRunner):
                 dataset_cls = AzureMLFolderDistributedDataset
 
             return dataset_cls(
-                path, {"type": "PickleDataSet", "backend": "cloudpickle"}
+                {"type": "PickleDataSet", "backend": "cloudpickle"}, path=path
             )
         else:
             # TODO: handle credentials better (probably with built-in Kedro credentials

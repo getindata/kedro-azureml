@@ -1,7 +1,5 @@
 import logging
-from copy import deepcopy
-from typing import Any, Dict, Type, Union
-from warnings import warn
+from typing import Any, Dict, Optional, Type, Union
 
 from kedro.io.core import (
     VERSION_KEY,
@@ -19,20 +17,20 @@ logger = logging.getLogger(__name__)
 class AzureMLPipelineDataSet(AbstractDataSet):
     def __init__(
         self,
-        path: str,
         dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
+        path: Optional[str] = None,
         filepath_arg: str = "filepath",
     ):
         """Creates a new instance of ``AzureMLPipelineDataSet``.
 
         Args:
-            path: Path to the file containing the data.
             dataset: Underlying dataset definition.
                 Accepted formats are:
                 a) object of a class that inherits from ``AbstractDataSet``
                 b) a string representing a fully qualified class name to such class
                 c) a dictionary with ``type`` key pointing to a string from b),
                 other keys are passed to the Dataset initializer.
+            path: Path to override the path of the underlying dataset with.
             filepath_arg: Underlying dataset initializer argument that will
                 contain a path to each corresponding partition file.
                 If unspecified, defaults to "filepath".
@@ -43,10 +41,13 @@ class AzureMLPipelineDataSet(AbstractDataSet):
 
         super().__init__()
 
-        self.path = path
-
         dataset = dataset if isinstance(dataset, dict) else {"type": dataset}
         self._dataset_type, self._dataset_config = parse_dataset_definition(dataset)
+
+        self._filepath_arg = filepath_arg
+
+        if path is not None:
+            self._dataset_config[self._filepath_arg] = path
 
         # TODO: remove and disable versioning in Azure ML runner?
         if VERSION_KEY in self._dataset_config:
@@ -56,18 +57,16 @@ class AzureMLPipelineDataSet(AbstractDataSet):
                 f"the dataset definition."
             )
 
-        self._filepath_arg = filepath_arg
-        if self._filepath_arg in self._dataset_config:
-            warn(
-                f"'{self._filepath_arg}' key must not be specified in the dataset "
-                f"definition as it will be overwritten by path argument"
-            )
+    @property
+    def path(self) -> str:
+        return self._dataset_config[self._filepath_arg]
 
-    def _construct_dataset(self):
-        kwargs = deepcopy(self._dataset_config)
-        kwargs[self._filepath_arg] = self.path
-        dataset = self._dataset_type(**kwargs)
-        return dataset
+    @path.setter
+    def path(self, path: str) -> None:
+        self._dataset_config[self._filepath_arg] = path
+
+    def _construct_dataset(self) -> AbstractDataSet:
+        return self._dataset_type(self._dataset_config)
 
     def _load(self) -> Any:
         return self._construct_dataset().load()
@@ -77,7 +76,6 @@ class AzureMLPipelineDataSet(AbstractDataSet):
 
     def _describe(self) -> Dict[str, Any]:
         return {
-            "path": self.path,
             "dataset_type": self._dataset_type.__name__,
             "dataset_config": self._dataset_config,
         }
