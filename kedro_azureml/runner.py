@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 from typing import Any, Dict
 
-from kedro.extras.datasets.pickle import PickleDataSet
 from kedro.io import AbstractDataSet, DataCatalog
 from kedro.pipeline import Pipeline
 from kedro.runner import SequentialRunner
@@ -69,7 +68,9 @@ class AzurePipelinesRunner(SequentialRunner):
                 logger.info("Using distributed dataset class as a default")
                 dataset_cls = AzureMLFolderDistributedDataset
 
-            return dataset_cls(path, PickleDataSet)
+            return dataset_cls(
+                path, {"type": "PickleDataSet", "backend": "cloudpickle"}
+            )
         else:
             # TODO: handle credentials better (probably with built-in Kedro credentials
             #  via ConfigLoader (but it's not available here...)
