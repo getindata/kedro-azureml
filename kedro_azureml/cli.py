@@ -290,11 +290,18 @@ def compile(
     help="Parameters override in form of `key=value`",
 )
 @click.option(
-    "--data-path",
-    "data_paths",
+    "--az-input",
+    "azure_inputs",
     type=(str, click.Path(exists=True, file_okay=False, dir_okay=True)),
     multiple=True,
-    help="Paths of Azure ML Pipeline inputs and outputs",
+    help="Name and path of Azure ML Pipeline input",
+)
+@click.option(
+    "--az-output",
+    "azure_outputs",
+    type=(str, click.Path(exists=True, file_okay=False, dir_okay=True)),
+    multiple=True,
+    help="Name and path of Azure ML Pipeline output",
 )
 @click.pass_obj
 def execute(
@@ -302,11 +309,14 @@ def execute(
     pipeline: str,
     node: str,
     params: str,
-    data_paths: List[Tuple[str, str]],
+    azure_inputs: List[Tuple[str, str]],
+    azure_outputs: List[Tuple[str, str]],
 ):
     # 1. Run kedro
     parameters = parse_extra_params(params)
-    data_paths = {ds_name: data_path for ds_name, data_path in data_paths}
+    azure_inputs = {ds_name: data_path for ds_name, data_path in azure_inputs}
+    azure_outputs = {ds_name: data_path for ds_name, data_path in azure_outputs}
+    data_paths = {**azure_inputs, **azure_outputs}
 
     with KedroContextManager(
         ctx.metadata.package_name, env=ctx.env, extra_params=parameters
@@ -323,7 +333,7 @@ def execute(
     # 2. Save dummy outputs
     # In distributed computing, it will only happen on nodes with rank 0
     if not pipeline_data_passing and is_distributed_master_node():
-        for data_path in data_paths.values():
+        for data_path in azure_outputs.values():
             (Path(data_path) / "output.txt").write_text("#getindata")
     else:
         logger.info("Skipping saving Azure outputs on non-master distributed nodes")

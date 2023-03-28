@@ -293,7 +293,7 @@ class AzureMLPipelineGenerator:
     def _prepare_command(self, node, pipeline):
         input_data_paths = (
             [
-                f"--data-path={name} "
+                f"--az-input={name} "
                 + "${{inputs."
                 + self._sanitize_param_name(name)
                 + "}}"
@@ -305,7 +305,7 @@ class AzureMLPipelineGenerator:
         )
         output_data_paths = (
             [
-                f"--data-path={name} "
+                f"--az-output={name} "
                 + "${{outputs."
                 + self._sanitize_param_name(name)
                 + "}}"

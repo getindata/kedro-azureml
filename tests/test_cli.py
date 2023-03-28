@@ -146,7 +146,7 @@ def test_can_invoke_execute_cli(
         runner = CliRunner()
         result = runner.invoke(
             cli.execute,
-            ["--node", "node1", "--az-output", str(tmp_path)],
+            ["--node", "node1", "--az-output", "dataset1", str(tmp_path)],
             obj=cli_context,
         )
         assert result.exit_code == 0
