@@ -12,8 +12,8 @@ from pluggy import PluginManager
 from kedro_azureml.config import KedroAzureRunnerConfig
 from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
 from kedro_azureml.datasets import (
-    AzureMLFolderDataset,
     AzureMLFolderDistributedDataset,
+    AzureMLPipelineDataSet,
     KedroAzureRunnerDataset,
     KedroAzureRunnerDistributedDataset,
 )
@@ -53,7 +53,7 @@ class AzurePipelinesRunner(SequentialRunner):
         for ds_name, ds_path in self.data_paths.items():
             if ds_name in catalog_set:
                 ds = catalog._get_dataset(ds_name)
-                if isinstance(ds, AzureMLFolderDataset):
+                if isinstance(ds, AzureMLPipelineDataSet):
                     ds.path = str(Path(ds_path) / Path(ds.path).name)
                     catalog.add(ds_name, ds, replace=True)
             else:
@@ -64,7 +64,7 @@ class AzurePipelinesRunner(SequentialRunner):
     def create_default_data_set(self, ds_name: str) -> AbstractDataSet:
         if self.pipeline_data_passing:
             path = str(Path(self.data_paths[ds_name]) / f"{ds_name}.pickle")
-            dataset_cls = AzureMLFolderDataset
+            dataset_cls = AzureMLPipelineDataSet
             if is_distributed_environment():
                 logger.info("Using distributed dataset class as a default")
                 dataset_cls = AzureMLFolderDistributedDataset

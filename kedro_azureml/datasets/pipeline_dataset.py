@@ -16,14 +16,14 @@ from kedro_azureml.distributed.utils import is_distributed_master_node
 logger = logging.getLogger(__name__)
 
 
-class AzureMLFolderDataset(AbstractDataSet):
+class AzureMLPipelineDataSet(AbstractDataSet):
     def __init__(
         self,
         path: str,
         dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
         filepath_arg: str = "filepath",
     ):
-        """Creates a new instance of ``AzureMLFolderDataset``.
+        """Creates a new instance of ``AzureMLPipelineDataSet``.
 
         Args:
             path: Path to the file containing the data.
@@ -86,7 +86,7 @@ class AzureMLFolderDataset(AbstractDataSet):
         return self._construct_dataset().exists()
 
 
-class AzureMLFolderDistributedDataset(AzureMLFolderDataset):
+class AzureMLFolderDistributedDataset(AzureMLPipelineDataSet):
     def _save(self, data: Any) -> None:
         if is_distributed_master_node():
             super()._save(data)
