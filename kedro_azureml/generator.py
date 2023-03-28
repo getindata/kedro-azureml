@@ -173,6 +173,10 @@ class AzureMLPipelineGenerator:
     ):
         command_kwargs = {}
         command_kwargs.update(self._get_distributed_azure_command_kwargs(node))
+        pipeline_data_passing = (
+            self.config.azure.pipeline_data_passing is not None
+            and self.config.azure.pipeline_data_passing.enabled
+        )
 
         return command(
             name=self._sanitize_azure_name(node.name),
@@ -185,7 +189,7 @@ class AzureMLPipelineGenerator:
                     run_id=kedro_azure_run_id,
                     storage_account_key=self.storage_account_key,
                 ).json()
-                if not self.config.azure.native_data_passing
+                if not pipeline_data_passing
                 else "",
                 **self.extra_env,
             },

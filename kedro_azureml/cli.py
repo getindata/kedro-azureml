@@ -311,15 +311,18 @@ def execute(
     with KedroContextManager(
         ctx.metadata.package_name, env=ctx.env, extra_params=parameters
     ) as mgr:
-        native_data_passing = mgr.plugin_config.azure.native_data_passing
+        pipeline_data_passing = (
+            mgr.plugin_config.azure.pipeline_data_passing is not None
+            and mgr.plugin_config.azure.pipeline_data_passing.enabled
+        )
         runner = AzurePipelinesRunner(
-            data_paths=data_paths, native_data_passing=native_data_passing
+            data_paths=data_paths, pipeline_data_passing=pipeline_data_passing
         )
         mgr.session.run(pipeline, node_names=[node], runner=runner)
 
     # 2. Save dummy outputs
     # In distributed computing, it will only happen on nodes with rank 0
-    if not native_data_passing and is_distributed_master_node():
+    if not pipeline_data_passing and is_distributed_master_node():
         for data_path in data_paths.values():
             (Path(data_path) / "output.txt").write_text("#getindata")
     else:

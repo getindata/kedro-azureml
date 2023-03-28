@@ -27,14 +27,14 @@ class AzurePipelinesRunner(SequentialRunner):
         self,
         is_async: bool = False,
         data_paths: Dict[str, str] = dict(),
-        native_data_passing: bool = False,
+        pipeline_data_passing: bool = False,
     ):
         super().__init__(is_async)
-        self.native_data_passing = native_data_passing
+        self.pipeline_data_passing = pipeline_data_passing
         self.runner_config_raw = os.environ.get(KEDRO_AZURE_RUNNER_CONFIG)
         self.runner_config: KedroAzureRunnerConfig = (
             KedroAzureRunnerConfig.parse_raw(self.runner_config_raw)
-            if not self.native_data_passing
+            if not self.pipeline_data_passing
             else None
         )
         self.data_paths = data_paths
@@ -62,7 +62,7 @@ class AzurePipelinesRunner(SequentialRunner):
         return super().run(pipeline, catalog, hook_manager, session_id)
 
     def create_default_data_set(self, ds_name: str) -> AbstractDataSet:
-        if self.native_data_passing:
+        if self.pipeline_data_passing:
             path = str(Path(self.data_paths[ds_name]) / f"{ds_name}.pickle")
             dataset_cls = AzureMLFolderDataset
             if is_distributed_environment():
