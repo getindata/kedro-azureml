@@ -66,7 +66,7 @@ class AzureMLPipelineDataSet(AbstractDataSet):
         self._dataset_config[self._filepath_arg] = path
 
     def _construct_dataset(self) -> AbstractDataSet:
-        return self._dataset_type(self._dataset_config)
+        return self._dataset_type(**self._dataset_config)
 
     def _load(self) -> Any:
         return self._construct_dataset().load()
@@ -89,6 +89,4 @@ class AzureMLFolderDistributedDataset(AzureMLPipelineDataSet):
         if is_distributed_master_node():
             super()._save(data)
         else:
-            logger.warning(
-                f"DataSet {self.dataset_name} will not be saved on a distributed node"
-            )
+            logger.warning(f"DataSet {self} will not be saved on a distributed node")
