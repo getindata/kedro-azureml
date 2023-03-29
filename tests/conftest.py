@@ -97,3 +97,8 @@ def patched_azure_runner(patched_azure_dataset):
     except Exception:
         pass
     os.environ = backup
+
+
+@pytest.fixture()
+def patched_azure_pipeline_data_passing_runner():
+    yield AzurePipelinesRunner(pipeline_data_passing=True)

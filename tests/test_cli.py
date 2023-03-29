@@ -123,6 +123,11 @@ def test_can_compile_pipeline(
     ],
     ids=("master node", "worker node"),
 )
+@pytest.mark.parametrize(
+    "pipeline_data_passing_enabled",
+    (False, True),
+    ids=("temporary storage", "pipeline data passing"),
+)
 def test_can_invoke_execute_cli(
     distributed_env_variables,
     should_create_output,
@@ -130,14 +135,28 @@ def test_can_invoke_execute_cli(
     cli_context,
     dummy_pipeline,
     dummy_plugin_config,
-    patched_azure_runner,
+    pipeline_data_passing_enabled,
+    request,
     tmp_path: Path,
 ):
+    if pipeline_data_passing_enabled:
+        patched_azure_runner = request.getfixturevalue(
+            "patched_azure_pipeline_data_passing_runner"
+        )
+        dummy_plugin_config.azure.pipeline_data_passing.enabled = True
+        output_path = tmp_path / "i2.pickle"
+    else:
+        patched_azure_runner = request.getfixturevalue("patched_azure_runner")
+        output_path = tmp_path / "output.txt"
     create_kedro_conf_dirs(tmp_path)
     with patch(
         "kedro_azureml.runner.AzurePipelinesRunner", new=patched_azure_runner
     ), patch.dict(
         "kedro.framework.project.pipelines", {"__default__": dummy_pipeline}
+    ), patch(
+        "kedro_azureml.utils.KedroContextManager.plugin_config",
+        new_callable=mock.PropertyMock,
+        return_value=dummy_plugin_config,
     ), patch.object(
         Path, "cwd", return_value=tmp_path
     ), patch.dict(
@@ -146,17 +165,19 @@ def test_can_invoke_execute_cli(
         runner = CliRunner()
         result = runner.invoke(
             cli.execute,
-            ["--node", "node1", "--az-output", "dataset1", str(tmp_path)],
+            ["--node", "node1", "--az-output", "i2", str(tmp_path)],
             obj=cli_context,
         )
         assert result.exit_code == 0
-        p = tmp_path / "output.txt"
+
         if should_create_output:
             assert (
-                p.exists() and p.stat().st_size > 0
+                output_path.exists() and output_path.stat().st_size > 0
             ), "Output placeholders were not created"
         else:
-            assert not p.exists(), "Output placeholders should not have been created"
+            assert (
+                not output_path.exists()
+            ), "Output placeholders/datasets should not have been created"
 
 
 @pytest.mark.parametrize(
