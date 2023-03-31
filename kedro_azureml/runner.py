@@ -76,7 +76,7 @@ class AzurePipelinesRunner(SequentialRunner):
                 dataset_cls = AzureMLPipelineDistributedDataSet
 
             return dataset_cls(
-                {"type": PickleDataSet, "backend": "cloudpickle"}, path=path
+                {"type": PickleDataSet, "backend": "cloudpickle", "filepath": path}
             )
         else:
             # TODO: handle credentials better (probably with built-in Kedro credentials
