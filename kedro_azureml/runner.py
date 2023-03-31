@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from kedro.extras.datasets.pickle import PickleDataSet
 from kedro.io import AbstractDataSet, DataCatalog
@@ -26,7 +26,7 @@ class AzurePipelinesRunner(SequentialRunner):
     def __init__(
         self,
         is_async: bool = False,
-        data_paths: Dict[str, str] = dict(),
+        data_paths: Optional[Dict[str, str]] = None,
         pipeline_data_passing: bool = False,
     ):
         super().__init__(is_async)
@@ -37,7 +37,7 @@ class AzurePipelinesRunner(SequentialRunner):
             if not self.pipeline_data_passing
             else None
         )
-        self.data_paths = data_paths
+        self.data_paths = data_paths if data_paths is not None else {}
 
     def run(
         self,
