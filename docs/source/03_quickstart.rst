@@ -17,6 +17,8 @@ created in Azure and have their **names** ready to input to the plugin:
 -  Azure Resource Group
 -  Azure ML workspace
 -  Azure ML Compute Cluster
+
+Depending on the type of flow you want to use, you will also need:
 -  Azure Storage Account and Storage Container
 -  Azure Storage Key (will be used to execute the pipeline)
 -  Azure Container Registry
@@ -65,6 +67,12 @@ created in Azure and have their **names** ready to input to the plugin:
    #                          EXPERIMENT_NAME CLUSTER_NAME STORAGE_ACCOUNT_NAME
    #                          STORAGE_CONTAINER ENVIRONMENT_NAME
    kedro azureml init <subscription-id> <resource-group-name> <workspace-name> <experiment-name> <compute-cluster-name> <storage-account-name> <storage-container-name> <environment-name>
+
+If you want to pass data between nodes using the built-in Azure ML
+pipeline data passing, you can use dummy values for the storage account
+and container names. In this case, adjust the ``conf/base/azureml.yml``
+to enable pipeline data passing. See :doc:`04_data_assets` for more
+information about this.
 
 8. Adjust the Data Catalog - the default one stores all data locally,
    whereas the plugin will automatically use Azure Blob Storage. Only
