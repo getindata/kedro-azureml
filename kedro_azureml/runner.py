@@ -60,6 +60,11 @@ class AzurePipelinesRunner(SequentialRunner):
             else:
                 catalog.add(ds_name, self.create_default_data_set(ds_name))
 
+        # Loop over remaining input datasets to add them to the catalog
+        unsatisfied = pipeline.inputs() - set(catalog.list())
+        for ds_name in unsatisfied:
+            catalog.add(ds_name, self.create_default_data_set(ds_name))
+
         return super().run(pipeline, catalog, hook_manager, session_id)
 
     def create_default_data_set(self, ds_name: str) -> AbstractDataSet:
