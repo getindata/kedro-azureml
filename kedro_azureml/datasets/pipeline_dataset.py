@@ -84,7 +84,7 @@ class AzureMLPipelineDataSet(AbstractDataSet):
         return self._construct_dataset().exists()
 
 
-class AzureMLFolderDistributedDataset(AzureMLPipelineDataSet):
+class AzureMLPipelineDistributedDataSet(AzureMLPipelineDataSet):
     def _save(self, data: Any) -> None:
         if is_distributed_master_node():
             super()._save(data)

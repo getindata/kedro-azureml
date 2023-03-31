@@ -12,8 +12,8 @@ from pluggy import PluginManager
 from kedro_azureml.config import KedroAzureRunnerConfig
 from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
 from kedro_azureml.datasets import (
-    AzureMLFolderDistributedDataset,
     AzureMLPipelineDataSet,
+    AzureMLPipelineDistributedDataSet,
     KedroAzureRunnerDataset,
     KedroAzureRunnerDistributedDataset,
 )
@@ -73,7 +73,7 @@ class AzurePipelinesRunner(SequentialRunner):
             dataset_cls = AzureMLPipelineDataSet
             if is_distributed_environment():
                 logger.info("Using distributed dataset class as a default")
-                dataset_cls = AzureMLFolderDistributedDataset
+                dataset_cls = AzureMLPipelineDistributedDataSet
 
             return dataset_cls(
                 {"type": PickleDataSet, "backend": "cloudpickle"}, path=path
