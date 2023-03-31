@@ -13,7 +13,6 @@ from kedro_azureml.config import KedroAzureRunnerConfig
 from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
 from kedro_azureml.datasets import (
     AzureMLPipelineDataSet,
-    AzureMLPipelineDistributedDataSet,
     KedroAzureRunnerDataset,
     KedroAzureRunnerDistributedDataset,
 )
@@ -70,12 +69,7 @@ class AzurePipelinesRunner(SequentialRunner):
     def create_default_data_set(self, ds_name: str) -> AbstractDataSet:
         if self.pipeline_data_passing:
             path = str(Path(self.data_paths[ds_name]) / f"{ds_name}.pickle")
-            dataset_cls = AzureMLPipelineDataSet
-            if is_distributed_environment():
-                logger.info("Using distributed dataset class as a default")
-                dataset_cls = AzureMLPipelineDistributedDataSet
-
-            return dataset_cls(
+            return AzureMLPipelineDataSet(
                 {"type": PickleDataSet, "backend": "cloudpickle", "filepath": path}
             )
         else:

@@ -10,7 +10,6 @@ from kedro.extras.datasets.pickle import PickleDataSet
 from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
 from kedro_azureml.datasets import (
     AzureMLPipelineDataSet,
-    AzureMLPipelineDistributedDataSet,
     KedroAzureRunnerDataset,
     KedroAzureRunnerDistributedDataset,
 )
@@ -43,12 +42,8 @@ def test_azure_dataset_config(dataset_class: Type):
     assert all(k in cfg for k in ("account_name", "account_key")), "Invalid ABFS config"
 
 
-@pytest.mark.parametrize(
-    "dataset_class", (AzureMLPipelineDataSet, AzureMLPipelineDistributedDataSet)
-)
-def test_azureml_pipeline_dataset(dataset_class: Type, tmp_path: Path):
-
-    ds = dataset_class(
+def test_azureml_pipeline_dataset(tmp_path: Path):
+    ds = AzureMLPipelineDataSet(
         {
             "type": PickleDataSet,
             "backend": "cloudpickle",

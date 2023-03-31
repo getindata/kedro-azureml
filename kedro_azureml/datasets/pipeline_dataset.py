@@ -9,7 +9,10 @@ from kedro.io.core import (
     parse_dataset_definition,
 )
 
-from kedro_azureml.distributed.utils import is_distributed_master_node
+from kedro_azureml.distributed.utils import (
+    is_distributed_environment,
+    is_distributed_master_node,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +103,10 @@ class AzureMLPipelineDataSet(AbstractDataSet):
         return self._construct_dataset().load()
 
     def _save(self, data: Any) -> None:
-        self._construct_dataset().save(data)
+        if is_distributed_environment() and not is_distributed_master_node():
+            logger.warning(f"DataSet {self} will not be saved on a distributed node")
+        else:
+            self._construct_dataset().save(data)
 
     def _describe(self) -> Dict[str, Any]:
         return {
@@ -110,11 +116,3 @@ class AzureMLPipelineDataSet(AbstractDataSet):
 
     def _exists(self) -> bool:
         return self._construct_dataset().exists()
-
-
-class AzureMLPipelineDistributedDataSet(AzureMLPipelineDataSet):
-    def _save(self, data: Any) -> None:
-        if is_distributed_master_node():
-            super()._save(data)
-        else:
-            logger.warning(f"DataSet {self} will not be saved on a distributed node")
