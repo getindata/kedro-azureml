@@ -15,6 +15,39 @@ logger = logging.getLogger(__name__)
 
 
 class AzureMLPipelineDataSet(AbstractDataSet):
+    """
+    Dataset to support pipeline data passing in Azure ML between nodes, using `kedro.io.AbstractDataSet` as base class.
+    Wraps around an underlying dataset, which can be any dataset supported by Kedro, and adds the ability to modify the
+    file path of the underlying dataset, to point to the mount paths on the Azure ML compute where the node is run.
+
+    Args
+    ----
+
+     | - ``dataset``: dataset: Underlying dataset definition.
+            Accepted formats are:
+            a) object of a class that inherits from ``AbstractDataSet``
+            b) a string representing a fully qualified class name to such class
+            c) a dictionary with ``type`` key pointing to a string from b),
+            other keys are passed to the Dataset initializer.
+     | - ``filepath_arg``: Underlying dataset initializer argument that will
+            set the filepath.
+            If unspecified, defaults to "filepath".
+
+    Example
+    -------
+
+    Example of a catalog.yml entry:
+
+    .. code-block:: yaml
+
+        processed_images:
+          type: kedro_azureml.datasets.AzureMLPipelineDataSet
+          dataset:
+            type: pillow.ImageDataSet
+            filepath: 'images.png'
+
+    """
+
     def __init__(
         self,
         dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
