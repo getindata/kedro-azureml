@@ -5,9 +5,11 @@ from uuid import uuid4
 import numpy as np
 import pandas as pd
 import pytest
+from kedro.extras.datasets.pickle import PickleDataSet
 
 from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
 from kedro_azureml.datasets import (
+    AzureMLPipelineDataSet,
     KedroAzureRunnerDataset,
     KedroAzureRunnerDistributedDataset,
 )
@@ -38,6 +40,24 @@ def test_azure_dataset_config(dataset_class: Type):
     ), "Invalid target path"
 
     assert all(k in cfg for k in ("account_name", "account_key")), "Invalid ABFS config"
+
+
+def test_azureml_pipeline_dataset(tmp_path: Path):
+    ds = AzureMLPipelineDataSet(
+        {
+            "type": PickleDataSet,
+            "backend": "cloudpickle",
+            "filepath": (original_path := str(tmp_path / "test.pickle")),
+        }
+    )
+    assert ds.path == original_path, "Path should be set to the underlying filepath"
+
+    ds.path = (modified_path := str(tmp_path / "test2.pickle"))
+    assert ds.path == modified_path, "Path should be modified to the supplied value"
+
+    ds.save("test")
+    assert Path(modified_path).stat().st_size > 0, "File does not seem to be saved"
+    assert ds.load() == "test", "Objects are not the same after deserialization"
 
 
 @pytest.mark.parametrize(

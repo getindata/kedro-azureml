@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import click
 from kedro.framework.startup import ProjectMetadata
@@ -290,28 +290,50 @@ def compile(
     help="Parameters override in form of `key=value`",
 )
 @click.option(
+    "--az-input",
+    "azure_inputs",
+    type=(str, click.Path(exists=True, file_okay=False, dir_okay=True)),
+    multiple=True,
+    help="Name and path of Azure ML Pipeline input",
+)
+@click.option(
     "--az-output",
     "azure_outputs",
-    type=str,
+    type=(str, click.Path(exists=True, file_okay=False, dir_okay=True)),
     multiple=True,
-    help="Paths of Azure ML Pipeline outputs to save dummy data into",
+    help="Name and path of Azure ML Pipeline output",
 )
 @click.pass_obj
 def execute(
-    ctx: CliContext, pipeline: str, node: str, params: str, azure_outputs: Tuple[str]
+    ctx: CliContext,
+    pipeline: str,
+    node: str,
+    params: str,
+    azure_inputs: List[Tuple[str, str]],
+    azure_outputs: List[Tuple[str, str]],
 ):
     # 1. Run kedro
     parameters = parse_extra_params(params)
+    azure_inputs = {ds_name: data_path for ds_name, data_path in azure_inputs}
+    azure_outputs = {ds_name: data_path for ds_name, data_path in azure_outputs}
+    data_paths = {**azure_inputs, **azure_outputs}
+
     with KedroContextManager(
         ctx.metadata.package_name, env=ctx.env, extra_params=parameters
     ) as mgr:
-        runner = AzurePipelinesRunner()
+        pipeline_data_passing = (
+            mgr.plugin_config.azure.pipeline_data_passing is not None
+            and mgr.plugin_config.azure.pipeline_data_passing.enabled
+        )
+        runner = AzurePipelinesRunner(
+            data_paths=data_paths, pipeline_data_passing=pipeline_data_passing
+        )
         mgr.session.run(pipeline, node_names=[node], runner=runner)
 
     # 2. Save dummy outputs
     # In distributed computing, it will only happen on nodes with rank 0
-    if is_distributed_master_node():
-        for dummy_output in azure_outputs:
-            (Path(dummy_output) / "output.txt").write_text("#getindata")
+    if not pipeline_data_passing and is_distributed_master_node():
+        for data_path in azure_outputs.values():
+            (Path(data_path) / "output.txt").write_text("#getindata")
     else:
         logger.info("Skipping saving Azure outputs on non-master distributed nodes")

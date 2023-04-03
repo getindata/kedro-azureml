@@ -25,6 +25,10 @@ class DockerConfig(BaseModel):
     image: Optional[str] = None
 
 
+class PipelineDataPassingConfig(BaseModel):
+    enabled: bool = False
+
+
 class AzureMLConfig(BaseModel):
     @staticmethod
     def _create_default_dict_with(
@@ -44,10 +48,11 @@ class AzureMLConfig(BaseModel):
     workspace_name: str
     experiment_name: str
     compute: Optional[Dict[str, ComputeConfig]]
-    temporary_storage: AzureTempStorageConfig
+    temporary_storage: Optional[AzureTempStorageConfig]
     environment_name: Optional[str]
     code_directory: Optional[str]
     working_directory: Optional[str]
+    pipeline_data_passing: Optional[PipelineDataPassingConfig] = None
 
 
 class KedroAzureMLConfig(BaseModel):
@@ -79,6 +84,9 @@ azure:
   # Path to the directory in the Docker image to run the code from
   # Ignored when code_directory is set
   working_directory: /home/kedro_docker
+  # Use Azure ML pipeline data passing instead of temporary storage
+  pipeline_data_passing:
+    enabled: false # disabled by default
 
   # Temporary storage settings - this is used to pass some data between steps
   # if the data is not specified in the catalog directly

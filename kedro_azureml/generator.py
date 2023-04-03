@@ -173,18 +173,24 @@ class AzureMLPipelineGenerator:
     ):
         command_kwargs = {}
         command_kwargs.update(self._get_distributed_azure_command_kwargs(node))
+        pipeline_data_passing = (
+            self.config.azure.pipeline_data_passing is not None
+            and self.config.azure.pipeline_data_passing.enabled
+        )
 
         return command(
             name=self._sanitize_azure_name(node.name),
             display_name=node.name,
-            command=self._prepare_command(node),
+            command=self._prepare_command(node, pipeline),
             compute=self.get_target_resource_from_node_tags(node).cluster_name,
             environment_variables={
                 KEDRO_AZURE_RUNNER_CONFIG: KedroAzureRunnerConfig(
                     temporary_storage=self.config.azure.temporary_storage,
                     run_id=kedro_azure_run_id,
                     storage_account_key=self.storage_account_key,
-                ).json(),
+                ).json()
+                if not pipeline_data_passing
+                else "",
                 **self.extra_env,
             },
             environment=self._resolve_azure_environment(),  # TODO: check whether Environment exists
@@ -284,10 +290,25 @@ class AzureMLPipelineGenerator:
             invoked_components[node.name] = commands[node.name](**azure_inputs)
         return invoked_components
 
-    def _prepare_command(self, node):
-        azure_outputs = (
+    def _prepare_command(self, node, pipeline):
+        input_data_paths = (
             [
-                "--az-output=${{outputs." + self._sanitize_param_name(name) + "}}"
+                f"--az-input={name} "
+                + "${{inputs."
+                + self._sanitize_param_name(name)
+                + "}}"
+                for name in node.inputs
+                if not name.startswith("params:") and name not in pipeline.inputs()
+            ]
+            if node.inputs
+            else []
+        )
+        output_data_paths = (
+            [
+                f"--az-output={name} "
+                + "${{outputs."
+                + self._sanitize_param_name(name)
+                + "}}"
                 for name in node.outputs
             ]
             if node.outputs
@@ -301,6 +322,6 @@ class AzureMLPipelineGenerator:
                 else ""
             )
             + f"kedro azureml -e {self.kedro_environment} execute --pipeline={self.pipeline_name} --node={node.name} "  # noqa
-            + " ".join(azure_outputs)
+            + " ".join(input_data_paths + output_data_paths)
             + (f" --params='{self.params}'" if self.params else "")
         ).strip()

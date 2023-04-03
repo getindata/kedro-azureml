@@ -58,7 +58,7 @@ class AzureMLFileDataSet(PartitionedDataSet):
     Example
     -------
 
-    Example of a catalog.yml enry:
+    Example of a catalog.yml entry:
 
     .. code-block:: yaml
 

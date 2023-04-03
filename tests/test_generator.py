@@ -21,10 +21,21 @@ from kedro_azureml.generator import AzureMLPipelineGenerator, ConfigException
         {"docker_image": "unit/tests/docker/image:latest"},
     ],
 )
+@pytest.mark.parametrize(
+    "pipeline_data_passing_enabled",
+    (False, True),
+    ids=("temporary storage", "pipeline data passing"),
+)
 def test_can_generate_azure_pipeline(
-    pipeline_name, dummy_plugin_config, generator_kwargs: dict, request
+    pipeline_name,
+    dummy_plugin_config,
+    generator_kwargs: dict,
+    pipeline_data_passing_enabled,
+    request,
 ):
     pipeline = request.getfixturevalue(pipeline_name)
+    if pipeline_data_passing_enabled:
+        dummy_plugin_config.azure.pipeline_data_passing.enabled = True
     with patch.object(
         AzureMLPipelineGenerator, "get_kedro_pipeline", return_value=pipeline
     ):
