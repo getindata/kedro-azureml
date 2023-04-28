@@ -13,6 +13,13 @@ shuttles:
   filepath: data/01_raw/shuttles.xlsx
   layer: raw
 
-preprocessed_companies:
-  type: kedro_azureml.datasets.pandas_dataset.AzureMLPandasDataSet
-  azureml_dataset: e2e_tests_preprocessed_companies
+# TODO: this does not work
+#preprocessed_companies:
+#  type: kedro_azureml.datasets.pandas_dataset.AzureMLPandasDataSet
+#  azureml_dataset: e2e_tests_preprocessed_companies
+
+preprocessed_shuttles:
+  type: kedro_azureml.datasets.AzureMLPipelineDataSet
+  dataset:
+    type: pandas.CSVDataSet
+    filepath: "shuttles.csv"

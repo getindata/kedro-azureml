@@ -1,7 +1,7 @@
 # Changelog
 
 ## [Unreleased]
--   Added support for pipeline-native data passing (allows to preview intermediate data in AzureML Studio UI) by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
+-   [🧑‍🔬 Experimental ] Added support for pipeline-native data passing (allows to preview intermediate data in AzureML Studio UI) by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
 -   New `AzureMLFileDataSet` and `AzureMLPandasDataSet`by [@asafalinadsg](https://github.com/asafalinadsg) & [@eliorc](https://github.com/eliorc)
 -   E2E tests for `AzureMLPandasDataSet` dataset
 -   Bumped minimal required Kedro version to `0.18.5`
