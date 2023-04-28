@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Type
+from unittest.mock import patch
 from uuid import uuid4
 
 import numpy as np
@@ -9,6 +10,7 @@ from kedro.extras.datasets.pickle import PickleDataSet
 
 from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
 from kedro_azureml.datasets import (
+    AzureMLPandasDataSet,
     AzureMLPipelineDataSet,
     KedroAzureRunnerDataset,
     KedroAzureRunnerDistributedDataset,
@@ -83,3 +85,31 @@ def test_can_save_python_objects_using_fspec(obj, comparer, patched_azure_datase
         Path(ds._get_target_path()).stat().st_size > 0
     ), "File does not seem to be saved"
     assert comparer(obj, ds.load()), "Objects are not the same after deserialization"
+
+
+@pytest.mark.parametrize(
+    "workspace_patch_class",
+    ["kedro_azureml.datasets.utils.Run", "kedro_azureml.datasets.utils.Workspace"],
+)
+def test_can_use_pandas_to_azure(workspace_patch_class):
+    with patch(
+        "kedro_azureml.datasets.pandas_dataset.TabularDatasetFactory"
+    ) as TabularDataSetFactory, patch(
+        "kedro_azureml.datasets.pandas_dataset.Datastore"
+    ) as Datastore, patch(
+        "kedro_azureml.datasets.pandas_dataset.Dataset"
+    ) as Dataset, patch(
+        workspace_patch_class
+    ) as workspace_or_run:
+        workspace_or_run.get_context().experiment.workspace.datastores = (
+            dsts := {"azure_datastore"}
+        )
+        workspace_or_run.from_config().datastores = dsts
+        ds = AzureMLPandasDataSet("azure_dataset", "azure_datastore")
+        df = pd.DataFrame(np.random.rand(100, 3), columns=["a", "b", "c"])
+        ds.save(df)
+        Datastore.get.assert_called_once()
+        TabularDataSetFactory.register_pandas_dataframe.assert_called_once()
+
+        ds.load()
+        Dataset.get_by_name.assert_called_once()
