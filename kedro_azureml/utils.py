@@ -1,10 +1,6 @@
+from copy import deepcopy
 from dataclasses import dataclass
-from functools import cached_property
-from typing import Any, Optional
-
-from kedro.framework.session import KedroSession
-
-from kedro_azureml.config import KedroAzureMLConfig
+from typing import Any
 
 
 @dataclass
@@ -13,29 +9,18 @@ class CliContext:
     metadata: Any
 
 
-class KedroContextManager:
-    def __init__(
-        self, package_name: str, env: str, extra_params: Optional[dict] = None
-    ):
-        self.extra_params = extra_params
-        self.env = env
-        self.package_name = package_name
-        self.session: Optional[KedroSession] = None
+def update_dict(dictionary, *kv_pairs):
+    updated = deepcopy(dictionary)
 
-    @cached_property
-    def context(self):
-        assert self.session is not None, "Session not  initialized yet"
-        return self.session.load_context()
+    def traverse(d, key, value):
+        s = key.split(".", 1)
+        if len(s) > 1:
+            if (s[0] not in d) or (not isinstance(d[s[0]], dict)):
+                d[s[0]] = {}
+            traverse(d[s[0]], s[1], value)
+        else:
+            d[s[0]] = value
 
-    @cached_property
-    def plugin_config(self) -> KedroAzureMLConfig:
-        return KedroAzureMLConfig.parse_obj(self.context.config_loader.get("azureml*"))
-
-    def __enter__(self):
-        self.session = KedroSession.create(
-            self.package_name, env=self.env, extra_params=self.extra_params
-        )
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.session.__exit__(exc_type, exc_val, exc_tb)
+    for k, v in kv_pairs:
+        traverse(updated, k, v)
+    return updated

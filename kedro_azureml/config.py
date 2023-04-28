@@ -4,6 +4,8 @@ from typing import Dict, Optional, Type
 import yaml
 from pydantic import BaseModel, validator
 
+from kedro_azureml.utils import update_dict
+
 
 class DefaultConfigDict(defaultdict):
     def __getitem__(self, key):
@@ -13,8 +15,8 @@ class DefaultConfigDict(defaultdict):
 
 
 class AzureTempStorageConfig(BaseModel):
-    account_name: str
-    container: str
+    account_name: Optional[str] = None
+    container: Optional[str] = None
 
 
 class ComputeConfig(BaseModel):
@@ -23,6 +25,10 @@ class ComputeConfig(BaseModel):
 
 class DockerConfig(BaseModel):
     image: Optional[str] = None
+
+
+class PipelineDataPassingConfig(BaseModel):
+    enabled: bool = False
 
 
 class AzureMLConfig(BaseModel):
@@ -44,10 +50,11 @@ class AzureMLConfig(BaseModel):
     workspace_name: str
     experiment_name: str
     compute: Optional[Dict[str, ComputeConfig]]
-    temporary_storage: AzureTempStorageConfig
+    temporary_storage: Optional[AzureTempStorageConfig]
     environment_name: Optional[str]
     code_directory: Optional[str]
     working_directory: Optional[str]
+    pipeline_data_passing: Optional[PipelineDataPassingConfig] = None
 
 
 class KedroAzureMLConfig(BaseModel):
@@ -79,6 +86,9 @@ azure:
   # Path to the directory in the Docker image to run the code from
   # Ignored when code_directory is set
   working_directory: /home/kedro_docker
+  # Use Azure ML pipeline data passing instead of temporary storage
+  pipeline_data_passing:
+    enabled: {pipeline_data_passing} # disabled by default
 
   # Temporary storage settings - this is used to pass some data between steps
   # if the data is not specified in the catalog directly
@@ -87,9 +97,9 @@ azure:
     # It's recommended to set Lifecycle management rule for storage container, to avoid costs of long-term storage
     # of the temporary data. Temporary data will be stored under abfs://<containter>/kedro-azureml-temp path
     # See https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-configure?tabs=azure-portal
-    account_name: "{storage_account_name}"
+    account_name: {storage_account_name}
     # Name of the storage container
-    container: "{storage_container}"
+    container: {storage_container}
   compute:
     # Azure compute used for running kedro jobs.
     # Additional compute cluster can be defined here. Individual nodes can reference specific compute clusters by adding
@@ -108,4 +118,11 @@ docker:
 """.strip()
 
 # This auto-validates the template above during import
-_CONFIG_TEMPLATE = KedroAzureMLConfig.parse_obj(yaml.safe_load(CONFIG_TEMPLATE_YAML))
+_CONFIG_TEMPLATE = KedroAzureMLConfig.parse_obj(
+    update_dict(
+        yaml.safe_load(CONFIG_TEMPLATE_YAML),
+        ("azure.pipeline_data_passing.enabled", False),
+        ("azure.temporary_storage.container", ""),
+        ("azure.temporary_storage.account_name", ""),
+    )
+)

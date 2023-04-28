@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import click
 from kedro.framework.startup import ProjectMetadata
@@ -21,8 +21,9 @@ from kedro_azureml.constants import (
     KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
 )
 from kedro_azureml.distributed.utils import is_distributed_master_node
+from kedro_azureml.manager import KedroContextManager
 from kedro_azureml.runner import AzurePipelinesRunner
-from kedro_azureml.utils import CliContext, KedroContextManager
+from kedro_azureml.utils import CliContext
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +57,10 @@ def azureml_group(ctx, metadata: ProjectMetadata, env):
 @click.argument("workspace_name")
 @click.argument("experiment_name")
 @click.argument("cluster_name")
-@click.argument("storage_account_name")
-@click.argument("storage_container")
 @click.argument("environment_name")
+@click.option("-a", "--storage_account_name")
+@click.option("-c", "--storage_container")
+@click.option("--use-pipeline-data-passing", is_flag=True, default=False)
 @click.pass_obj
 def init(
     ctx: CliContext,
@@ -67,13 +69,24 @@ def init(
     workspace_name,
     experiment_name,
     cluster_name,
+    environment_name,
     storage_account_name,
     storage_container,
-    environment_name,
+    use_pipeline_data_passing: bool,
 ):
     """
     Creates basic configuration for Kedro AzureML plugin
     """
+
+    if (
+        not (storage_account_name and storage_container)
+        and not use_pipeline_data_passing
+    ):
+        raise click.UsageError(
+            "You need to specify storage account (-a) and container name (-c) "
+            "or enable pipeline data passing (--use-pipeline-data-passing)"
+        )
+
     target_path = Path.cwd().joinpath("conf/base/azureml.yml")
     cfg = CONFIG_TEMPLATE_YAML.format(
         **{
@@ -82,9 +95,10 @@ def init(
             "workspace_name": workspace_name,
             "experiment_name": experiment_name,
             "cluster_name": cluster_name,
-            "storage_account_name": storage_account_name,
-            "storage_container": storage_container,
+            "storage_account_name": storage_account_name or "~",
+            "storage_container": storage_container or "~",
             "environment_name": environment_name,
+            "pipeline_data_passing": use_pipeline_data_passing,
         }
     )
     target_path.write_text(cfg)
@@ -290,28 +304,50 @@ def compile(
     help="Parameters override in form of `key=value`",
 )
 @click.option(
+    "--az-input",
+    "azure_inputs",
+    type=(str, click.Path(exists=True, file_okay=False, dir_okay=True)),
+    multiple=True,
+    help="Name and path of Azure ML Pipeline input",
+)
+@click.option(
     "--az-output",
     "azure_outputs",
-    type=str,
+    type=(str, click.Path(exists=True, file_okay=False, dir_okay=True)),
     multiple=True,
-    help="Paths of Azure ML Pipeline outputs to save dummy data into",
+    help="Name and path of Azure ML Pipeline output",
 )
 @click.pass_obj
 def execute(
-    ctx: CliContext, pipeline: str, node: str, params: str, azure_outputs: Tuple[str]
+    ctx: CliContext,
+    pipeline: str,
+    node: str,
+    params: str,
+    azure_inputs: List[Tuple[str, str]],
+    azure_outputs: List[Tuple[str, str]],
 ):
     # 1. Run kedro
     parameters = parse_extra_params(params)
+    azure_inputs = {ds_name: data_path for ds_name, data_path in azure_inputs}
+    azure_outputs = {ds_name: data_path for ds_name, data_path in azure_outputs}
+    data_paths = {**azure_inputs, **azure_outputs}
+
     with KedroContextManager(
         ctx.metadata.package_name, env=ctx.env, extra_params=parameters
     ) as mgr:
-        runner = AzurePipelinesRunner()
+        pipeline_data_passing = (
+            mgr.plugin_config.azure.pipeline_data_passing is not None
+            and mgr.plugin_config.azure.pipeline_data_passing.enabled
+        )
+        runner = AzurePipelinesRunner(
+            data_paths=data_paths, pipeline_data_passing=pipeline_data_passing
+        )
         mgr.session.run(pipeline, node_names=[node], runner=runner)
 
     # 2. Save dummy outputs
     # In distributed computing, it will only happen on nodes with rank 0
-    if is_distributed_master_node():
-        for dummy_output in azure_outputs:
-            (Path(dummy_output) / "output.txt").write_text("#getindata")
+    if not pipeline_data_passing and is_distributed_master_node():
+        for data_path in azure_outputs.values():
+            (Path(data_path) / "output.txt").write_text("#getindata")
     else:
         logger.info("Skipping saving Azure outputs on non-master distributed nodes")

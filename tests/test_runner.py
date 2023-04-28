@@ -1,6 +1,10 @@
+from pathlib import Path
+
+from kedro.extras.datasets.pickle import PickleDataSet
 from kedro.io import DataCatalog, MemoryDataSet
 from kedro.pipeline import Pipeline
 
+from kedro_azureml.datasets.pipeline_dataset import AzureMLPipelineDataSet
 from kedro_azureml.runner import AzurePipelinesRunner
 
 
@@ -31,3 +35,29 @@ def test_runner_fills_missing_datasets(
             catalog,
         )
     assert results["output_data"] == input_data, "Invalid output data"
+
+
+def test_runner_pipeline_data_passing(dummy_pipeline: Pipeline, tmp_path: Path):
+    input_path = str(tmp_path / "input_data.pickle")
+    input_dataset = AzureMLPipelineDataSet(
+        {"type": PickleDataSet, "backend": "cloudpickle", "filepath": input_path}
+    )
+    input_data = ["yolo :)"]
+    input_dataset.save(input_data)
+
+    output_path = str(tmp_path / "i2.pickle")
+    output_dataset = AzureMLPipelineDataSet(
+        {"type": PickleDataSet, "backend": "cloudpickle", "filepath": output_path}
+    )
+
+    runner = AzurePipelinesRunner(
+        pipeline_data_passing=True, data_paths={"input_data": tmp_path, "i2": tmp_path}
+    )
+    catalog = DataCatalog()
+    runner.run(
+        dummy_pipeline.filter(node_names=["node1"]),
+        catalog,
+    )
+    assert Path(output_path).stat().st_size > 0, "No output data found"
+    output_data = output_dataset.load()
+    assert output_data == input_data, "Output data is not the same as input data"
