@@ -167,7 +167,8 @@ jobs:
       - name: Build and push docker image
         working-directory: ./spaceflights
         run: |
-          docker build --build-arg BASE_IMAGE=python:3.10-buster -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:${{ matrix.e2e_config }} .
+          docker pull ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:${{ matrix.e2e_config }} || true
+          docker build --build-arg BASE_IMAGE=python:3.10-buster -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:${{ matrix.e2e_config }} --cache-from=${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:${{ matrix.e2e_config }} .
           docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:${{ matrix.e2e_config }}
 
       - name: Run on Azure ML Pipelines

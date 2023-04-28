@@ -204,6 +204,7 @@ class AzureMLPipelineGenerator:
                 self._sanitize_param_name(name): Output() for name in node.outputs
             },
             code=self.config.azure.code_directory,
+            is_deterministic=False,  # TODO: allow setting this to true per node (e.g. by tags as for resources)
             **command_kwargs,
         )
 
