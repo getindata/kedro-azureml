@@ -21,8 +21,9 @@ from kedro_azureml.constants import (
     KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
 )
 from kedro_azureml.distributed.utils import is_distributed_master_node
+from kedro_azureml.manager import KedroContextManager
 from kedro_azureml.runner import AzurePipelinesRunner
-from kedro_azureml.utils import CliContext, KedroContextManager
+from kedro_azureml.utils import CliContext
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +57,10 @@ def azureml_group(ctx, metadata: ProjectMetadata, env):
 @click.argument("workspace_name")
 @click.argument("experiment_name")
 @click.argument("cluster_name")
-@click.argument("storage_account_name")
-@click.argument("storage_container")
 @click.argument("environment_name")
+@click.option("-a", "--storage_account_name")
+@click.option("-c", "--storage_container")
+@click.option("--use-pipeline-data-passing", is_flag=True, default=False)
 @click.pass_obj
 def init(
     ctx: CliContext,
@@ -67,13 +69,24 @@ def init(
     workspace_name,
     experiment_name,
     cluster_name,
+    environment_name,
     storage_account_name,
     storage_container,
-    environment_name,
+    use_pipeline_data_passing: bool,
 ):
     """
     Creates basic configuration for Kedro AzureML plugin
     """
+
+    if (
+        not (storage_account_name and storage_container)
+        and not use_pipeline_data_passing
+    ):
+        raise click.UsageError(
+            "You need to specify storage account (-a) and container name (-c) "
+            "or enable pipeline data passing (--use-pipeline-data-passing)"
+        )
+
     target_path = Path.cwd().joinpath("conf/base/azureml.yml")
     cfg = CONFIG_TEMPLATE_YAML.format(
         **{
@@ -82,9 +95,10 @@ def init(
             "workspace_name": workspace_name,
             "experiment_name": experiment_name,
             "cluster_name": cluster_name,
-            "storage_account_name": storage_account_name,
-            "storage_container": storage_container,
+            "storage_account_name": storage_account_name or "~",
+            "storage_container": storage_container or "~",
             "environment_name": environment_name,
+            "pipeline_data_passing": use_pipeline_data_passing,
         }
     )
     target_path.write_text(cfg)

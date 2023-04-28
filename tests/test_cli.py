@@ -17,16 +17,25 @@ from kedro_azureml.utils import CliContext
 from tests.utils import create_kedro_conf_dirs
 
 
+@pytest.mark.parametrize("use_pipeline_data_passing", (True, False))
 def test_can_initialize_basic_plugin_config(
-    patched_kedro_package,
-    cli_context,
-    tmp_path: Path,
+    patched_kedro_package, cli_context, tmp_path: Path, use_pipeline_data_passing: bool
 ):
 
     config_path = create_kedro_conf_dirs(tmp_path)
     unique_id = uuid4().hex
     with patch.object(Path, "cwd", return_value=tmp_path):
         runner = CliRunner()
+        storage_args = (
+            ["--use-pipeline-data-passing"]
+            if use_pipeline_data_passing
+            else [
+                "-a",
+                f"storage_account_name_{unique_id}",
+                "-c",
+                f"storage_container_{unique_id}",
+            ]
+        )
         result = runner.invoke(
             cli.init,
             [
@@ -35,10 +44,9 @@ def test_can_initialize_basic_plugin_config(
                 f"workspace_name_{unique_id}",
                 f"experiment_name_{unique_id}",
                 f"cluster_name_{unique_id}",
-                f"storage_account_name_{unique_id}",
-                f"storage_container_{unique_id}",
                 f"environment_name_{unique_id}",
-            ],
+            ]
+            + storage_args,
             obj=cli_context,
         )
         assert result.exit_code == 0
@@ -59,13 +67,23 @@ def test_can_initialize_basic_plugin_config(
             config.azure.compute["__default__"].cluster_name
             == f"cluster_name_{unique_id}"
         )
-        assert (
-            config.azure.temporary_storage.account_name
-            == f"storage_account_name_{unique_id}"
-        )
-        assert (
-            config.azure.temporary_storage.container == f"storage_container_{unique_id}"
-        )
+        if use_pipeline_data_passing:
+            assert (
+                config.azure.pipeline_data_passing.enabled
+            ), "Data passing should be enabled"
+            assert not (
+                config.azure.temporary_storage.account_name
+                or config.azure.temporary_storage.container
+            )
+        else:
+            assert (
+                config.azure.temporary_storage.account_name
+                == f"storage_account_name_{unique_id}"
+            )
+            assert (
+                config.azure.temporary_storage.container
+                == f"storage_container_{unique_id}"
+            )
         assert config.azure.environment_name == f"environment_name_{unique_id}"
 
 
@@ -91,7 +109,7 @@ def test_can_compile_pipeline(
     with patch.object(
         AzureMLPipelineGenerator, "get_kedro_pipeline", return_value=dummy_pipeline
     ), patch(
-        "kedro_azureml.utils.KedroContextManager.plugin_config",
+        "kedro_azureml.manager.KedroContextManager.plugin_config",
         new_callable=mock.PropertyMock,
         return_value=dummy_plugin_config,
     ), patch.dict(
@@ -154,7 +172,7 @@ def test_can_invoke_execute_cli(
     ), patch.dict(
         "kedro.framework.project.pipelines", {"__default__": dummy_pipeline}
     ), patch(
-        "kedro_azureml.utils.KedroContextManager.plugin_config",
+        "kedro_azureml.manager.KedroContextManager.plugin_config",
         new_callable=mock.PropertyMock,
         return_value=dummy_plugin_config,
     ), patch.object(
@@ -302,6 +320,8 @@ def test_run_is_interrupted_if_used_on_empty_env(
     ), patch.object(Path, "cwd", return_value=tmp_path), patch.dict(
         os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
     ), patch(
+        "kedro_azureml.client.DefaultAzureCredential"
+    ), patch(
         "click.confirm", return_value=confirm
     ) as click_confirm:
         runner = CliRunner()
@@ -344,7 +364,7 @@ def test_can_invoke_run_with_failed_pipeline(
                 "--wait-for-completion",
             ],
             obj=ProjectMetadata(
-                tmp_path, "tests", "project", tmp_path, "1.0", Path.cwd()
+                tmp_path, "tests", "project", tmp_path, "1.0", Path.cwd(), "0.18.5"
             ),
         )
         assert result.exit_code == 1

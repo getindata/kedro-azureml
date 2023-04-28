@@ -1,6 +1,11 @@
 # Changelog
 
 ## [Unreleased]
+-   Added support for pipeline-native data passing (allows to preview intermediate data in AzureML Studio UI) by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
+-   New `AzureMLFileDataSet` and `AzureMLPandasDataSet`by [@asafalinadsg](https://github.com/asafalinadsg) & [@eliorc](https://github.com/eliorc)
+-   E2E tests for `AzureMLPandasDataSet` dataset
+-   Bumped minimal required Kedro version to `0.18.5`
+-   Added support for `OmegaConfigLoader`
 
 ## [0.3.6] - 2023-03-08
 

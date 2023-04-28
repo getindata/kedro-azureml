@@ -96,6 +96,14 @@ class AzureMLPipelineDataSet(AbstractDataSet):
     def path(self, path: str) -> None:
         self._dataset_config[self._filepath_arg] = path
 
+    @property
+    def _filepath(self) -> str:
+        """
+        Fixes compatibility with kedro-mlflow https://github.com/getindata/kedro-azureml/issues/53
+        :return:
+        """
+        return self.path
+
     def _construct_dataset(self) -> AbstractDataSet:
         return self._dataset_type(**self._dataset_config)
 

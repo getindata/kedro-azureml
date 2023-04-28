@@ -103,6 +103,9 @@ jobs:
     if: (github.event.pull_request.head.repo.full_name == github.repository || github.event.pull_request == null)
     needs: [unit_tests, sonarcloud]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        e2e_config: ["e2e", "e2e_pipeline_data_passing"]
     steps:
       - uses: actions/checkout@v2
 
@@ -123,7 +126,7 @@ jobs:
       - name: Initialize starter project
         run: |
           pip install $(find "./dist" -name "*.tar.gz")
-          kedro new --starter spaceflights --config tests/conf/e2e/starter-config.yml --verbose
+          kedro new --starter spaceflights --config tests/conf/${{ matrix.e2e_config }}/starter-config.yml --verbose
 
       - name: Install starter requirements
         working-directory: ./spaceflights
@@ -143,9 +146,10 @@ jobs:
           cat Dockerfile
           echo "!data/01_raw" >> .dockerignore
           rm conf/base/catalog.yml
-          cp ../tests/conf/e2e/catalog.yml conf/base/catalog.yml
-          cp ../tests/conf/e2e/azureml.yml conf/base/azureml.yml
+          cp ../tests/conf/${{ matrix.e2e_config }}/catalog.yml conf/base/catalog.yml
+          cp ../tests/conf/${{ matrix.e2e_config }}/azureml.yml conf/base/azureml.yml
           sed -i 's/{container_registry}/${{ secrets.REGISTRY_LOGIN_SERVER }}/g' conf/base/azureml.yml
+          sed -i 's/{image_tag}/${{ matrix.e2e_config }}/g' conf/base/azureml.yml
           cat conf/base/azureml.yml
 
       - name: Login via Azure CLI
@@ -163,8 +167,8 @@ jobs:
       - name: Build and push docker image
         working-directory: ./spaceflights
         run: |
-          docker build --build-arg BASE_IMAGE=python:3.10-buster -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:latest .
-          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:latest
+          docker build --build-arg BASE_IMAGE=python:3.10-buster -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:${{ matrix.e2e_config }} .
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:${{ matrix.e2e_config }}
 
       - name: Run on Azure ML Pipelines
         working-directory: ./spaceflights

@@ -1,0 +1,15 @@
+azure:
+  subscription_id: "00000000-0000-0000-0000-000000000000"
+  experiment_name: "kedro-azure-experiment"
+  resource_group: "rg"
+  workspace_name: "workspace"
+  environment_name: "aml-env@latest"
+  code_directory: null
+  working_directory: /home/kedro
+
+  temporary_storage:
+    account_name: "account"
+    container: "container"
+compute:
+  __default__:
+    cluster_name: "unit-tests-cluster"

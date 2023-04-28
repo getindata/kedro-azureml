@@ -9,7 +9,8 @@ from typing import Dict, Optional
 import click
 
 from kedro_azureml.generator import AzureMLPipelineGenerator
-from kedro_azureml.utils import CliContext, KedroContextManager
+from kedro_azureml.manager import KedroContextManager
+from kedro_azureml.utils import CliContext
 
 logger = logging.getLogger()
 
