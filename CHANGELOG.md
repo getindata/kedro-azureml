@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+-   [📝 Docs] Revamp the quickstart guide in documentation
+-   Refactor `kedro azureml init` command to be more user-friendly
+-   Add dependency on `kedro-datasets` to prepare for Kedro `0.19.0`; Remove `kedro.datasets.*` imports
 
 ## [0.4.0] - 2023-04-28
 

@@ -1,6 +1,5 @@
 import logging
 import re
-import warnings
 from typing import Any, Dict, Optional, Type, Union
 from uuid import uuid4
 
@@ -134,11 +133,7 @@ class AzureMLPipelineGenerator:
             self.docker_image
             or (self.config.docker.image if self.config.docker else None)
         ):
-            warnings.warn(
-                f"Using docker image: {image} to run the pipeline."
-                f"\nWe recommend to use Azure Environments instead, follow the updated Quickstart documentation",
-                DeprecationWarning,
-            )
+            logger.info(f"Using docker image: {image} to run the pipeline.")
             return Environment(image=image)
         else:
             return self.aml_env or self.config.azure.environment_name

@@ -3,10 +3,10 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from kedro.extras.datasets.pickle import PickleDataSet
 from kedro.io import AbstractDataSet, DataCatalog
 from kedro.pipeline import Pipeline
 from kedro.runner import SequentialRunner
+from kedro_datasets.pickle import PickleDataSet
 from pluggy import PluginManager
 
 from kedro_azureml.config import KedroAzureRunnerConfig

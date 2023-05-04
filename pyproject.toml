@@ -44,6 +44,7 @@ backoff = "^2.2.1"
 azure-core = ">=1.26.1"
 azureml-core = "^1.49.0"
 azureml-dataset-runtime = "^1.49.0"
+kedro-datasets = "^1.2.0"
 
 [tool.poetry.extras]
 mlflow = ["azureml-mlflow", "mlflow"]
