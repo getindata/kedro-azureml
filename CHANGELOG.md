@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.4.1] - 2023-05-04
+
 -   [📝 Docs] Revamp the quickstart guide in documentation
 -   Refactor `kedro azureml init` command to be more user-friendly
 -   Add dependency on `kedro-datasets` to prepare for Kedro `0.19.0`; Remove `kedro.datasets.*` imports
@@ -59,7 +62,9 @@
 
 -   Initial plugin release
 
-[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.4.0...HEAD
+[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.4.1...HEAD
+
+[0.4.1]: https://github.com/getindata/kedro-azureml/compare/0.4.0...0.4.1
 
 [0.4.0]: https://github.com/getindata/kedro-azureml/compare/0.3.6...0.4.0
 
