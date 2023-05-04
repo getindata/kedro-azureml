@@ -13,7 +13,8 @@ Welcome to Kedro Azure ML Pipelines plugin documentation!
    Introduction <source/01_intro.md>
    Installation <source/02_installation.md>
    Quickstart <source/03_quickstart.rst>
-   Data Assets <source/04_data_assets.rst>
+   MLflow Integration <source/04_mlflow.rst>
+   Data Assets <source/05_data_assets.rst>
    Development <source/05_development.md>
 
 

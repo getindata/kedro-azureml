@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import List
 from unittest import mock
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
@@ -17,9 +18,24 @@ from kedro_azureml.utils import CliContext
 from tests.utils import create_kedro_conf_dirs
 
 
+@pytest.mark.parametrize(
+    "env_or_docker",
+    [
+        ["--docker-image", "my_docker/image:latest"],
+        ["--aml-env", f"{uuid4().hex}@latest"],
+        ["--azureml-environment", f"{uuid4().hex}:v1"],
+        ["--docker-image", "a", "--aml-env", "b"],
+        [],
+    ],
+    ids=("with docker", "with AML env", "with AML (long param name)", "both", "none"),
+)
 @pytest.mark.parametrize("use_pipeline_data_passing", (True, False))
 def test_can_initialize_basic_plugin_config(
-    patched_kedro_package, cli_context, tmp_path: Path, use_pipeline_data_passing: bool
+    patched_kedro_package,
+    cli_context,
+    tmp_path: Path,
+    env_or_docker: List[str],
+    use_pipeline_data_passing: bool,
 ):
 
     config_path = create_kedro_conf_dirs(tmp_path)
@@ -36,6 +52,7 @@ def test_can_initialize_basic_plugin_config(
                 f"storage_container_{unique_id}",
             ]
         )
+
         result = runner.invoke(
             cli.init,
             [
@@ -44,12 +61,22 @@ def test_can_initialize_basic_plugin_config(
                 f"workspace_name_{unique_id}",
                 f"experiment_name_{unique_id}",
                 f"cluster_name_{unique_id}",
-                f"environment_name_{unique_id}",
             ]
-            + storage_args,
+            + storage_args
+            + env_or_docker,
             obj=cli_context,
         )
-        assert result.exit_code == 0
+
+        if "--aml-env" in env_or_docker and "--docker-image" in env_or_docker:
+            assert result.exit_code == 2
+            assert "You cannot specify both" in result.output
+            return
+        elif len(env_or_docker) == 0:
+            assert result.exit_code == 2
+            assert "You must specify either" in result.output
+            return
+
+        assert result.exit_code == 0, result.exception
 
         azureml_config_path = config_path / "azureml.yml"
         assert (
@@ -84,7 +111,13 @@ def test_can_initialize_basic_plugin_config(
                 config.azure.temporary_storage.container
                 == f"storage_container_{unique_id}"
             )
-        assert config.azure.environment_name == f"environment_name_{unique_id}"
+
+        if "--aml-env" in env_or_docker or "--azureml-environment" in env_or_docker:
+            assert config.azure.environment_name == env_or_docker[1]
+            assert config.docker.image is None
+        else:
+            assert config.azure.environment_name is None
+            assert config.docker.image == env_or_docker[1]
 
 
 @pytest.mark.parametrize(
@@ -256,7 +289,7 @@ def test_can_invoke_run(
             cli.run,
             ["-s", "subscription_id"]
             + (["--wait-for-completion"] if wait_for_completion else [])
-            + (["--aml_env", aml_env] if aml_env else [])
+            + (["--aml-env", aml_env] if aml_env else [])
             + (sum([["--env-var", k] for k in extra_env[0]], [])),
             obj=cli_context,
         )

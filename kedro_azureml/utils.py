@@ -10,6 +10,8 @@ class CliContext:
 
 
 def update_dict(dictionary, *kv_pairs):
+    """Return a deep copy of dictionary with updated values for the given key-value pairs.
+    Supports nested dictionaries"""
     updated = deepcopy(dictionary)
 
     def traverse(d, key, value):

@@ -57,10 +57,32 @@ def azureml_group(ctx, metadata: ProjectMetadata, env):
 @click.argument("workspace_name")
 @click.argument("experiment_name")
 @click.argument("cluster_name")
-@click.argument("environment_name")
-@click.option("-a", "--storage_account_name")
-@click.option("-c", "--storage_container")
-@click.option("--use-pipeline-data-passing", is_flag=True, default=False)
+@click.option(
+    "--azureml-environment",
+    "--aml-env",
+    default=None,
+    type=str,
+    help="Azure ML environment to use with code flow",
+)
+@click.option(
+    "-d", "--docker-image", default=None, type=str, help="Docker image to use"
+)
+@click.option(
+    "-a",
+    "--storage-account-name",
+    help="Name of the storage account (if you want to use Azure Blob Storage for temporary data)",
+)
+@click.option(
+    "-c",
+    "--storage-container",
+    help="Name of the storage container (if you want to use Azure Blob Storage for temporary data)",
+)
+@click.option(
+    "--use-pipeline-data-passing",
+    is_flag=True,
+    default=False,
+    help="(flag) Set, to use EXPERIMENTAL pipeline data passing",
+)
 @click.pass_obj
 def init(
     ctx: CliContext,
@@ -69,7 +91,8 @@ def init(
     workspace_name,
     experiment_name,
     cluster_name,
-    environment_name,
+    azureml_environment: Optional[str],
+    docker_image: Optional[str],
     storage_account_name,
     storage_container,
     use_pipeline_data_passing: bool,
@@ -78,13 +101,23 @@ def init(
     Creates basic configuration for Kedro AzureML plugin
     """
 
+    # Check whether docker_image and azure_ml_environment are specified, they cannot be, they are mutually exclusive
+    if docker_image and azureml_environment:
+        raise click.UsageError(
+            "You cannot specify both --docker_image/-d and --azure_ml_environment/--aml_env"
+        )
+    elif not (docker_image or azureml_environment):
+        raise click.UsageError(
+            "You must specify either --docker_image/-d or --azure_ml_environment/--aml_env"
+        )
+
     if (
         not (storage_account_name and storage_container)
         and not use_pipeline_data_passing
     ):
         raise click.UsageError(
             "You need to specify storage account (-a) and container name (-c) "
-            "or enable pipeline data passing (--use-pipeline-data-passing)"
+            "or enable pipeline data passing (--use_pipeline_data_passing)"
         )
 
     target_path = Path.cwd().joinpath("conf/base/azureml.yml")
@@ -97,23 +130,26 @@ def init(
             "cluster_name": cluster_name,
             "storage_account_name": storage_account_name or "~",
             "storage_container": storage_container or "~",
-            "environment_name": environment_name,
+            "environment_name": azureml_environment or "~",
             "pipeline_data_passing": use_pipeline_data_passing,
+            "docker_image": docker_image or "~",
+            "code_directory": "." if azureml_environment else "~",
         }
     )
     target_path.write_text(cfg)
 
     click.echo(f"Configuration generated in {target_path}")
 
-    click.echo(
-        click.style(
-            f"It's recommended to set Lifecycle management rule for storage container {storage_container} "
-            f"to avoid costs of long-term storage of the temporary data."
-            f"\nTemporary data will be stored under abfs://{storage_container}/{KEDRO_AZURE_BLOB_TEMP_DIR_NAME} path"  # noqa
-            f"\nSee https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-configure?tabs=azure-portal",  # noqa
-            fg="green",
+    if storage_account_name and storage_container:
+        click.echo(
+            click.style(
+                f"It's recommended to set Lifecycle management rule for storage container {storage_container} "
+                f"to avoid costs of long-term storage of the temporary data."
+                f"\nTemporary data will be stored under abfs://{storage_container}/{KEDRO_AZURE_BLOB_TEMP_DIR_NAME} path"  # noqa
+                f"\nSee https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-configure?tabs=azure-portal",  # noqa
+                fg="green",
+            )
         )
-    )
 
     aml_ignore = Path.cwd().joinpath(".amlignore")
     if aml_ignore.exists():
@@ -131,14 +167,14 @@ def init(
 @azureml_group.command()
 @click.option(
     "-s",
-    "--subscription_id",
+    "--subscription-id",
     help=f"Azure Subscription ID. Defaults to env `{AZURE_SUBSCRIPTION_ID}`",
     default=lambda: os.getenv(AZURE_SUBSCRIPTION_ID, ""),
     type=str,
 )
 @click.option(
-    "--azureml_environment",
-    "--aml_env",
+    "--azureml-environment",
+    "--aml-env",
     "aml_env",
     type=str,
     help="Azure ML Environment to use for pipeline execution.",
@@ -233,8 +269,8 @@ def run(
 
 @azureml_group.command()
 @click.option(
-    "--azureml_environment",
-    "--aml_env",
+    "--azureml-environment",
+    "--aml-env",
     "aml_env",
     type=str,
     help="Azure ML Environment to use for pipeline execution.",

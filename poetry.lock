@@ -1912,6 +1912,74 @@ yaml = ["PyYAML (>=4.2,<7.0)", "pandas (>=1.3,<2.0)"]
 yaml-yamldataset = ["PyYAML (>=4.2,<7.0)", "pandas (>=1.3,<2.0)"]
 
 [[package]]
+name = "kedro-datasets"
+version = "1.2.0"
+description = "Kedro-Datasets is where you can find all of Kedro's data connectors."
+category = "main"
+optional = false
+python-versions = ">=3.7, <3.11"
+files = [
+    {file = "kedro-datasets-1.2.0.tar.gz", hash = "sha256:23c1de5412886056040b8a3ffb09137729f614dc0c4bb15a90e15228594235cc"},
+    {file = "kedro_datasets-1.2.0-py3-none-any.whl", hash = "sha256:ba1b17a090cb9b9e0ae17f724729180ec4a631b3a234550983df67cf3967dfe2"},
+]
+
+[package.dependencies]
+kedro = ">=0.18.4,<0.19.0"
+
+[package.extras]
+all = ["Pillow (>=9.0,<10.0)", "PyYAML (>=4.2,<7.0)", "SQLAlchemy (>=1.2,<2.0)", "biopython (>=1.73,<2.0)", "dask[complete] (>=2021.10,<2022.0)", "delta-spark (>=1.0,<2.0)", "docutils (==0.16)", "geopandas (>=0.6.0,<1.0)", "hdfs (>=2.5.8,<3.0)", "holoviews (>=1.13.0,<1.14.0)", "ipykernel (>=5.3,<7.0)", "lxml (>=4.6,<5.0)", "matplotlib (>=3.0.3,<4.0)", "myst-parser (>=0.17.2,<0.18.0)", "nbsphinx (==0.8.1)", "nbstripout (>=0.4,<1.0)", "networkx (>=2.4,<3.0)", "opencv-python (>=4.5.5.64,<4.6.0.0)", "openpyxl (>=3.0.6,<4.0)", "pandas (>=1.3,<2.0)", "pandas-gbq (>=0.12.0,<0.18.0)", "plotly (>=4.8.0,<6.0)", "polars (>=0.15.16,<0.16.0)", "pyarrow (>=6.0)", "pyarrow (>=8.0,<9.0)", "pyodbc (>=4.0,<5.0)", "pyproj (>=3.0,<4.0)", "pyspark (>=2.2,<4.0)", "redis (>=4.1,<5.0)", "requests (>=2.20,<3.0)", "s3fs (>=0.3.0,<0.5)", "scikit-learn (>=1.0.2,<1.1.0)", "scipy (>=1.7.3,<1.8.0)", "snowflake-snowpark-python (>=1.0.0,<1.1.0)", "sphinx (>=3.4.3,<3.5.0)", "sphinx-autodoc-typehints (==1.11.1)", "sphinx-copybutton (==0.3.1)", "sphinx-rtd-theme (==0.4.1)", "tables (>=3.6,<4.0)", "tables (>=3.6.0,<3.7.0)", "tensorflow (>=2.0,<3.0)", "triad (>=0.6.7,<1.0)"]
+api = ["requests (>=2.20,<3.0)"]
+api-apidataset = ["requests (>=2.20,<3.0)"]
+biosequence = ["biopython (>=1.73,<2.0)"]
+biosequence-biosequencedataset = ["biopython (>=1.73,<2.0)"]
+dask = ["dask[complete] (>=2021.10,<2022.0)", "triad (>=0.6.7,<1.0)"]
+dask-parquetdataset = ["dask[complete] (>=2021.10,<2022.0)", "triad (>=0.6.7,<1.0)"]
+docs = ["docutils (==0.16)", "ipykernel (>=5.3,<7.0)", "myst-parser (>=0.17.2,<0.18.0)", "nbsphinx (==0.8.1)", "nbstripout (>=0.4,<1.0)", "sphinx (>=3.4.3,<3.5.0)", "sphinx-autodoc-typehints (==1.11.1)", "sphinx-copybutton (==0.3.1)", "sphinx-rtd-theme (==0.4.1)"]
+geopandas = ["geopandas (>=0.6.0,<1.0)", "pyproj (>=3.0,<4.0)"]
+geopandas-geojsondataset = ["geopandas (>=0.6.0,<1.0)", "pyproj (>=3.0,<4.0)"]
+holoviews = ["holoviews (>=1.13.0,<1.14.0)"]
+holoviews-holoviewswriter = ["holoviews (>=1.13.0,<1.14.0)"]
+matplotlib = ["matplotlib (>=3.0.3,<4.0)"]
+matplotlib-matplotlibwriter = ["matplotlib (>=3.0.3,<4.0)"]
+networkx = ["networkx (>=2.4,<3.0)"]
+networkx-networkxdataset = ["networkx (>=2.4,<3.0)"]
+pandas = ["SQLAlchemy (>=1.2,<2.0)", "lxml (>=4.6,<5.0)", "openpyxl (>=3.0.6,<4.0)", "pandas (>=1.3,<2.0)", "pandas-gbq (>=0.12.0,<0.18.0)", "pyarrow (>=6.0)", "pyodbc (>=4.0,<5.0)", "tables (>=3.6,<4.0)", "tables (>=3.6.0,<3.7.0)"]
+pandas-csvdataset = ["pandas (>=1.3,<2.0)"]
+pandas-exceldataset = ["openpyxl (>=3.0.6,<4.0)", "pandas (>=1.3,<2.0)"]
+pandas-featherdataset = ["pandas (>=1.3,<2.0)"]
+pandas-gbqquerydataset = ["pandas (>=1.3,<2.0)", "pandas-gbq (>=0.12.0,<0.18.0)"]
+pandas-gbqtabledataset = ["pandas (>=1.3,<2.0)", "pandas-gbq (>=0.12.0,<0.18.0)"]
+pandas-genericdataset = ["pandas (>=1.3,<2.0)"]
+pandas-hdfdataset = ["pandas (>=1.3,<2.0)", "tables (>=3.6,<4.0)", "tables (>=3.6.0,<3.7.0)"]
+pandas-jsondataset = ["pandas (>=1.3,<2.0)"]
+pandas-parquetdataset = ["pandas (>=1.3,<2.0)", "pyarrow (>=6.0)"]
+pandas-sqlquerydataset = ["SQLAlchemy (>=1.2,<2.0)", "pandas (>=1.3,<2.0)", "pyodbc (>=4.0,<5.0)"]
+pandas-sqltabledataset = ["SQLAlchemy (>=1.2,<2.0)", "pandas (>=1.3,<2.0)"]
+pandas-xmldataset = ["lxml (>=4.6,<5.0)", "pandas (>=1.3,<2.0)"]
+pillow = ["Pillow (>=9.0,<10.0)"]
+pillow-imagedataset = ["Pillow (>=9.0,<10.0)"]
+plotly = ["pandas (>=1.3,<2.0)", "plotly (>=4.8.0,<6.0)"]
+plotly-jsondataset = ["plotly (>=4.8.0,<6.0)"]
+plotly-plotlydataset = ["pandas (>=1.3,<2.0)", "plotly (>=4.8.0,<6.0)"]
+polars = ["polars (>=0.15.16,<0.16.0)"]
+polars-csvdataset = ["polars (>=0.15.16,<0.16.0)"]
+redis = ["redis (>=4.1,<5.0)"]
+snowflake-snowparktabledataset = ["pyarrow (>=8.0,<9.0)", "snowflake-snowpark-python (>=1.0.0,<1.1.0)"]
+spark = ["delta-spark (>=1.0,<2.0)", "hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<4.0)", "s3fs (>=0.3.0,<0.5)"]
+spark-deltatabledataset = ["delta-spark (>=1.0,<2.0)", "hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<4.0)", "s3fs (>=0.3.0,<0.5)"]
+spark-sparkdataset = ["hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<4.0)", "s3fs (>=0.3.0,<0.5)"]
+spark-sparkhivedataset = ["hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<4.0)", "s3fs (>=0.3.0,<0.5)"]
+spark-sparkjdbcdataset = ["hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<4.0)", "s3fs (>=0.3.0,<0.5)"]
+svmlight = ["scikit-learn (>=1.0.2,<1.1.0)", "scipy (>=1.7.3,<1.8.0)"]
+svmlight-svmlightdataset = ["scikit-learn (>=1.0.2,<1.1.0)", "scipy (>=1.7.3,<1.8.0)"]
+tensorflow = ["tensorflow (>=2.0,<3.0)"]
+tensorflow-tensorflowmodeldataset = ["tensorflow (>=2.0,<3.0)"]
+video = ["opencv-python (>=4.5.5.64,<4.6.0.0)"]
+video-videodataset = ["opencv-python (>=4.5.5.64,<4.6.0.0)"]
+yaml = ["PyYAML (>=4.2,<7.0)", "pandas (>=1.3,<2.0)"]
+yaml-yamldataset = ["PyYAML (>=4.2,<7.0)", "pandas (>=1.3,<2.0)"]
+
+[[package]]
 name = "knack"
 version = "0.10.1"
 description = "A Command-Line Interface framework"
@@ -3872,4 +3940,4 @@ mlflow = ["azureml-mlflow", "mlflow"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "7c1bf55eb253d93043bfbdf32cd68d87f541a2d46a13205cf4a9814c9b82300b"
+content-hash = "6e7ff188739412892d5149a21467dc09b9d3206552947e93affd20662f03640e"

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kedro-azureml"
-version = "0.4.0"
+version = "0.4.1"
 description = "Kedro plugin with Azure ML Pipelines support"
 readme = "README.md"
 authors = ['marcin.zablocki <marcin.zablocki@getindata.com>']
@@ -44,6 +44,7 @@ backoff = "^2.2.1"
 azure-core = ">=1.26.1"
 azureml-core = "^1.49.0"
 azureml-dataset-runtime = "^1.49.0"
+kedro-datasets = ">=1.0.0"
 
 [tool.poetry.extras]
 mlflow = ["azureml-mlflow", "mlflow"]

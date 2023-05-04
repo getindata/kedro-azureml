@@ -1,5 +1,5 @@
 Azure Data Assets
------------------
+=================
 
 ``kedro-azureml`` adds support for two new datasets that can be used in the Kedro catalog, the ``AzureMLFileDataSet``
 and the ``AzureMLPandasDataSet`` which translate to `File/Folder dataset`_ and `Tabular dataset`_ respectively in
@@ -7,7 +7,7 @@ Azure Machine Learning. Both fully support the Azure versioning mechanism and ca
 other dataset in Kedro.
 
 Apart from these, ``kedro-azureml`` also adds the ``AzureMLPipelineDataSet`` which is used to pass data between
-pipeline nodes when the pipeline is run on Azure ML and the `pipeline_data_passing` feature is enabled.
+pipeline nodes when the pipeline is run on Azure ML and the *pipeline data passing* feature is enabled.
 By default, data is then saved and loaded using the ``PickleDataSet`` as underlying dataset.
 Any other underlying dataset can be used instead by adding a ``AzureMLPipelineDataSet`` to the catalog.
 
@@ -22,7 +22,7 @@ For details on usage, see the :ref:`API Reference` below
 .. _`API Reference`:
 
 API Reference
-=============
+-------------
 
 .. autoclass:: kedro_azureml.datasets.AzureMLPandasDataSet
     :members:

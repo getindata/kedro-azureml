@@ -80,9 +80,9 @@ azure:
   # Azure ML Workspace name
   workspace_name: "{workspace_name}"
   # Azure ML Environment to use during pipeline execution
-  environment_name: "{environment_name}"
+  environment_name: {environment_name}
   # Path to directory to upload, or null to disable code upload
-  code_directory: "."
+  code_directory: {code_directory}
   # Path to the directory in the Docker image to run the code from
   # Ignored when code_directory is set
   working_directory: /home/kedro_docker
@@ -114,7 +114,7 @@ docker:
   # We suggest using the Azure environment instead
   # See https://kedro-azureml.readthedocs.io/en/0.2.1/source/03_quickstart.html
   # Docker image to use during pipeline execution
-  image: ~
+  image: {docker_image}
 """.strip()
 
 # This auto-validates the template above during import
@@ -124,5 +124,8 @@ _CONFIG_TEMPLATE = KedroAzureMLConfig.parse_obj(
         ("azure.pipeline_data_passing.enabled", False),
         ("azure.temporary_storage.container", ""),
         ("azure.temporary_storage.account_name", ""),
+        ("azure.code_directory", None),
+        ("azure.environment_name", None),
+        ("docker.image", None),
     )
 )

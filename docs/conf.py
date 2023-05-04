@@ -6,6 +6,8 @@
 
 # -- Path setup --------------------------------------------------------------
 
+import datetime as dt
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -20,7 +22,7 @@ from kedro_azureml import __version__ as release
 # -- Project information -----------------------------------------------------
 
 project = "Kedro Azure ML Plugin"
-copyright = "2022, GetInData"
+copyright = f"{dt.datetime.utcnow().year}, GetInData"
 author = "GetInData"
 
 # The full version, including alpha/beta/rc tags
@@ -58,7 +60,7 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
-autodoc_mock_imports = ["azureml", "pandas"]
+autodoc_mock_imports = ["azureml", "pandas", "backoff", "cloudpickle"]
 
 # -- Options for HTML output -------------------------------------------------
 
