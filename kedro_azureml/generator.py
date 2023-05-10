@@ -198,7 +198,7 @@ class AzureMLPipelineGenerator:
                     Input()
                     if name in self.catalog.list()
                     and isinstance(
-                        self.catalog._get_dataset(name), AzureMLFolderDataSet
+                        self.catalog._get_dataset(name), AzureMLPipelineDataSet
                     )
                     else Input(type="string")
                 )
@@ -325,6 +325,8 @@ class AzureMLPipelineGenerator:
                 + self._sanitize_param_name(name)
                 + "}}"
                 for name in node.outputs
+                if name in self.catalog.list()
+                and isinstance(self.catalog._get_dataset(name), AzureMLPipelineDataSet)
             ]
             if node.outputs
             else []
