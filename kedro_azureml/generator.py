@@ -28,7 +28,7 @@ from kedro_azureml.constants import (
     KEDRO_AZURE_RUNNER_CONFIG,
     PARAMS_PREFIX,
 )
-from kedro_azureml.datasets import AzureMLFolderDataSet, AzureMLPipelineDataSet
+from kedro_azureml.datasets import AzureMLFolderDataSet
 from kedro_azureml.distributed import DistributedNodeConfig
 from kedro_azureml.distributed.config import Framework
 
@@ -195,12 +195,16 @@ class AzureMLPipelineGenerator:
             environment=self._resolve_azure_environment(),  # TODO: check whether Environment exists
             inputs={
                 self._sanitize_param_name(name): (
-                    Input()
-                    if name in self.catalog.list()
-                    and isinstance(
-                        self.catalog._get_dataset(name), AzureMLPipelineDataSet
+                    Input(type="string")
+                    if name.startswith(PARAMS_PREFIX)
+                    or (
+                        name in pipeline.inputs()
+                        and name in self.catalog.list()
+                        and not isinstance(
+                            self.catalog._get_dataset(name), AzureMLFolderDataSet
+                        )
                     )
-                    else Input(type="string")
+                    else Input()
                 )
                 for name in node.inputs
             },
@@ -312,8 +316,14 @@ class AzureMLPipelineGenerator:
                 + self._sanitize_param_name(name)
                 + "}}"
                 for name in node.inputs
-                if name in self.catalog.list()
-                and isinstance(self.catalog._get_dataset(name), AzureMLPipelineDataSet)
+                if not name.startswith(PARAMS_PREFIX)
+                and not (
+                    name in pipeline.inputs()
+                    and name in self.catalog.list()
+                    and not isinstance(
+                        self.catalog._get_dataset(name), AzureMLFolderDataSet
+                    )
+                )
             ]
             if node.inputs
             else []
@@ -325,8 +335,6 @@ class AzureMLPipelineGenerator:
                 + self._sanitize_param_name(name)
                 + "}}"
                 for name in node.outputs
-                if name in self.catalog.list()
-                and isinstance(self.catalog._get_dataset(name), AzureMLPipelineDataSet)
             ]
             if node.outputs
             else []
