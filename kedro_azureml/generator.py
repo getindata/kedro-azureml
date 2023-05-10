@@ -28,7 +28,7 @@ from kedro_azureml.constants import (
     KEDRO_AZURE_RUNNER_CONFIG,
     PARAMS_PREFIX,
 )
-from kedro_azureml.datasets import AzureMLFolderDataSet
+from kedro_azureml.datasets import AzureMLFolderDataSet, AzureMLPipelineDataSet
 from kedro_azureml.distributed import DistributedNodeConfig
 from kedro_azureml.distributed.config import Framework
 
@@ -312,7 +312,8 @@ class AzureMLPipelineGenerator:
                 + self._sanitize_param_name(name)
                 + "}}"
                 for name in node.inputs
-                if not name.startswith("params:") and name not in pipeline.inputs()
+                if name in self.catalog.list()
+                and isinstance(self.catalog._get_dataset(name), AzureMLPipelineDataSet)
             ]
             if node.inputs
             else []
