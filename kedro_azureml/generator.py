@@ -14,6 +14,7 @@ from azure.ai.ml import (
 from azure.ai.ml.dsl import pipeline as azure_pipeline
 from azure.ai.ml.entities import Environment, Job
 from azure.ai.ml.entities._builders import Command
+from kedro.io import DataCatalog
 from kedro.pipeline import Pipeline
 from kedro.pipeline.node import Node
 
@@ -27,6 +28,7 @@ from kedro_azureml.constants import (
     KEDRO_AZURE_RUNNER_CONFIG,
     PARAMS_PREFIX,
 )
+from kedro_azureml.datasets import AzureMLFolderDataSet
 from kedro_azureml.distributed import DistributedNodeConfig
 from kedro_azureml.distributed.config import Framework
 
@@ -44,6 +46,7 @@ class AzureMLPipelineGenerator:
         kedro_environment: str,
         config: KedroAzureMLConfig,
         kedro_params: Dict[str, Any],
+        catalog: DataCatalog,
         aml_env: Optional[str] = None,
         docker_image: Optional[str] = None,
         params: Optional[str] = None,
@@ -55,6 +58,7 @@ class AzureMLPipelineGenerator:
 
         self.params = params
         self.kedro_params = kedro_params
+        self.catalog = catalog
         self.aml_env = aml_env
         self.docker_image = docker_image
         self.config = config
@@ -191,7 +195,12 @@ class AzureMLPipelineGenerator:
             environment=self._resolve_azure_environment(),  # TODO: check whether Environment exists
             inputs={
                 self._sanitize_param_name(name): (
-                    Input(type="string") if name in pipeline.inputs() else Input()
+                    Input()
+                    if name in self.catalog.list()
+                    and isinstance(
+                        self.catalog._get_dataset(name), AzureMLFolderDataSet
+                    )
+                    else Input(type="string")
                 )
                 for name in node.inputs
             },
@@ -280,9 +289,18 @@ class AzureMLPipelineGenerator:
                     parent_outputs = invoked_components[output_from_deps.name].outputs
                     azure_output = parent_outputs[sanitized_input_name]
                     azure_inputs[sanitized_input_name] = azure_output
+                elif node_input in self.catalog.list() and isinstance(
+                    ds := self.catalog._get_dataset(node_input), AzureMLFolderDataSet
+                ):
+                    # 2. try to find dataset in catalog
+                    azure_inputs[sanitized_input_name] = Input(
+                        # TODO: add versioning
+                        path=f"{ds._azureml_dataset}@latest"
+                    )
                 else:
-                    # 2. if not found, provide dummy input
+                    # 3. if not found, provide dummy input
                     azure_inputs[sanitized_input_name] = node_input
+                # TODO: also add for outputs
             invoked_components[node.name] = commands[node.name](**azure_inputs)
         return invoked_components
 

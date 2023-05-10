@@ -50,6 +50,7 @@ def get_context_and_pipeline(
             ctx.env,
             mgr.plugin_config,
             mgr.context.params,
+            mgr.context.catalog,
             aml_env,
             docker_image,
             params,
