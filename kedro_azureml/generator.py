@@ -209,7 +209,16 @@ class AzureMLPipelineGenerator:
                 for name in node.inputs
             },
             outputs={
-                self._sanitize_param_name(name): Output() for name in node.outputs
+                self._sanitize_param_name(name): (
+                    # TODO: add versioning
+                    Output(name=ds._azureml_dataset)
+                    if name in self.catalog.list()
+                    and isinstance(
+                        ds := self.catalog._get_dataset(name), AzureMLFolderDataSet
+                    )
+                    else Output()
+                )
+                for name in node.outputs
             },
             code=self.config.azure.code_directory,
             is_deterministic=False,  # TODO: allow setting this to true per node (e.g. by tags as for resources)
@@ -293,18 +302,17 @@ class AzureMLPipelineGenerator:
                     parent_outputs = invoked_components[output_from_deps.name].outputs
                     azure_output = parent_outputs[sanitized_input_name]
                     azure_inputs[sanitized_input_name] = azure_output
+                # 2. try to find AzureMLFolderDataSet in catalog
                 elif node_input in self.catalog.list() and isinstance(
                     ds := self.catalog._get_dataset(node_input), AzureMLFolderDataSet
                 ):
-                    # 2. try to find dataset in catalog
                     azure_inputs[sanitized_input_name] = Input(
                         # TODO: add versioning
                         path=f"{ds._azureml_dataset}@latest"
                     )
+                # 3. if not found, provide dummy input
                 else:
-                    # 3. if not found, provide dummy input
                     azure_inputs[sanitized_input_name] = node_input
-                # TODO: also add for outputs
             invoked_components[node.name] = commands[node.name](**azure_inputs)
         return invoked_components
 
