@@ -18,7 +18,7 @@ class AzureMLLocalRunHook:
             catalog: The ``DataCatalog`` from which to fetch data.
         """
         # we don't want the hook to work when we are running on AML
-        if not isinstance(run_params["runner"], AzurePipelinesRunner):
+        if run_params["runner"] != "AzurePipelinesRunner":
             for dataset_name, dataset in catalog._data_sets.items():
                 # This limits support for azureml:// paths to AzureMLFolderDataSet
                 # because others have their filesystem already initalised and the
