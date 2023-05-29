@@ -31,7 +31,13 @@ class PipelineDataPassingConfig(BaseModel):
     enabled: bool = False
 
 
-class AzureMLConfig(BaseModel):
+class AzureMLBase(BaseModel):
+    subscription_id: str
+    resource_group: str
+    workspace_name: str
+
+
+class AzureMLConfig(AzureMLBase):
     @staticmethod
     def _create_default_dict_with(
         value: dict, default, dict_cls: Type = DefaultConfigDict
@@ -45,9 +51,6 @@ class AzureMLConfig(BaseModel):
             value, ComputeConfig(cluster_name="{cluster_name}")
         )
 
-    subscription_id: str
-    resource_group: str
-    workspace_name: str
     experiment_name: str
     compute: Optional[Dict[str, ComputeConfig]]
     temporary_storage: Optional[AzureTempStorageConfig]
