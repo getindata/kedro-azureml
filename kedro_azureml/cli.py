@@ -137,15 +137,6 @@ def init(
         }
     )
     target_path.write_text(cfg)
-    with open(Path.cwd().joinpath("conf/base/config.json"), "w") as f:
-        json.dump(
-            {
-                "subscription_id": subscription_id,
-                "resource_group": resource_group,
-                "workspace_name": workspace_name,
-            },
-            f,
-        )
 
     click.echo(f"Configuration generated in {target_path}")
 

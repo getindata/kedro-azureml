@@ -3,8 +3,8 @@ from pathlib import Path
 from azureml.fsspec import AzureMachineLearningFileSystem
 from kedro.framework.hooks import hook_impl
 
+from kedro_azureml.config import AzureMLConfig
 from kedro_azureml.client import _get_azureml_client
-from kedro_azureml.config import AzureMLBase
 from kedro_azureml.datasets.folder_dataset import AzureMLFolderDataSet
 
 
@@ -16,6 +16,10 @@ class AzureMLLocalRunHook:
     """Hook class that allows local runs using AML datasets."""
 
     @hook_impl
+    def after_context_created(self, context) -> None:
+        self.azure_config = AzureMLConfig(**context.config_loader.get("azureml*")['azure'])
+
+    @hook_impl
     def before_pipeline_run(self, run_params, pipeline, catalog):
         """Hook implementation to change dataset path for local runs.
         Args:
@@ -25,10 +29,7 @@ class AzureMLLocalRunHook:
         """
         # we don't want the hook to work when we are running on AML
         if run_params["runner"] != "AzurePipelinesRunner":
-            config = AzureMLBase.parse_file(
-                Path(run_params["project_path"]) / "conf/base/config.json"
-            )
-            with _get_azureml_client(subscription_id=None, config=config) as ml_client:
+            with _get_azureml_client(subscription_id=None, config=self.azure_config) as ml_client:
                 for dataset_name, dataset in catalog._data_sets.items():
                     if isinstance(dataset, AzureMLFolderDataSet) and (
                         dataset_name in pipeline.inputs()
