@@ -46,20 +46,6 @@ class AzureMLLocalRunHook:
                         else:
                             azure_path = azure_ds.path
                             fs = AzureMachineLearningFileSystem(azure_path)
-                        # TODO: See if there is a better way to isolate the right file
-                        fpaths = [
-                            name for name in fs.ls() if Path(dataset.path).name in name
-                        ]
-                        if len(fpaths) < 1:
-                            raise FileNotFoundError(
-                                f"File {Path(dataset.path).name} not found uri_folder dataset"
-                            )
-                        elif len(fpaths) > 1:
-                            raise TooManyFilesError(
-                                f"Multiple files with name: {Path(dataset.path).name} found in folder dataset"
-                            )
-                        else:
-                            fpath = fpaths[0]
                         # The datasets filepath is always absolute due to AbstractDataset
                         ds_local_absolute_fpath = Path(dataset._filepath)
                         # TODO: Figure out the best path structure depending on versioning implementation.
@@ -77,7 +63,8 @@ class AzureMLLocalRunHook:
                         )
                         # using APPEND will keep the local file if exists
                         # as versions are unique this will prevent unnecessary file download
-                        fs.download(fpath, str(new_filepath.parent), overwrite="APPEND")
+                        for fpath in fs.ls():
+                            fs.download(fpath, str(new_filepath.parent), overwrite="APPEND")
                         dataset.path = str(new_filepath)
                         catalog.add(dataset_name, dataset, replace=True)
 
