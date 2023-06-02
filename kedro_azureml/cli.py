@@ -2,9 +2,11 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import click
+from kedro.framework.cli.project import LOAD_VERSION_HELP
+from kedro.framework.cli.utils import _split_load_versions
 from kedro.framework.startup import ProjectMetadata
 
 from kedro_azureml.cli_functions import (
@@ -206,6 +208,14 @@ def init(
     multiple=True,
     help="Environment variables to be injected in the steps, format: KEY=VALUE",
 )
+@click.option(
+    "--load-versions",
+    "-lv",
+    type=str,
+    default="",
+    help=LOAD_VERSION_HELP,
+    callback=_split_load_versions,
+)
 @click.pass_obj
 @click.pass_context
 def run(
@@ -218,6 +228,7 @@ def run(
     params: str,
     wait_for_completion: bool,
     env_var: Tuple[str],
+    load_version: Dict[str, str],
 ):
     """Runs the specified pipeline in Azure ML Pipelines; Additional parameters can be passed from command line.
     Can be used with --wait-for-completion param to block the caller until the pipeline finishes in Azure ML.
@@ -236,7 +247,9 @@ def run(
 
     mgr: KedroContextManager
     extra_env = parse_extra_env_params(env_var)
-    with get_context_and_pipeline(ctx, image, pipeline, params, aml_env, extra_env) as (
+    with get_context_and_pipeline(
+        ctx, image, pipeline, params, aml_env, extra_env, load_version
+    ) as (
         mgr,
         az_pipeline,
     ):
@@ -302,6 +315,20 @@ def run(
     default="pipeline.yaml",
     help="Pipeline YAML definition file.",
 )
+@click.option(
+    "--env-var",
+    type=str,
+    multiple=True,
+    help="Environment variables to be injected in the steps, format: KEY=VALUE",
+)
+@click.option(
+    "--load-versions",
+    "-lv",
+    type=str,
+    default="",
+    help=LOAD_VERSION_HELP,
+    callback=_split_load_versions,
+)
 @click.pass_obj
 def compile(
     ctx: CliContext,
@@ -310,10 +337,15 @@ def compile(
     pipeline: str,
     params: list,
     output: str,
+    env_var: Tuple[str],
+    load_version: Dict[str, str],
 ):
     """Compiles the pipeline into YAML format"""
     params = json.dumps(p) if (p := parse_extra_params(params)) else ""
-    with get_context_and_pipeline(ctx, image, pipeline, params, aml_env) as (
+    extra_env = parse_extra_env_params(env_var)
+    with get_context_and_pipeline(
+        ctx, image, pipeline, params, aml_env, extra_env, load_version
+    ) as (
         _,
         az_pipeline,
     ):

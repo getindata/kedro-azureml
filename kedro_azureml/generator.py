@@ -52,6 +52,7 @@ class AzureMLPipelineGenerator:
         params: Optional[str] = None,
         storage_account_key: Optional[str] = "",
         extra_env: Dict[str, str] = {},
+        load_versions: Dict[str, str] = {},
     ):
         self.storage_account_key = storage_account_key
         self.kedro_environment = kedro_environment
@@ -64,6 +65,7 @@ class AzureMLPipelineGenerator:
         self.config = config
         self.pipeline_name = pipeline_name
         self.extra_env = extra_env
+        self.load_versions = load_versions
 
     def generate(self) -> Job:
         pipeline = self.get_kedro_pipeline()
@@ -141,6 +143,14 @@ class AzureMLPipelineGenerator:
             return Environment(image=image)
         else:
             return self.aml_env or self.config.azure.environment_name
+
+    def _get_versioned_azureml_dataset_name(self, dataset_name: str):
+        version = self.load_versions.get(dataset_name)
+        if version is None or version == "latest":
+            suffix = "@latest"
+        else:
+            suffix = ":" + version
+        return dataset_name + suffix
 
     def _from_params_or_value(
         self,
@@ -307,8 +317,9 @@ class AzureMLPipelineGenerator:
                     ds := self.catalog._get_dataset(node_input), AzureMLFolderDataSet
                 ):
                     azure_inputs[sanitized_input_name] = Input(
-                        # TODO: add versioning
-                        path=f"{ds._azureml_dataset}@latest"
+                        path=self._get_versioned_azureml_dataset_name(
+                            ds._azureml_dataset
+                        )
                     )
                 # 3. if not found, provide dummy input
                 else:
