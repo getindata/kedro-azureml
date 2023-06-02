@@ -174,6 +174,17 @@ class AzureMLPipelineGenerator:
             msg += f", got {value_to_parse}"
             raise ValueError(msg)
 
+    def _is_param_or_root_non_azureml_folder_dataset(
+        self, dataset_name: str, pipeline: Pipeline
+    ) -> bool:
+        return dataset_name.startswith(PARAMS_PREFIX) or (
+            dataset_name in pipeline.inputs()
+            and dataset_name in self.catalog.list()
+            and not isinstance(
+                self.catalog._get_dataset(dataset_name), AzureMLFolderDataSet
+            )
+        )
+
     def _construct_azure_command(
         self,
         pipeline: Pipeline,
@@ -206,14 +217,7 @@ class AzureMLPipelineGenerator:
             inputs={
                 self._sanitize_param_name(name): (
                     Input(type="string")
-                    if name.startswith(PARAMS_PREFIX)
-                    or (
-                        name in pipeline.inputs()
-                        and name in self.catalog.list()
-                        and not isinstance(
-                            self.catalog._get_dataset(name), AzureMLFolderDataSet
-                        )
-                    )
+                    if self._is_param_or_root_non_azureml_folder_dataset(name, pipeline)
                     else Input()
                 )
                 for name in node.inputs
@@ -335,14 +339,7 @@ class AzureMLPipelineGenerator:
                 + self._sanitize_param_name(name)
                 + "}}"
                 for name in node.inputs
-                if not name.startswith(PARAMS_PREFIX)
-                and not (
-                    name in pipeline.inputs()
-                    and name in self.catalog.list()
-                    and not isinstance(
-                        self.catalog._get_dataset(name), AzureMLFolderDataSet
-                    )
-                )
+                if not self._is_param_or_root_non_azureml_folder_dataset(name, pipeline)
             ]
             if node.inputs
             else []
