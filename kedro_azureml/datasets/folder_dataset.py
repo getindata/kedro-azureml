@@ -19,13 +19,13 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet):
         self,
         azureml_dataset: str,
         dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
-        version: Optional[Version] = None,
+        azureml_version: Optional[Version] = None,
         filepath_arg: str = "filepath",
     ):
         super().__init__(dataset=dataset, filepath_arg=filepath_arg)
 
         self._azureml_dataset = azureml_dataset
-        self._version = version
+        self._version = azureml_version
 
         # TODO: remove and disable versioning in Azure ML runner?
         if VERSION_KEY in self._dataset_config:
