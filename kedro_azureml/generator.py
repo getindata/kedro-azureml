@@ -52,6 +52,7 @@ class AzureMLPipelineGenerator:
         params: Optional[str] = None,
         storage_account_key: Optional[str] = "",
         extra_env: Dict[str, str] = {},
+        load_versions: Dict[str, str] = {},
     ):
         self.storage_account_key = storage_account_key
         self.kedro_environment = kedro_environment
@@ -64,6 +65,7 @@ class AzureMLPipelineGenerator:
         self.config = config
         self.pipeline_name = pipeline_name
         self.extra_env = extra_env
+        self.load_versions = load_versions
 
     def generate(self) -> Job:
         pipeline = self.get_kedro_pipeline()
@@ -142,6 +144,14 @@ class AzureMLPipelineGenerator:
         else:
             return self.aml_env or self.config.azure.environment_name
 
+    def _get_versioned_azureml_dataset_name(self, dataset_name: str):
+        version = self.load_versions.get(dataset_name)
+        if version is None or version == "latest":
+            suffix = "@latest"
+        else:
+            suffix = ":" + version
+        return dataset_name + suffix
+
     def _from_params_or_value(
         self,
         namespace: Optional[str],
@@ -163,6 +173,17 @@ class AzureMLPipelineGenerator:
             msg += f" while parsing: {hint}"
             msg += f", got {value_to_parse}"
             raise ValueError(msg)
+
+    def _is_param_or_root_non_azureml_folder_dataset(
+        self, dataset_name: str, pipeline: Pipeline
+    ) -> bool:
+        return dataset_name.startswith(PARAMS_PREFIX) or (
+            dataset_name in pipeline.inputs()
+            and dataset_name in self.catalog.list()
+            and not isinstance(
+                self.catalog._get_dataset(dataset_name), AzureMLFolderDataSet
+            )
+        )
 
     def _construct_azure_command(
         self,
@@ -196,14 +217,7 @@ class AzureMLPipelineGenerator:
             inputs={
                 self._sanitize_param_name(name): (
                     Input(type="string")
-                    if name.startswith(PARAMS_PREFIX)
-                    or (
-                        name in pipeline.inputs()
-                        and name in self.catalog.list()
-                        and not isinstance(
-                            self.catalog._get_dataset(name), AzureMLFolderDataSet
-                        )
-                    )
+                    if self._is_param_or_root_non_azureml_folder_dataset(name, pipeline)
                     else Input()
                 )
                 for name in node.inputs
@@ -307,8 +321,9 @@ class AzureMLPipelineGenerator:
                     ds := self.catalog._get_dataset(node_input), AzureMLFolderDataSet
                 ):
                     azure_inputs[sanitized_input_name] = Input(
-                        # TODO: add versioning
-                        path=f"{ds._azureml_dataset}@latest"
+                        path=self._get_versioned_azureml_dataset_name(
+                            ds._azureml_dataset
+                        )
                     )
                 # 3. if not found, provide dummy input
                 else:
@@ -324,14 +339,7 @@ class AzureMLPipelineGenerator:
                 + self._sanitize_param_name(name)
                 + "}}"
                 for name in node.inputs
-                if not name.startswith(PARAMS_PREFIX)
-                and not (
-                    name in pipeline.inputs()
-                    and name in self.catalog.list()
-                    and not isinstance(
-                        self.catalog._get_dataset(name), AzureMLFolderDataSet
-                    )
-                )
+                if not self._is_param_or_root_non_azureml_folder_dataset(name, pipeline)
             ]
             if node.inputs
             else []

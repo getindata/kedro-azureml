@@ -1,11 +1,12 @@
 import logging
-from typing import Any, Dict, Type, Union
+from typing import Any, Dict, Optional, Type, Union
 
 from kedro.io.core import (
     VERSION_KEY,
     VERSIONED_FLAG_KEY,
     AbstractDataSet,
     DataSetError,
+    Version,
 )
 
 from kedro_azureml.datasets.pipeline_dataset import AzureMLPipelineDataSet
@@ -18,11 +19,13 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet):
         self,
         azureml_dataset: str,
         dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
+        version: Optional[Version] = None,
         filepath_arg: str = "filepath",
     ):
         super().__init__(dataset=dataset, filepath_arg=filepath_arg)
 
         self._azureml_dataset = azureml_dataset
+        self._version = version
 
         # TODO: remove and disable versioning in Azure ML runner?
         if VERSION_KEY in self._dataset_config:
