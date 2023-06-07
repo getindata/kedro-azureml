@@ -228,7 +228,7 @@ def run(
     params: str,
     wait_for_completion: bool,
     env_var: Tuple[str],
-    load_version: Dict[str, str],
+    load_versions: Dict[str, str],
 ):
     """Runs the specified pipeline in Azure ML Pipelines; Additional parameters can be passed from command line.
     Can be used with --wait-for-completion param to block the caller until the pipeline finishes in Azure ML.
@@ -248,7 +248,7 @@ def run(
     mgr: KedroContextManager
     extra_env = parse_extra_env_params(env_var)
     with get_context_and_pipeline(
-        ctx, image, pipeline, params, aml_env, extra_env, load_version
+        ctx, image, pipeline, params, aml_env, extra_env, load_versions
     ) as (
         mgr,
         az_pipeline,
@@ -338,13 +338,13 @@ def compile(
     params: list,
     output: str,
     env_var: Tuple[str],
-    load_version: Dict[str, str],
+    load_versions: Dict[str, str],
 ):
     """Compiles the pipeline into YAML format"""
     params = json.dumps(p) if (p := parse_extra_params(params)) else ""
     extra_env = parse_extra_env_params(env_var)
     with get_context_and_pipeline(
-        ctx, image, pipeline, params, aml_env, extra_env, load_version
+        ctx, image, pipeline, params, aml_env, extra_env, load_versions
     ) as (
         _,
         az_pipeline,
