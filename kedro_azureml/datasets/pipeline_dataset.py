@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Any, Dict, Type, Union
 
 from kedro.io.core import (
@@ -26,12 +27,14 @@ class AzureMLPipelineDataSet(AbstractDataSet):
     Args
     ----
 
-     | - ``dataset``: dataset: Underlying dataset definition.
+     | - ``dataset``: Underlying dataset definition.
             Accepted formats are:
             a) object of a class that inherits from ``AbstractDataSet``
             b) a string representing a fully qualified class name to such class
             c) a dictionary with ``type`` key pointing to a string from b),
             other keys are passed to the Dataset initializer.
+     | - ``folder``: Folder (path) to prepend to the filepath of the underlying dataset.
+            If unspecified, defaults to "data".
      | - ``filepath_arg``: Underlying dataset initializer argument that will
             set the filepath.
             If unspecified, defaults to "filepath".
@@ -45,6 +48,7 @@ class AzureMLPipelineDataSet(AbstractDataSet):
 
         processed_images:
           type: kedro_azureml.datasets.AzureMLPipelineDataSet
+          folder: 'data/01_raw'
           dataset:
             type: pillow.ImageDataSet
             filepath: 'images.png'
@@ -54,6 +58,7 @@ class AzureMLPipelineDataSet(AbstractDataSet):
     def __init__(
         self,
         dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
+        folder: str = "data",
         filepath_arg: str = "filepath",
     ):
         """Creates a new instance of ``AzureMLPipelineDataSet``.
@@ -78,6 +83,7 @@ class AzureMLPipelineDataSet(AbstractDataSet):
         dataset = dataset if isinstance(dataset, dict) else {"type": dataset}
         self._dataset_type, self._dataset_config = parse_dataset_definition(dataset)
 
+        self.folder = folder
         self._filepath_arg = filepath_arg
 
         # TODO: remove and disable versioning in Azure ML runner?
@@ -90,11 +96,7 @@ class AzureMLPipelineDataSet(AbstractDataSet):
 
     @property
     def path(self) -> str:
-        return self._dataset_config[self._filepath_arg]
-
-    @path.setter
-    def path(self, path: str) -> None:
-        self._dataset_config[self._filepath_arg] = path
+        return str(Path(self.folder) / Path(self._dataset_config[self._filepath_arg]))
 
     @property
     def _filepath(self) -> str:
@@ -105,7 +107,9 @@ class AzureMLPipelineDataSet(AbstractDataSet):
         return self.path
 
     def _construct_dataset(self) -> AbstractDataSet:
-        return self._dataset_type(**self._dataset_config)
+        dataset_config = self._dataset_config.copy()
+        dataset_config[self._filepath_arg] = self.path
+        return self._dataset_type(**dataset_config)
 
     def _load(self) -> Any:
         return self._construct_dataset().load()
@@ -120,6 +124,8 @@ class AzureMLPipelineDataSet(AbstractDataSet):
         return {
             "dataset_type": self._dataset_type.__name__,
             "dataset_config": self._dataset_config,
+            "folder": self.folder,
+            "filepath_arg": self._filepath_arg,
         }
 
     def _exists(self) -> bool:

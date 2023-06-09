@@ -20,9 +20,10 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet):
         azureml_dataset: str,
         dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
         version: Optional[Version] = None,
+        folder: str = "data",
         filepath_arg: str = "filepath",
     ):
-        super().__init__(dataset=dataset, filepath_arg=filepath_arg)
+        super().__init__(dataset=dataset, folder=folder, filepath_arg=filepath_arg)
 
         self._azureml_dataset = azureml_dataset
         self._version = version
