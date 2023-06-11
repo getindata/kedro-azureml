@@ -1,6 +1,5 @@
 import logging
 import os
-from pathlib import Path
 from typing import Any, Dict, Optional
 
 from kedro.io import AbstractDataSet, DataCatalog
@@ -53,8 +52,7 @@ class AzurePipelinesRunner(SequentialRunner):
             if ds_name in catalog_set:
                 ds = catalog._get_dataset(ds_name)
                 if isinstance(ds, AzureMLPipelineDataSet):
-                    file_name = Path(ds.path).name
-                    ds.path = str(Path(azure_dataset_folder) / file_name)
+                    ds.folder = azure_dataset_folder
                     catalog.add(ds_name, ds, replace=True)
             else:
                 catalog.add(ds_name, self.create_default_data_set(ds_name))
@@ -68,9 +66,13 @@ class AzurePipelinesRunner(SequentialRunner):
 
     def create_default_data_set(self, ds_name: str) -> AbstractDataSet:
         if self.pipeline_data_passing:
-            path = str(Path(self.data_paths[ds_name]) / f"{ds_name}.pickle")
             return AzureMLPipelineDataSet(
-                {"type": PickleDataSet, "backend": "cloudpickle", "filepath": path}
+                {
+                    "type": PickleDataSet,
+                    "backend": "cloudpickle",
+                    "filepath": f"{ds_name}.pickle",
+                },
+                folder=self.data_paths[ds_name],
             )
         else:
             # TODO: handle credentials better (probably with built-in Kedro credentials
