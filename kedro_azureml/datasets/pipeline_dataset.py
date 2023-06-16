@@ -85,6 +85,10 @@ class AzureMLPipelineDataSet(AbstractDataSet):
 
         self.folder = folder
         self._filepath_arg = filepath_arg
+        # Convert filepath to relative path
+        self._dataset_config[self._filepath_arg] = str(
+            Path(self._dataset_config[self._filepath_arg]).relative_to(Path.cwd())
+        )
 
         # TODO: remove and disable versioning in Azure ML runner?
         if VERSION_KEY in self._dataset_config:
