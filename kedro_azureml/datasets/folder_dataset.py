@@ -88,15 +88,16 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
                 raise VersionNotFoundError(
                     f"Did not find version {self.resolve_load_version()} for {self}"
                 )
-
-            if azureml_ds.type == "uri_file":
-                raise NotImplementedError("AzureMLFileDataSet not yet implemented")
             fs = AzureMachineLearningFileSystem(azureml_ds.path)
-            # relative path of the folder dataset on azure
-            relative_path = fs._infer_storage_options(azureml_ds.path)[-1]
-            path_on_azure = str(
-                Path(relative_path) / self._dataset_config[self._filepath_arg]
-            )
+            if azureml_ds.type == "uri_file":
+                # relative path of the file dataset on azure
+                path_on_azure = fs._infer_storage_options(azureml_ds.path)[-1]
+            elif azureml_ds.type == "uri_folder":
+                # relative path of the folder dataset on azure
+                relative_path = fs._infer_storage_options(azureml_ds.path)[-1]
+                path_on_azure = str(
+                    Path(relative_path) / self._dataset_config[self._filepath_arg]
+                )
             # if the path is a file we'll take the parent directory to download into
             download_path = (
                 self._get_load_path().parent
