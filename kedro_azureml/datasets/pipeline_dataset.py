@@ -78,8 +78,6 @@ class AzureMLPipelineDataSet(AbstractDataSet):
             DataSetError: If versioning is enabled for the underlying dataset.
         """
 
-        super().__init__()
-
         dataset = dataset if isinstance(dataset, dict) else {"type": dataset}
         self._dataset_type, self._dataset_config = parse_dataset_definition(dataset)
 
@@ -104,7 +102,7 @@ class AzureMLPipelineDataSet(AbstractDataSet):
 
     @property
     def path(self) -> str:
-        return str(Path(self.folder) / Path(self._dataset_config[self._filepath_arg]))
+        return Path(self.folder) / Path(self._dataset_config[self._filepath_arg])
 
     @property
     def _filepath(self) -> str:
@@ -116,7 +114,7 @@ class AzureMLPipelineDataSet(AbstractDataSet):
 
     def _construct_dataset(self) -> AbstractDataSet:
         dataset_config = self._dataset_config.copy()
-        dataset_config[self._filepath_arg] = self.path
+        dataset_config[self._filepath_arg] = str(self.path)
         return self._dataset_type(**dataset_config)
 
     def _load(self) -> Any:
