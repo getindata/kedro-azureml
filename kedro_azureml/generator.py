@@ -158,6 +158,10 @@ class AzureMLPipelineGenerator:
         elif dataset_name in self.catalog.list() and isinstance(
             ds := self.catalog._get_dataset(dataset_name), AzureMLFolderDataSet
         ):
+            if ds._azureml_type == "uri_file" and dataset_name not in pipeline.inputs():
+                raise ValueError(
+                    "AzureMLFolderDataSets with azureml_type 'uri_file' can only be used as pipeline inputs"
+                )
             return ds._azureml_type
         else:
             return "uri_folder"
