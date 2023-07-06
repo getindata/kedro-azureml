@@ -329,9 +329,10 @@ class AzureMLPipelineGenerator:
                     ds := self.catalog._get_dataset(node_input), AzureMLFolderDataSet
                 ):
                     azure_inputs[sanitized_input_name] = Input(
+                        type=ds._azureml_type,
                         path=self._get_versioned_azureml_dataset_name(
                             ds._azureml_dataset
-                        )
+                        ),
                     )
                 # 3. if not found, provide dummy input
                 else:
