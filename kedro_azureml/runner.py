@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from kedro.io import AbstractDataSet, DataCatalog
@@ -15,6 +16,7 @@ from kedro_azureml.datasets import (
     KedroAzureRunnerDataset,
     KedroAzureRunnerDistributedDataset,
 )
+from kedro_azureml.datasets.folder_dataset import AzureMLFolderDataSet
 from kedro_azureml.distributed.utils import is_distributed_environment
 
 logger = logging.getLogger(__name__)
@@ -48,11 +50,17 @@ class AzurePipelinesRunner(SequentialRunner):
         catalog_set = set(catalog.list())
 
         # Loop over datasets in arguments to set their paths
-        for ds_name, azure_dataset_folder in self.data_paths.items():
+        for ds_name, azure_dataset_path in self.data_paths.items():
             if ds_name in catalog_set:
                 ds = catalog._get_dataset(ds_name)
                 if isinstance(ds, AzureMLPipelineDataSet):
-                    ds.folder = azure_dataset_folder
+                    if (
+                        isinstance(ds, AzureMLFolderDataSet)
+                        and ds._azureml_type == "uri_file"
+                    ):
+                        ds.folder = str(Path(azure_dataset_path).parent)
+                    else:
+                        ds.folder = azure_dataset_path
                     catalog.add(ds_name, ds, replace=True)
             else:
                 catalog.add(ds_name, self.create_default_data_set(ds_name))

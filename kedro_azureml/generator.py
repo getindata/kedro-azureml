@@ -152,6 +152,16 @@ class AzureMLPipelineGenerator:
             suffix = ":" + version
         return dataset_name + suffix
 
+    def _get_input_type(self, dataset_name: str, pipeline: Pipeline) -> Input:
+        if self._is_param_or_root_non_azureml_folder_dataset(dataset_name, pipeline):
+            return "string"
+        elif dataset_name in self.catalog.list() and isinstance(
+            ds := self.catalog._get_dataset(dataset_name), AzureMLFolderDataSet
+        ):
+            return ds._azureml_type
+        else:
+            return "uri_folder"
+
     def _from_params_or_value(
         self,
         namespace: Optional[str],
@@ -215,10 +225,8 @@ class AzureMLPipelineGenerator:
             },
             environment=self._resolve_azure_environment(),  # TODO: check whether Environment exists
             inputs={
-                self._sanitize_param_name(name): (
-                    Input(type="string")
-                    if self._is_param_or_root_non_azureml_folder_dataset(name, pipeline)
-                    else Input()
+                self._sanitize_param_name(name): Input(
+                    type=self._get_input_type(name, pipeline)
                 )
                 for name in node.inputs
             },
