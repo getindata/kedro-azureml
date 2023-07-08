@@ -52,11 +52,33 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
                 f"the dataset definition."
             )
 
+    @property
+    def path(self) -> str:
+        # For local runs we want to replicate the folder structure of the remote dataset.
+        # Otherwise kedros versioning would version at the file/folder level and not the
+        # AzureML dataset level
+        if self._local_run:
+            return (
+                Path(self.folder)
+                / self._azureml_dataset
+                / self.resolve_load_version()
+                / Path(self._dataset_config[self._filepath_arg])
+            )
+        else:
+            return Path(self.folder) / Path(self._dataset_config[self._filepath_arg])
+
+    @property
+    def download_path(self) -> str:
+        # Because `is_dir` and `is_file` don't work if the path does not
+        # exist, we use this heuristic to identify paths vs folders.
+        if self.path.suffix != "":
+            return str(self.path.parent)
+        else:
+            return str(self.path)
+
     def _construct_dataset(self) -> AbstractDataSet:
         dataset_config = self._dataset_config.copy()
         dataset_config[self._filepath_arg] = str(self.path)
-        if self._local_run:
-            dataset_config["version"] = self._version
         return self._dataset_type(**dataset_config)
 
     def _get_latest_version(self) -> str:
@@ -90,25 +112,23 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
                 )
             fs = AzureMachineLearningFileSystem(azureml_ds.path)
             if azureml_ds.type == "uri_file":
-                # relative path of the file dataset on azure
+                # relative (to storage account root) path of the file dataset on azure
                 path_on_azure = fs._infer_storage_options(azureml_ds.path)[-1]
             elif azureml_ds.type == "uri_folder":
-                # relative path of the folder dataset on azure
-                relative_path = fs._infer_storage_options(azureml_ds.path)[-1]
+                # relative (to storage account root) path of the folder dataset on azure
+                dataset_root_on_azure = fs._infer_storage_options(azureml_ds.path)[-1]
+                # relative (to storage account root) path of the dataset in the folder on azure
                 path_on_azure = str(
-                    Path(relative_path) / self._dataset_config[self._filepath_arg]
+                    Path(dataset_root_on_azure)
+                    / self._dataset_config[self._filepath_arg]
                 )
-            # if the path is a file we'll take the parent directory to download into
-            download_path = (
-                self._get_load_path().parent
-                if ("." in self._get_load_path().name)
-                else self._get_load_path()
-            )
+            # we take the relative within the Azure dataset to avoid downloading
+            # all files in a folder dataset.
             for fpath in fs.ls(path_on_azure):
                 logger.info(f"Downloading {fpath} for local execution")
                 # using APPEND will keep the local file if exists
                 # as versions are unique this will prevent unnecessary file download
-                fs.download(fpath, str(download_path), overwrite="APPEND")
+                fs.download(fpath, self.download_path, overwrite="APPEND")
         return self._construct_dataset().load()
 
     def _save(self, data: Any) -> None:
