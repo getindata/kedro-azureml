@@ -122,6 +122,8 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
                     Path(dataset_root_on_azure)
                     / self._dataset_config[self._filepath_arg]
                 )
+            else:
+                raise ValueError("Unsupported AzureMLDataset type")
             # we take the relative within the Azure dataset to avoid downloading
             # all files in a folder dataset.
             for fpath in fs.ls(path_on_azure):
