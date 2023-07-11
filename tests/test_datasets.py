@@ -6,8 +6,8 @@ from uuid import uuid4
 import numpy as np
 import pandas as pd
 import pytest
-from kedro.extras.datasets.pickle import PickleDataSet
 from kedro.extras.datasets.pandas import ParquetDataSet
+from kedro.extras.datasets.pickle import PickleDataSet
 from kedro.io.core import Version
 
 from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME

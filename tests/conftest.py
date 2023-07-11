@@ -3,11 +3,14 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
-import fsspec
-from azureml.fsspec import AzureMachineLearningFileSystem
-import pandas as pd
 
+import fsspec
+import pandas as pd
 import pytest
+from azureml.fsspec import AzureMachineLearningFileSystem
+from kedro.extras.datasets.pandas import CSVDataSet, ParquetDataSet
+from kedro.io import DataCatalog
+from kedro.io.core import Version
 from kedro.pipeline import Pipeline, node, pipeline
 
 from kedro_azureml.config import (
@@ -17,7 +20,7 @@ from kedro_azureml.config import (
     KedroAzureRunnerConfig,
 )
 from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
-from kedro_azureml.datasets import KedroAzureRunnerDataset
+from kedro_azureml.datasets import AzureMLFolderDataSet, KedroAzureRunnerDataset
 from kedro_azureml.runner import AzurePipelinesRunner
 from kedro_azureml.utils import CliContext
 from tests.utils import identity
@@ -107,19 +110,29 @@ def patched_azure_pipeline_data_passing_runner():
     yield AzurePipelinesRunner(pipeline_data_passing=True)
 
 
+class ExtendedMagicMock(MagicMock):
+    def to_dict(self):
+        return {
+            "subscription_id": self.subscription_id,
+            "resource_group": self.resource_group,
+            "workspace_name": self.workspace_name,
+            "experiment_name": self.experiment_name,
+        }
+
+
 @pytest.fixture
 def mock_azureml_config():
-    mock_config = MagicMock()
+    mock_config = ExtendedMagicMock()
     mock_config.subscription_id = "123"
     mock_config.resource_group = "456"
     mock_config.workspace_name = "best"
+    mock_config.experiment_name = "test"
     return mock_config
 
 
 @pytest.fixture
 def simulated_azureml_dataset(tmp_path):
     df = pd.DataFrame({"data": [1, 2, 3], "partition_idx": [1, 2, 3]})
-
 
     test_data_file = tmp_path / "test_file"
     test_data_file.mkdir(parents=True)
@@ -210,3 +223,23 @@ def in_temp_dir(tmp_path):
 
     os.chdir(original_cwd)
 
+
+@pytest.fixture
+def multi_catalog():
+    csv = AzureMLFolderDataSet(
+        dataset={
+            "type": CSVDataSet,
+            "filepath": "abc.csv",
+        },
+        azureml_dataset="test_dataset",
+        version=Version(None, None),
+    )
+    parq = AzureMLFolderDataSet(
+        dataset={
+            "type": ParquetDataSet,
+            "filepath": "xyz.parq",
+        },
+        azureml_dataset="test_dataset_2",
+        version=Version(None, None),
+    )
+    return DataCatalog({"input_data": csv, "i2": parq})

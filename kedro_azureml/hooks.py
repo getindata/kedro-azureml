@@ -7,20 +7,6 @@ from kedro.io.core import Version
 from kedro_azureml.config import AzureMLConfig
 from kedro_azureml.datasets.folder_dataset import AzureMLFolderDataSet
 
-logger = logging.getLogger(__name__)
-
-
-class TooManyFilesError(Exception):
-    pass
-
-
-def get_versioned_path(filepath: PurePosixPath, version: str) -> PurePosixPath:
-    if filepath.is_dir():
-        return filepath / version / filepath.parts[-1]
-    else:
-        return filepath / version / filepath.name
-
-
 class AzureMLLocalRunHook:
     """Hook class that allows local runs using AML datasets."""
 
