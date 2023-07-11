@@ -374,14 +374,14 @@ def compile(
 @click.option(
     "--az-input",
     "azure_inputs",
-    type=(str, click.Path(exists=True, file_okay=False, dir_okay=True)),
+    type=(str, click.Path(exists=True, file_okay=True, dir_okay=True)),
     multiple=True,
     help="Name and path of Azure ML Pipeline input",
 )
 @click.option(
     "--az-output",
     "azure_outputs",
-    type=(str, click.Path(exists=True, file_okay=False, dir_okay=True)),
+    type=(str, click.Path(exists=True, file_okay=True, dir_okay=True)),
     multiple=True,
     help="Name and path of Azure ML Pipeline output",
 )

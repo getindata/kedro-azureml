@@ -1,7 +1,7 @@
 import logging
 from functools import partial
 from operator import attrgetter
-from typing import Any, Dict, Optional, Type, Union
+from typing import Any, Dict, Literal, Optional, Type, Union, get_args
 from pathlib import Path
 
 from azure.core.exceptions import ResourceNotFoundError
@@ -22,6 +22,7 @@ from kedro.io.core import (
 from kedro_azureml.client import _get_azureml_client
 from kedro_azureml.datasets.pipeline_dataset import AzureMLPipelineDataSet
 
+AzureMLDataAssetType = Literal["uri_file", "uri_folder"]
 logger = logging.getLogger(__name__)
 
 
@@ -30,9 +31,10 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         self,
         azureml_dataset: str,
         dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
-        version: Optional[Version] = None,
         folder: str = "data",
         filepath_arg: str = "filepath",
+        azureml_type: AzureMLDataAssetType = "uri_folder",
+        version: Optional[Version] = None,
     ):
         super().__init__(dataset=dataset, folder=folder, filepath_arg=filepath_arg)
 
@@ -43,6 +45,12 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         self._download = False
         self._local_run = False
         self._azureml_config = None
+        self._azureml_type = azureml_type
+        if self._azureml_type not in get_args(AzureMLDataAssetType):
+            raise DataSetError(
+                f"Invalid azureml_type '{self._azureml_type}' in dataset definition. "
+                f"Valid values are: {get_args(AzureMLDataAssetType)}"
+            )
 
         # TODO: remove and disable versioning in Azure ML runner?
         if VERSION_KEY in self._dataset_config:
