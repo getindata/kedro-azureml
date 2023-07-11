@@ -61,3 +61,6 @@ pandas = "^1.4.3"
 
 [tool.poetry.plugins."kedro.project_commands"]
 "azureml" = "kedro_azureml.cli:commands"
+
+[tool.poetry.plugins."kedro.hooks"]
+"azure_local_run_hook" = "kedro_azureml.hooks:azureml_local_run_hook"
