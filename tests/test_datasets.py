@@ -58,7 +58,10 @@ def test_azure_dataset_config(dataset_class: Type):
             False,
             False,
             {
-                "path": "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces/dummy_ws/datastores/some_datastore/paths/test_file/test.pickle",
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_file/test.pickle"
+                ),
                 "type": "uri_file",
             },
         ),
@@ -70,7 +73,10 @@ def test_azure_dataset_config(dataset_class: Type):
             True,
             False,
             {
-                "path": "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces/dummy_ws/datastores/some_datastore/paths/test_file/test.pickle",
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_file/test.pickle"
+                ),
                 "type": "uri_file",
             },
         ),
@@ -82,7 +88,10 @@ def test_azure_dataset_config(dataset_class: Type):
             True,
             True,
             {
-                "path": "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces/dummy_ws/datastores/some_datastore/paths/test_file/test.pickle",
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_file/test.pickle"
+                ),
                 "type": "uri_file",
             },
         ),
@@ -94,7 +103,10 @@ def test_azure_dataset_config(dataset_class: Type):
             False,
             False,
             {
-                "path": "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces/dummy_ws/datastores/some_datastore/paths/random/subfolder/test.pickle",
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/random/subfolder/test.pickle"
+                ),
                 "type": "uri_file",
             },
         ),
@@ -106,7 +118,10 @@ def test_azure_dataset_config(dataset_class: Type):
             True,
             False,
             {
-                "path": "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces/dummy_ws/datastores/some_datastore/paths/random/subfolder/test.pickle",
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/random/subfolder/test.pickle"
+                ),
                 "type": "uri_file",
             },
         ),
@@ -118,7 +133,10 @@ def test_azure_dataset_config(dataset_class: Type):
             True,
             True,
             {
-                "path": "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces/dummy_ws/datastores/some_datastore/paths/test_file/random/subfolder/test.pickle",
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_file/random/subfolder/test.pickle"
+                ),
                 "type": "uri_file",
             },
         ),
@@ -130,7 +148,10 @@ def test_azure_dataset_config(dataset_class: Type):
             False,
             False,
             {
-                "path": "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces/dummy_ws/datastores/some_datastore/paths/test_folder/",
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder/"
+                ),
                 "type": "uri_file",
             },
         ),
@@ -142,7 +163,10 @@ def test_azure_dataset_config(dataset_class: Type):
             True,
             False,
             {
-                "path": "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces/dummy_ws/datastores/some_datastore/paths/test_folder/",
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder/"
+                ),
                 "type": "uri_folder",
             },
         ),
@@ -154,7 +178,10 @@ def test_azure_dataset_config(dataset_class: Type):
             True,
             True,
             {
-                "path": "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces/dummy_ws/datastores/some_datastore/paths/test_folder/",
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder/"
+                ),
                 "type": "uri_folder",
             },
         ),
@@ -166,7 +193,10 @@ def test_azure_dataset_config(dataset_class: Type):
             False,
             False,
             {
-                "path": "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces/dummy_ws/datastores/some_datastore/paths/test_folder_nested/",
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_nested/"
+                ),
                 "type": "uri_folder",
             },
         ),
@@ -178,7 +208,10 @@ def test_azure_dataset_config(dataset_class: Type):
             True,
             False,
             {
-                "path": "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces/dummy_ws/datastores/some_datastore/paths/test_folder_nested/",
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_nested/"
+                ),
                 "type": "uri_folder",
             },
         ),
@@ -190,7 +223,10 @@ def test_azure_dataset_config(dataset_class: Type):
             True,
             True,
             {
-                "path": "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces/dummy_ws/datastores/some_datastore/paths/test_folder_nested/",
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_nested/"
+                ),
                 "type": "uri_folder",
             },
         ),

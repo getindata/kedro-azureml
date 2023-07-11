@@ -1,11 +1,9 @@
-import logging
-from pathlib import PurePosixPath
-
 from kedro.framework.hooks import hook_impl
 from kedro.io.core import Version
 
 from kedro_azureml.config import AzureMLConfig
 from kedro_azureml.datasets.folder_dataset import AzureMLFolderDataSet
+
 
 class AzureMLLocalRunHook:
     """Hook class that allows local runs using AML datasets."""

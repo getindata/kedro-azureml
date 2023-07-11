@@ -20,7 +20,10 @@ from kedro_azureml.config import (
     KedroAzureRunnerConfig,
 )
 from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
-from kedro_azureml.datasets import AzureMLFolderDataSet, KedroAzureRunnerDataset
+from kedro_azureml.datasets import (
+    AzureMLFolderDataSet,
+    KedroAzureRunnerDataset,
+)
 from kedro_azureml.runner import AzurePipelinesRunner
 from kedro_azureml.utils import CliContext
 from tests.utils import identity
