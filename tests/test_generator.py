@@ -31,6 +31,7 @@ def test_can_generate_azure_pipeline(
     dummy_plugin_config,
     generator_kwargs: dict,
     pipeline_data_passing_enabled,
+    multi_catalog,
     request,
 ):
     pipeline = request.getfixturevalue(pipeline_name)
@@ -41,7 +42,12 @@ def test_can_generate_azure_pipeline(
     ):
         env_name = "unit_test_env"
         generator = AzureMLPipelineGenerator(
-            pipeline_name, env_name, dummy_plugin_config, {}, **generator_kwargs
+            pipeline_name,
+            env_name,
+            dummy_plugin_config,
+            {},
+            catalog=multi_catalog,
+            **generator_kwargs,
         )
 
         az_pipeline = generator.generate()
@@ -67,7 +73,7 @@ def test_can_generate_azure_pipeline(
 
 
 def test_azure_pipeline_with_different_compute(
-    dummy_pipeline_compute_tag, dummy_plugin_config
+    dummy_pipeline_compute_tag, dummy_plugin_config, multi_catalog
 ):
     """
     Test that when a Node in an Azure Pipeline is tagged with a compute tag
@@ -88,6 +94,7 @@ def test_azure_pipeline_with_different_compute(
             env_name,
             dummy_plugin_config,
             {},
+            catalog=multi_catalog,
             aml_env=aml_env,
         )
 
@@ -103,20 +110,22 @@ def test_azure_pipeline_with_different_compute(
                 ), "compute settings don't match"
 
 
-def test_can_get_pipeline_from_kedro(dummy_plugin_config, dummy_pipeline):
+def test_can_get_pipeline_from_kedro(
+    dummy_plugin_config, dummy_pipeline, multi_catalog
+):
     pipeline_name = "unit_test_pipeline"
     with patch.dict(
         "kedro.framework.project.pipelines", {pipeline_name: dummy_pipeline}
     ):
         generator = AzureMLPipelineGenerator(
-            pipeline_name, "local", dummy_plugin_config, {}
+            pipeline_name, "local", dummy_plugin_config, {}, catalog=multi_catalog
         )
         p = generator.get_kedro_pipeline()
         assert p == dummy_pipeline
 
 
 def test_get_target_resource_from_node_tags_raises_exception(
-    dummy_plugin_config, dummy_pipeline
+    dummy_plugin_config, dummy_pipeline, multi_catalog
 ):
     pipeline_name = "unit_test_pipeline"
     node = MagicMock()
@@ -127,13 +136,15 @@ def test_get_target_resource_from_node_tags_raises_exception(
         "kedro.framework.project.pipelines", {pipeline_name: dummy_pipeline}
     ):
         generator = AzureMLPipelineGenerator(
-            pipeline_name, "local", dummy_plugin_config, {}
+            pipeline_name, "local", dummy_plugin_config, {}, catalog=multi_catalog
         )
         with pytest.raises(ConfigException):
             generator.get_target_resource_from_node_tags(node)
 
 
-def test_azure_pipeline_with_custom_env_vars(dummy_plugin_config, dummy_pipeline):
+def test_azure_pipeline_with_custom_env_vars(
+    dummy_plugin_config, dummy_pipeline, multi_catalog
+):
     pipeline_name = "unit_test_pipeline"
     node = MagicMock()
     node.tags = ["compute-2", "compute-3"]
@@ -143,7 +154,12 @@ def test_azure_pipeline_with_custom_env_vars(dummy_plugin_config, dummy_pipeline
         "kedro.framework.project.pipelines", {pipeline_name: dummy_pipeline}
     ):
         generator = AzureMLPipelineGenerator(
-            pipeline_name, "local", dummy_plugin_config, {}, extra_env={"ABC": "def"}
+            pipeline_name,
+            "local",
+            dummy_plugin_config,
+            {},
+            extra_env={"ABC": "def"},
+            catalog=multi_catalog,
         )
 
         for node in generator.generate().jobs.values():
