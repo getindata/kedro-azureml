@@ -27,6 +27,49 @@ logger = logging.getLogger(__name__)
 
 
 class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
+    """
+    AzureMLFolderDataSet enables kedro-azureml to use azureml
+    v2-sdk Folder/File datasets for remote and local runs.
+
+    Args
+    ----
+
+     | - ``azureml_dataset``: Name of the AzureML dataset.
+     | - ``dataset``: Definition of the underlying dataset saved in the Folder/Filedataset.
+        ``e.g. Parquet, Csv etc.
+     | - ``folder``: The local folder where the dataset should be saved during local runs.
+        ``Relevant for local execution via `kedro run`.
+     | - ``filepath_arg``: Filepath arg on the wrapped dataset, defaults to `filepath`
+     | - ``azureml_type``: Either `uri_folder` or `uri_file`
+     | - ``version``: Version of the AzureML dataset to be used in kedro format.
+
+    Example
+    -------
+
+    Example of a catalog.yml entry:
+
+    .. code-block:: yaml
+
+        my_folder_dataset:
+          type: kedro_azureml.datasets.AzureMLFolderDataSet
+          azureml_dataset: my_azureml_folder_dataset
+          folder: data/01_raw/some_folder/
+          versioned: True
+          dataset:
+            type: pandas.ParquetDataSet
+            filepath: "."
+
+        my_file_dataset:
+            type: kedro_azureml.datasets.AzureMLFolderDataSet
+            azureml_dataset: my_azureml_file_dataset
+            folder: data/01_raw/some_other_folder/
+            versioned: True
+            dataset:
+                type: pandas.ParquetDataSet
+                filepath: "companies.csv"
+
+    """
+
     def __init__(
         self,
         azureml_dataset: str,
@@ -36,6 +79,15 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         azureml_type: AzureMLDataAssetType = "uri_folder",
         version: Optional[Version] = None,
     ):
+        """
+        azureml_dataset: Name of the AzureML file azureml_dataset.
+        dataset: Type of the underlying dataset that is saved on AzureML e.g. Parquet, Csv etc.
+        folder: The local folder where the dataset should be saved during local runs.
+                Relevant only for local execution via `kedro run`.
+        filepath_arg: Filepath arg on the wrapped dataset, defaults to `filepath`
+        azureml_type: Either `uri_folder` or `uri_file`
+        version: Version of the AzureML dataset to be used in kedro format.
+        """
         super().__init__(dataset=dataset, folder=folder, filepath_arg=filepath_arg)
 
         self._azureml_dataset = azureml_dataset
