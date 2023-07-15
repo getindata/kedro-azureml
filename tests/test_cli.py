@@ -37,7 +37,6 @@ def test_can_initialize_basic_plugin_config(
     env_or_docker: List[str],
     use_pipeline_data_passing: bool,
 ):
-
     config_path = create_kedro_conf_dirs(tmp_path)
     unique_id = uuid4().hex
     with patch.object(Path, "cwd", return_value=tmp_path):
