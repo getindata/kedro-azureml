@@ -271,9 +271,12 @@ def test_azureml_pipeline_dataset(tmp_path: Path):
             "filepath": (original_path := str(tmp_path / "test.pickle")),
         }
     )
-    assert ds.path == original_path, "Path should be set to the underlying filepath"
+    assert (
+        str(ds.path) == original_path
+    ), "Path should be set to the underlying filepath"
 
-    ds.path = (modified_path := str(tmp_path / "test2.pickle"))
+    ds.folder = (modified_path := str(tmp_path))
+    modified_path = Path(modified_path) / "test.pickle"
     assert ds.path == modified_path, "Path should be modified to the supplied value"
 
     ds.save("test")
