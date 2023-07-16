@@ -20,10 +20,7 @@ from kedro_azureml.config import (
     KedroAzureRunnerConfig,
 )
 from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
-from kedro_azureml.datasets import (
-    AzureMLFolderDataSet,
-    KedroAzureRunnerDataset,
-)
+from kedro_azureml.datasets import AzureMLAssetDataSet, KedroAzureRunnerDataset
 from kedro_azureml.runner import AzurePipelinesRunner
 from kedro_azureml.utils import CliContext
 from tests.utils import identity
@@ -185,7 +182,7 @@ class AzureMLFileSystemMock(fsspec.implementations.local.LocalFileSystem):
 @pytest.fixture
 def mock_azureml_fs(simulated_azureml_dataset):
     with patch(
-        "kedro_azureml.datasets.folder_dataset.AzureMachineLearningFileSystem",
+        "kedro_azureml.datasets.asset_dataset.AzureMachineLearningFileSystem",
         new=AzureMLFileSystemMock,
     ):
         with patch.object(
@@ -202,7 +199,7 @@ def mock_azureml_client(request):
     mock_data_asset.type = request.param["type"]
 
     with patch(
-        "kedro_azureml.datasets.folder_dataset._get_azureml_client"
+        "kedro_azureml.datasets.asset_dataset._get_azureml_client"
     ) as mock_get_client:
         mock_client = MagicMock()
         mock_client.data.get.return_value = mock_data_asset
@@ -229,7 +226,7 @@ def in_temp_dir(tmp_path):
 
 @pytest.fixture
 def multi_catalog():
-    csv = AzureMLFolderDataSet(
+    csv = AzureMLAssetDataSet(
         dataset={
             "type": CSVDataSet,
             "filepath": "abc.csv",
@@ -237,7 +234,7 @@ def multi_catalog():
         azureml_dataset="test_dataset",
         version=Version(None, None),
     )
-    parq = AzureMLFolderDataSet(
+    parq = AzureMLAssetDataSet(
         dataset={
             "type": ParquetDataSet,
             "filepath": "xyz.parq",

@@ -28,7 +28,7 @@ from kedro_azureml.constants import (
     KEDRO_AZURE_RUNNER_CONFIG,
     PARAMS_PREFIX,
 )
-from kedro_azureml.datasets import AzureMLFolderDataSet
+from kedro_azureml.datasets import AzureMLAssetDataSet
 from kedro_azureml.distributed import DistributedNodeConfig
 from kedro_azureml.distributed.config import Framework
 
@@ -156,11 +156,11 @@ class AzureMLPipelineGenerator:
         if self._is_param_or_root_non_azureml_folder_dataset(dataset_name, pipeline):
             return "string"
         elif dataset_name in self.catalog.list() and isinstance(
-            ds := self.catalog._get_dataset(dataset_name), AzureMLFolderDataSet
+            ds := self.catalog._get_dataset(dataset_name), AzureMLAssetDataSet
         ):
             if ds._azureml_type == "uri_file" and dataset_name not in pipeline.inputs():
                 raise ValueError(
-                    "AzureMLFolderDataSets with azureml_type 'uri_file' can only be used as pipeline inputs"
+                    "AzureMLAssetDataSets with azureml_type 'uri_file' can only be used as pipeline inputs"
                 )
             return ds._azureml_type
         else:
@@ -195,7 +195,7 @@ class AzureMLPipelineGenerator:
             dataset_name in pipeline.inputs()
             and dataset_name in self.catalog.list()
             and not isinstance(
-                self.catalog._get_dataset(dataset_name), AzureMLFolderDataSet
+                self.catalog._get_dataset(dataset_name), AzureMLAssetDataSet
             )
         )
 
@@ -240,7 +240,7 @@ class AzureMLPipelineGenerator:
                     Output(name=ds._azureml_dataset)
                     if name in self.catalog.list()
                     and isinstance(
-                        ds := self.catalog._get_dataset(name), AzureMLFolderDataSet
+                        ds := self.catalog._get_dataset(name), AzureMLAssetDataSet
                     )
                     else Output()
                 )
@@ -328,9 +328,9 @@ class AzureMLPipelineGenerator:
                     parent_outputs = invoked_components[output_from_deps.name].outputs
                     azure_output = parent_outputs[sanitized_input_name]
                     azure_inputs[sanitized_input_name] = azure_output
-                # 2. try to find AzureMLFolderDataSet in catalog
+                # 2. try to find AzureMLAssetDataSet in catalog
                 elif node_input in self.catalog.list() and isinstance(
-                    ds := self.catalog._get_dataset(node_input), AzureMLFolderDataSet
+                    ds := self.catalog._get_dataset(node_input), AzureMLAssetDataSet
                 ):
                     azure_inputs[sanitized_input_name] = Input(
                         type=ds._azureml_type,

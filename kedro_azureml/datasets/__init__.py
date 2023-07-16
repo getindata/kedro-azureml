@@ -1,5 +1,5 @@
+from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataSet
 from kedro_azureml.datasets.file_dataset import AzureMLFileDataSet
-from kedro_azureml.datasets.folder_dataset import AzureMLFolderDataSet
 from kedro_azureml.datasets.pandas_dataset import AzureMLPandasDataSet
 from kedro_azureml.datasets.pipeline_dataset import AzureMLPipelineDataSet
 from kedro_azureml.datasets.runner_dataset import (
@@ -9,7 +9,7 @@ from kedro_azureml.datasets.runner_dataset import (
 
 __all__ = [
     "AzureMLFileDataSet",
-    "AzureMLFolderDataSet",
+    "AzureMLAssetDataSet",
     "AzureMLPipelineDataSet",
     "AzureMLPandasDataSet",
     "KedroAzureRunnerDataset",

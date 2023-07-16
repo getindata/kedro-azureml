@@ -12,7 +12,7 @@ from kedro.io.core import Version
 
 from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
 from kedro_azureml.datasets import (
-    AzureMLFolderDataSet,
+    AzureMLAssetDataSet,
     AzureMLPandasDataSet,
     AzureMLPipelineDataSet,
     KedroAzureRunnerDataset,
@@ -233,7 +233,7 @@ def test_azure_dataset_config(dataset_class: Type):
     ],
     indirect=["mock_azureml_client"],
 )
-def test_azureml_folder_dataset(
+def test_azureml_asset_dataset(
     in_temp_dir,
     mock_azureml_client,
     mock_azureml_config,
@@ -245,7 +245,7 @@ def test_azureml_folder_dataset(
     local_run,
     download,
 ):
-    ds = AzureMLFolderDataSet(
+    ds = AzureMLAssetDataSet(
         dataset={
             "type": dataset_type,
             "filepath": path_in_aml,
@@ -275,7 +275,7 @@ def test_azureml_pipeline_dataset(tmp_path: Path):
         str(ds.path) == original_path
     ), "Path should be set to the underlying filepath"
 
-    ds.folder = (modified_path := str(tmp_path))
+    ds.root_dir = (modified_path := str(tmp_path))
     modified_path = Path(modified_path) / "test.pickle"
     assert ds.path == modified_path, "Path should be modified to the supplied value"
 

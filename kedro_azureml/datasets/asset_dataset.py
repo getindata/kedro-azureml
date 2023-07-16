@@ -26,9 +26,9 @@ AzureMLDataAssetType = Literal["uri_file", "uri_folder"]
 logger = logging.getLogger(__name__)
 
 
-class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
+class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
     """
-    AzureMLFolderDataSet enables kedro-azureml to use azureml
+    AzureMLAssetDataSet enables kedro-azureml to use azureml
     v2-sdk Folder/File datasets for remote and local runs.
 
     Args
@@ -37,7 +37,7 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
      | - ``azureml_dataset``: Name of the AzureML dataset.
      | - ``dataset``: Definition of the underlying dataset saved in the Folder/Filedataset.
         ``e.g. Parquet, Csv etc.
-     | - ``folder``: The local folder where the dataset should be saved during local runs.
+     | - ``root_dir``: The local folder where the dataset should be saved during local runs.
         ``Relevant for local execution via `kedro run`.
      | - ``filepath_arg``: Filepath arg on the wrapped dataset, defaults to `filepath`
      | - ``azureml_type``: Either `uri_folder` or `uri_file`
@@ -51,18 +51,18 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
     .. code-block:: yaml
 
         my_folder_dataset:
-          type: kedro_azureml.datasets.AzureMLFolderDataSet
+          type: kedro_azureml.datasets.AzureMLAssetDataSet
           azureml_dataset: my_azureml_folder_dataset
-          folder: data/01_raw/some_folder/
+          root_dir: data/01_raw/some_folder/
           versioned: True
           dataset:
             type: pandas.ParquetDataSet
             filepath: "."
 
         my_file_dataset:
-            type: kedro_azureml.datasets.AzureMLFolderDataSet
+            type: kedro_azureml.datasets.AzureMLAssetDataSet
             azureml_dataset: my_azureml_file_dataset
-            folder: data/01_raw/some_other_folder/
+            root_dir: data/01_raw/some_other_folder/
             versioned: True
             dataset:
                 type: pandas.ParquetDataSet
@@ -74,7 +74,7 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         self,
         azureml_dataset: str,
         dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
-        folder: str = "data",
+        root_dir: str = "data",
         filepath_arg: str = "filepath",
         azureml_type: AzureMLDataAssetType = "uri_folder",
         version: Optional[Version] = None,
@@ -82,13 +82,13 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         """
         azureml_dataset: Name of the AzureML file azureml_dataset.
         dataset: Type of the underlying dataset that is saved on AzureML e.g. Parquet, Csv etc.
-        folder: The local folder where the dataset should be saved during local runs.
+        root_dir: The local folder where the dataset should be saved during local runs.
                 Relevant only for local execution via `kedro run`.
         filepath_arg: Filepath arg on the wrapped dataset, defaults to `filepath`
         azureml_type: Either `uri_folder` or `uri_file`
         version: Version of the AzureML dataset to be used in kedro format.
         """
-        super().__init__(dataset=dataset, folder=folder, filepath_arg=filepath_arg)
+        super().__init__(dataset=dataset, root_dir=root_dir, filepath_arg=filepath_arg)
 
         self._azureml_dataset = azureml_dataset
         self._version = version
@@ -119,13 +119,13 @@ class AzureMLFolderDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         # AzureML dataset level
         if self._local_run:
             return (
-                Path(self.folder)
+                Path(self.root_dir)
                 / self._azureml_dataset
                 / self.resolve_load_version()
                 / Path(self._dataset_config[self._filepath_arg])
             )
         else:
-            return Path(self.folder) / Path(self._dataset_config[self._filepath_arg])
+            return Path(self.root_dir) / Path(self._dataset_config[self._filepath_arg])
 
     @property
     def download_path(self) -> str:

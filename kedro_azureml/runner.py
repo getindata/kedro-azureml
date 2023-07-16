@@ -16,7 +16,7 @@ from kedro_azureml.datasets import (
     KedroAzureRunnerDataset,
     KedroAzureRunnerDistributedDataset,
 )
-from kedro_azureml.datasets.folder_dataset import AzureMLFolderDataSet
+from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataSet
 from kedro_azureml.distributed.utils import is_distributed_environment
 
 logger = logging.getLogger(__name__)
@@ -55,12 +55,12 @@ class AzurePipelinesRunner(SequentialRunner):
                 ds = catalog._get_dataset(ds_name)
                 if isinstance(ds, AzureMLPipelineDataSet):
                     if (
-                        isinstance(ds, AzureMLFolderDataSet)
+                        isinstance(ds, AzureMLAssetDataSet)
                         and ds._azureml_type == "uri_file"
                     ):
-                        ds.folder = str(Path(azure_dataset_path).parent)
+                        ds.root_dir = str(Path(azure_dataset_path).parent)
                     else:
-                        ds.folder = azure_dataset_path
+                        ds.root_dir = azure_dataset_path
                     catalog.add(ds_name, ds, replace=True)
             else:
                 catalog.add(ds_name, self.create_default_data_set(ds_name))
@@ -80,7 +80,7 @@ class AzurePipelinesRunner(SequentialRunner):
                     "backend": "cloudpickle",
                     "filepath": f"{ds_name}.pickle",
                 },
-                folder=self.data_paths[ds_name],
+                root_dir=self.data_paths[ds_name],
             )
         else:
             # TODO: handle credentials better (probably with built-in Kedro credentials

@@ -2,7 +2,7 @@ from kedro.framework.hooks import hook_impl
 from kedro.io.core import Version
 
 from kedro_azureml.config import AzureMLConfig
-from kedro_azureml.datasets.folder_dataset import AzureMLFolderDataSet
+from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataSet
 
 
 class AzureMLLocalRunHook:
@@ -25,7 +25,7 @@ class AzureMLLocalRunHook:
         # we don't want the hook to work when we are running on AML
         if "AzurePipelinesRunner" not in run_params["runner"]:
             for dataset_name, dataset in catalog._data_sets.items():
-                if isinstance(dataset, AzureMLFolderDataSet):
+                if isinstance(dataset, AzureMLAssetDataSet):
                     if dataset_name in pipeline.inputs():
                         dataset._local_run = True
                         dataset._download = True
