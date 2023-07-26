@@ -1,5 +1,4 @@
 from kedro.framework.hooks import hook_impl
-from kedro.io.core import Version
 
 from kedro_azureml.config import AzureMLConfig
 from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataSet
