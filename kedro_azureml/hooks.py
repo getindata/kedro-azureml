@@ -22,23 +22,21 @@ class AzureMLLocalRunHook:
             pipeline: The ``Pipeline`` object representing the pipeline to be run.
             catalog: The ``DataCatalog`` from which to fetch data.
         """
-        # we don't want the hook to work when we are running on AML
-        if "AzurePipelinesRunner" not in run_params["runner"]:
-            for dataset_name, dataset in catalog._data_sets.items():
-                if isinstance(dataset, AzureMLAssetDataSet):
-                    if dataset_name in pipeline.inputs():
-                        dataset._local_run = True
-                        dataset._download = True
-                        dataset._azureml_config = self.azure_config
-                        catalog.add(dataset_name, dataset, replace=True)
+        for dataset_name, dataset in catalog._data_sets.items():
+            if isinstance(dataset, AzureMLAssetDataSet):
+                if "AzurePipelinesRunner" not in run_params["runner"]:
+                    # when running locally using an AzureMLAssetDataSet
+                    # as an intermediate dataset we don't want download
+                    # but still set to run local with a local version.
+                    download = dataset_name in pipeline.inputs()
+                    dataset.as_local(self.azure_config, download=download)
+                # when running remotely we still want to provide information
+                # from the azureml config for getting the dataset version during
+                # remote runs
+                else:
+                    dataset._azureml_config = self.azure_config
 
-                    # we are adding this so that if an intermediate dataset in one
-                    # run becomes the root dataset in another run we don't get problems
-                    # with files being folder in the kedro verion way.
-                    else:
-                        dataset._local_run = True
-                        dataset._version = Version("local", "local")
-                        catalog.add(dataset_name, dataset, replace=True)
+                catalog.add(dataset_name, dataset, replace=True)
 
 
 azureml_local_run_hook = AzureMLLocalRunHook()

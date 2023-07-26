@@ -195,3 +195,12 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
 
     def _save(self, data: Any) -> None:
         self._construct_dataset().save(data)
+
+    def as_local(self, azure_config, download: bool):
+        self._azureml_config = azure_config
+        self._local_run = True
+        if download:
+            self._download = True
+        # for local runs we want the data to be saved as a "local version"
+        else:
+            self._version = Version("local", "local")
