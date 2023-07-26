@@ -34,7 +34,8 @@ class AzureMLLocalRunHook:
                 # from the azureml config for getting the dataset version during
                 # remote runs
                 else:
-                    dataset._azureml_config = self.azure_config
+                    # dataset._azureml_config = self.azure_config
+                    dataset._version = None
 
                 catalog.add(dataset_name, dataset, replace=True)
 
