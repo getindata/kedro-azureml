@@ -43,4 +43,4 @@ def test_hook_after_context_created(
         assert multi_catalog.datasets.input_data._azureml_config is None
         assert multi_catalog.datasets.i2._download is False
         assert multi_catalog.datasets.i2._local_run is False
-        assert multi_catalog.datasets.i2._version == None
+        assert multi_catalog.datasets.i2._version is None
