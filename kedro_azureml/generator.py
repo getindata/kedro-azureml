@@ -144,13 +144,15 @@ class AzureMLPipelineGenerator:
         else:
             return self.aml_env or self.config.azure.environment_name
 
-    def _get_versioned_azureml_dataset_name(self, dataset_name: str):
-        version = self.load_versions.get(dataset_name)
+    def _get_versioned_azureml_dataset_name(
+        self, catalog_name: str, azureml_dataset_name: str
+    ):
+        version = self.load_versions.get(catalog_name)
         if version is None or version == "latest":
             suffix = "@latest"
         else:
             suffix = ":" + version
-        return dataset_name + suffix
+        return azureml_dataset_name + suffix
 
     def _get_input_type(self, dataset_name: str, pipeline: Pipeline) -> Input:
         if self._is_param_or_root_non_azureml_folder_dataset(dataset_name, pipeline):
@@ -335,7 +337,7 @@ class AzureMLPipelineGenerator:
                     azure_inputs[sanitized_input_name] = Input(
                         type=ds._azureml_type,
                         path=self._get_versioned_azureml_dataset_name(
-                            ds._azureml_dataset
+                            node_input, ds._azureml_dataset
                         ),
                     )
                 # 3. if not found, provide dummy input
