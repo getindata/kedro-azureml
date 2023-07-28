@@ -70,6 +70,8 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
 
     """
 
+    versioned = True
+
     def __init__(
         self,
         azureml_dataset: str,

@@ -155,7 +155,7 @@ class AzureMLPipelineGenerator:
         return azureml_dataset_name + suffix
 
     def _get_input_type(self, dataset_name: str, pipeline: Pipeline) -> Input:
-        if self._is_param_or_root_non_azureml_folder_dataset(dataset_name, pipeline):
+        if self._is_param_or_root_non_azureml_asset_dataset(dataset_name, pipeline):
             return "string"
         elif dataset_name in self.catalog.list() and isinstance(
             ds := self.catalog._get_dataset(dataset_name), AzureMLAssetDataSet
@@ -190,7 +190,7 @@ class AzureMLPipelineGenerator:
             msg += f", got {value_to_parse}"
             raise ValueError(msg)
 
-    def _is_param_or_root_non_azureml_folder_dataset(
+    def _is_param_or_root_non_azureml_asset_dataset(
         self, dataset_name: str, pipeline: Pipeline
     ) -> bool:
         return dataset_name.startswith(PARAMS_PREFIX) or (
@@ -354,7 +354,7 @@ class AzureMLPipelineGenerator:
                 + self._sanitize_param_name(name)
                 + "}}"
                 for name in node.inputs
-                if not self._is_param_or_root_non_azureml_folder_dataset(name, pipeline)
+                if not self._is_param_or_root_non_azureml_asset_dataset(name, pipeline)
             ]
             if node.inputs
             else []
