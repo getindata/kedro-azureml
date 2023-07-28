@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 from kedro.extras.datasets.pandas import ParquetDataSet
 from kedro.extras.datasets.pickle import PickleDataSet
-from kedro.io.core import Version
+from kedro.io.core import VERSIONED_FLAG_KEY, DataSetError, Version
 
 from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
 from kedro_azureml.datasets import (
@@ -348,9 +348,43 @@ def test_azureml_asset_dataset(
     ds._azureml_config = Path(mock_azureml_config)
     assert ds.path == Path(path_locally)
     assert ds.download_path == download_path
+    df = pd.DataFrame({"data": [1, 2, 3], "partition_idx": [1, 2, 3]})
     if download:
-        df = pd.DataFrame({"data": [1, 2, 3], "partition_idx": [1, 2, 3]})
         assert (ds._load()["data"] == df["data"]).all()
+        if dataset_type is not ParquetDataSet:
+            ds.path.unlink()
+            assert not ds.path.exists()
+            ds._save(df)
+            assert ds.path.exists()
+    else:
+        ds._save(df)
+        assert (ds._load()["data"] == df["data"]).all()
+
+
+def test_azureml_assetdataset_raises_DataSetError_azureml_type():
+    with pytest.raises(DataSetError, match="mltable"):
+        AzureMLAssetDataSet(
+            dataset={
+                "type": PickleDataSet,
+                "filepath": "some/random/path/test.pickle",
+            },
+            azureml_dataset="test_dataset",
+            version=Version(None, None),
+            azureml_type="mltable",
+        )
+
+
+def test_azureml_assetdataset_raises_DataSetError_wrapped_dataset_versioned():
+    with pytest.raises(DataSetError, match=VERSIONED_FLAG_KEY):
+        AzureMLAssetDataSet(
+            dataset={
+                "type": PickleDataSet,
+                "filepath": "some/random/path/test.pickle",
+                "versioned": True,
+            },
+            azureml_dataset="test_dataset",
+            version=Version(None, None),
+        )
 
 
 def test_azureml_pipeline_dataset(tmp_path: Path):
