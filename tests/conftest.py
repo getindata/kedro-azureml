@@ -143,8 +143,19 @@ def simulated_azureml_dataset(tmp_path):
 
     df.to_pickle(test_data_nested / "test.pickle")
 
-    test_data_folder_nested = tmp_path / "test_folder_nested" / "random" / "subfolder"
+    test_data_folder_nested_file = (
+        tmp_path / "test_folder_nested_file" / "random" / "subfolder"
+    )
+    test_data_folder_nested_file.mkdir(parents=True)
+    df.to_pickle(test_data_folder_nested_file / "test.pickle")
+
+    test_data_folder_root_file = tmp_path / "test_folder_file"
+    test_data_folder_root_file.mkdir(parents=True)
+    df.to_pickle(test_data_folder_root_file / "test.pickle")
+
     test_data_folder_root = tmp_path / "test_folder"
+
+    test_data_folder_nested = tmp_path / "test_folder_nested" / "random" / "subfolder"
     test_data_folder_nested.mkdir(parents=True)
     test_data_folder_root.mkdir(parents=True)
 

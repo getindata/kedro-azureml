@@ -230,6 +230,96 @@ def test_azure_dataset_config(dataset_class: Type):
                 "type": "uri_folder",
             },
         ),
+        (
+            PickleDataSet,
+            "test.pickle",
+            "data/test.pickle",
+            "data",
+            False,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_file/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            PickleDataSet,
+            "test.pickle",
+            "data/test_dataset/1/test.pickle",
+            "data/test_dataset/1",
+            True,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_file/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            PickleDataSet,
+            "test.pickle",
+            "data/test_dataset/1/test.pickle",
+            "data/test_dataset/1",
+            True,
+            True,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_file/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            PickleDataSet,
+            "random/subfolder/test.pickle",
+            "data/random/subfolder/test.pickle",
+            "data/random/subfolder",
+            False,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_nested_file/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            PickleDataSet,
+            "random/subfolder/test.pickle",
+            "data/test_dataset/1/random/subfolder/test.pickle",
+            "data/test_dataset/1/random/subfolder",
+            True,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_nested_file/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            PickleDataSet,
+            "random/subfolder/test.pickle",
+            "data/test_dataset/1/random/subfolder/test.pickle",
+            "data/test_dataset/1/random/subfolder",
+            True,
+            True,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_nested_file/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
     ],
     indirect=["mock_azureml_client"],
 )
