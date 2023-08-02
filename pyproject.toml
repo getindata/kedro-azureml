@@ -42,9 +42,10 @@ pydantic = "~=1.9.1"
 mlflow = {version = "^1.27.0", optional = true}
 backoff = "^2.2.1"
 azure-core = ">=1.26.1"
-azureml-core = "^1.49.0"
-azureml-dataset-runtime = "^1.49.0"
+azureml-core = "^1.52.0"
+azureml-dataset-runtime = "^1.52.0"
 kedro-datasets = ">=1.0.0"
+azureml-fsspec = "^1.1.1"
 
 [tool.poetry.extras]
 mlflow = ["azureml-mlflow", "mlflow"]
@@ -61,3 +62,6 @@ pandas = "^1.4.3"
 
 [tool.poetry.plugins."kedro.project_commands"]
 "azureml" = "kedro_azureml.cli:commands"
+
+[tool.poetry.plugins."kedro.hooks"]
+"azure_local_run_hook" = "kedro_azureml.hooks:azureml_local_run_hook"

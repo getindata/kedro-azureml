@@ -6,10 +6,13 @@ from uuid import uuid4
 import numpy as np
 import pandas as pd
 import pytest
+from kedro.extras.datasets.pandas import ParquetDataSet
 from kedro.extras.datasets.pickle import PickleDataSet
+from kedro.io.core import VERSIONED_FLAG_KEY, DataSetError, Version
 
 from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
 from kedro_azureml.datasets import (
+    AzureMLAssetDataSet,
     AzureMLPandasDataSet,
     AzureMLPipelineDataSet,
     KedroAzureRunnerDataset,
@@ -44,6 +47,346 @@ def test_azure_dataset_config(dataset_class: Type):
     assert all(k in cfg for k in ("account_name", "account_key")), "Invalid ABFS config"
 
 
+@pytest.mark.parametrize(
+    "dataset_type,path_in_aml,path_locally,download_path,local_run,download,mock_azureml_client",
+    [
+        (
+            PickleDataSet,
+            "test.pickle",
+            "data/test.pickle",
+            "data",
+            False,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_file/test.pickle"
+                ),
+                "type": "uri_file",
+            },
+        ),
+        (
+            PickleDataSet,
+            "test.pickle",
+            "data/test_dataset/1/test.pickle",
+            "data/test_dataset/1",
+            True,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_file/test.pickle"
+                ),
+                "type": "uri_file",
+            },
+        ),
+        (
+            PickleDataSet,
+            "test.pickle",
+            "data/test_dataset/1/test.pickle",
+            "data/test_dataset/1",
+            True,
+            True,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_file/test.pickle"
+                ),
+                "type": "uri_file",
+            },
+        ),
+        (
+            PickleDataSet,
+            "random/subfolder/test.pickle",
+            "data/random/subfolder/test.pickle",
+            "data/random/subfolder",
+            False,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/random/subfolder/test.pickle"
+                ),
+                "type": "uri_file",
+            },
+        ),
+        (
+            PickleDataSet,
+            "random/subfolder/test.pickle",
+            "data/test_dataset/1/random/subfolder/test.pickle",
+            "data/test_dataset/1/random/subfolder",
+            True,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/random/subfolder/test.pickle"
+                ),
+                "type": "uri_file",
+            },
+        ),
+        (
+            PickleDataSet,
+            "random/subfolder/test.pickle",
+            "data/test_dataset/1/random/subfolder/test.pickle",
+            "data/test_dataset/1/random/subfolder",
+            True,
+            True,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_file/random/subfolder/test.pickle"
+                ),
+                "type": "uri_file",
+            },
+        ),
+        (
+            ParquetDataSet,
+            ".",
+            "data/",
+            "data",
+            False,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder/"
+                ),
+                "type": "uri_file",
+            },
+        ),
+        (
+            ParquetDataSet,
+            ".",
+            "data/test_dataset/1/",
+            "data/test_dataset/1",
+            True,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            ParquetDataSet,
+            ".",
+            "data/test_dataset/1/",
+            "data/test_dataset/1",
+            True,
+            True,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            ParquetDataSet,
+            "random/subfolder/",
+            "data/random/subfolder/",
+            "data/random/subfolder",
+            False,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_nested/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            ParquetDataSet,
+            "random/subfolder/",
+            "data/test_dataset/1/random/subfolder/",
+            "data/test_dataset/1/random/subfolder",
+            True,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_nested/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            ParquetDataSet,
+            "random/subfolder/",
+            "data/test_dataset/1/random/subfolder/",
+            "data/test_dataset/1/random/subfolder",
+            True,
+            True,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_nested/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            PickleDataSet,
+            "test.pickle",
+            "data/test.pickle",
+            "data",
+            False,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_file/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            PickleDataSet,
+            "test.pickle",
+            "data/test_dataset/1/test.pickle",
+            "data/test_dataset/1",
+            True,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_file/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            PickleDataSet,
+            "test.pickle",
+            "data/test_dataset/1/test.pickle",
+            "data/test_dataset/1",
+            True,
+            True,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_file/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            PickleDataSet,
+            "random/subfolder/test.pickle",
+            "data/random/subfolder/test.pickle",
+            "data/random/subfolder",
+            False,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_nested_file/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            PickleDataSet,
+            "random/subfolder/test.pickle",
+            "data/test_dataset/1/random/subfolder/test.pickle",
+            "data/test_dataset/1/random/subfolder",
+            True,
+            False,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_nested_file/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+        (
+            PickleDataSet,
+            "random/subfolder/test.pickle",
+            "data/test_dataset/1/random/subfolder/test.pickle",
+            "data/test_dataset/1/random/subfolder",
+            True,
+            True,
+            {
+                "path": (
+                    "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces"
+                    "/dummy_ws/datastores/some_datastore/paths/test_folder_nested_file/"
+                ),
+                "type": "uri_folder",
+            },
+        ),
+    ],
+    indirect=["mock_azureml_client"],
+)
+def test_azureml_asset_dataset(
+    in_temp_dir,
+    mock_azureml_client,
+    mock_azureml_config,
+    mock_azureml_fs,
+    dataset_type,
+    path_in_aml,
+    path_locally,
+    download_path,
+    local_run,
+    download,
+):
+    ds = AzureMLAssetDataSet(
+        dataset={
+            "type": dataset_type,
+            "filepath": path_in_aml,
+        },
+        azureml_dataset="test_dataset",
+        version=Version(None, None),
+    )
+    ds._local_run = local_run
+    ds._download = download
+    ds._azureml_config = Path(mock_azureml_config)
+    assert ds.path == Path(path_locally)
+    assert ds.download_path == download_path
+    df = pd.DataFrame({"data": [1, 2, 3], "partition_idx": [1, 2, 3]})
+    if download:
+        assert (ds._load()["data"] == df["data"]).all()
+        if dataset_type is not ParquetDataSet:
+            ds.path.unlink()
+            assert not ds.path.exists()
+            ds._save(df)
+            assert ds.path.exists()
+    else:
+        ds._save(df)
+        assert (ds._load()["data"] == df["data"]).all()
+
+
+def test_azureml_assetdataset_raises_DataSetError_azureml_type():
+    with pytest.raises(DataSetError, match="mltable"):
+        AzureMLAssetDataSet(
+            dataset={
+                "type": PickleDataSet,
+                "filepath": "some/random/path/test.pickle",
+            },
+            azureml_dataset="test_dataset",
+            version=Version(None, None),
+            azureml_type="mltable",
+        )
+
+
+def test_azureml_assetdataset_raises_DataSetError_wrapped_dataset_versioned():
+    with pytest.raises(DataSetError, match=VERSIONED_FLAG_KEY):
+        AzureMLAssetDataSet(
+            dataset={
+                "type": PickleDataSet,
+                "filepath": "some/random/path/test.pickle",
+                "versioned": True,
+            },
+            azureml_dataset="test_dataset",
+            version=Version(None, None),
+        )
+
+
 def test_azureml_pipeline_dataset(tmp_path: Path):
     ds = AzureMLPipelineDataSet(
         {
@@ -52,9 +395,12 @@ def test_azureml_pipeline_dataset(tmp_path: Path):
             "filepath": (original_path := str(tmp_path / "test.pickle")),
         }
     )
-    assert ds.path == original_path, "Path should be set to the underlying filepath"
+    assert (
+        str(ds.path) == original_path
+    ), "Path should be set to the underlying filepath"
 
-    ds.path = (modified_path := str(tmp_path / "test2.pickle"))
+    ds.root_dir = (modified_path := str(tmp_path))
+    modified_path = Path(modified_path) / "test.pickle"
     assert ds.path == modified_path, "Path should be modified to the supplied value"
 
     ds.save("test")

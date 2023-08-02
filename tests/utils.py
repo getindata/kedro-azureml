@@ -30,5 +30,9 @@ def create_kedro_conf_dirs(tmp_path: Path):
         Path(__file__).absolute().parent / "conf" / "base" / "azureml.yml",
         config_path / "azureml.yml",
     )
+    copy(
+        Path(__file__).absolute().parent / "conf" / "base" / "parameters.yml",
+        config_path / "parameters.yml",
+    )
 
     return config_path

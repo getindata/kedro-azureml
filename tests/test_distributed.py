@@ -64,7 +64,7 @@ def test_can_annotate_kedro_node_with_distributed_decorator(framework, num_nodes
     ],
 )
 def test_can_generate_azure_pipeline_with_distributed_node(
-    dummy_plugin_config, framework, num_nodes, kedro_params
+    dummy_plugin_config, framework, num_nodes, kedro_params, multi_catalog
 ):
     @distributed_job(framework, num_nodes=num_nodes)
     def my_distributed_node(x):
@@ -89,6 +89,7 @@ def test_can_generate_azure_pipeline_with_distributed_node(
             dummy_plugin_config,
             kedro_params,
             aml_env=aml_env,
+            catalog=multi_catalog,
         )
 
         az_pipeline = generator.generate()
@@ -108,7 +109,7 @@ def test_can_generate_azure_pipeline_with_distributed_node(
 
 @pytest.mark.parametrize("invalid_num_nodes", [False, 123.0, {}, "asdf"])
 def test_generator_raises_on_invalid_distributed_config(
-    dummy_plugin_config, invalid_num_nodes
+    dummy_plugin_config, invalid_num_nodes, multi_catalog
 ):
     @distributed_job(Framework.PyTorch, num_nodes=invalid_num_nodes)
     def my_distributed_node(x):
@@ -133,6 +134,7 @@ def test_generator_raises_on_invalid_distributed_config(
             dummy_plugin_config,
             {},
             aml_env=aml_env,
+            catalog=multi_catalog,
         )
 
         with pytest.raises(ValueError):

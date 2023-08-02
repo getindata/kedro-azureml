@@ -1,9 +1,12 @@
 from pathlib import Path
 
+import pytest
 from kedro.extras.datasets.pickle import PickleDataSet
 from kedro.io import DataCatalog, MemoryDataSet
+from kedro.io.core import Version
 from kedro.pipeline import Pipeline
 
+from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataSet
 from kedro_azureml.datasets.pipeline_dataset import AzureMLPipelineDataSet
 from kedro_azureml.runner import AzurePipelinesRunner
 
@@ -61,3 +64,43 @@ def test_runner_pipeline_data_passing(dummy_pipeline: Pipeline, tmp_path: Path):
     assert Path(output_path).stat().st_size > 0, "No output data found"
     output_data = output_dataset.load()
     assert output_data == input_data, "Output data is not the same as input data"
+
+
+@pytest.mark.parametrize(
+    "azureml_dataset_type,data_path",
+    [
+        (
+            "uri_folder",
+            "/random/folder",
+        ),
+        ("uri_file", "/random/folder/file.csv"),
+    ],
+)
+def test_asset_dataset_root_dir_adjustments(
+    dummy_pipeline: Pipeline, tmp_path: Path, azureml_dataset_type, data_path
+):
+    input_path = str(tmp_path / "input_data.pickle")
+    input_dataset = AzureMLAssetDataSet(
+        dataset={
+            "type": PickleDataSet,
+            "backend": "cloudpickle",
+            "filepath": input_path,
+        },
+        azureml_dataset="test_dataset_2",
+        version=Version(None, None),
+        azureml_type=azureml_dataset_type,
+    )
+    input_data = ["yolo :)"]
+    input_dataset._save(input_data)
+
+    runner = AzurePipelinesRunner(
+        pipeline_data_passing=True, data_paths={"input_data": data_path, "i2": tmp_path}
+    )
+
+    catalog = DataCatalog({"input_data": input_dataset})
+    assert catalog.datasets.input_data.root_dir == "data"
+    runner.run(
+        dummy_pipeline.filter(node_names=["node1"]),
+        catalog,
+    )
+    assert catalog.datasets.input_data.root_dir == "/random/folder"

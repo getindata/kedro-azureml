@@ -187,7 +187,6 @@ class AzureMLFileDataSet(PartitionedDataSet):
         super().__init__(path, **kwargs)
 
     def _save(self, data: t.Dict[str, t.Any]) -> None:
-
         # save to azure blob storage
         super()._save(data)
 
