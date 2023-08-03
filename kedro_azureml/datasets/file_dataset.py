@@ -5,7 +5,7 @@ from azureml.core import Dataset, Datastore, Workspace
 from azureml.data.dataset_factory import FileDatasetFactory
 from kedro.io import PartitionedDataSet
 
-from kedro_azureml.datasets.utils import get_workspace
+from kedro_azureml.auth.utils import get_workspace
 
 
 @dataclass
