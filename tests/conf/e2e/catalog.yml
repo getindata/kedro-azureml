@@ -16,3 +16,7 @@ shuttles:
 preprocessed_companies:
   type: kedro_azureml.datasets.pandas_dataset.AzureMLPandasDataSet
   azureml_dataset: e2e_tests_preprocessed_companies
+  workspace_args:
+    subscription_id: "{subscription_id}"
+    resource_group: sandbox-ml-ops
+    workspace_name: ml-ops-sandbox
