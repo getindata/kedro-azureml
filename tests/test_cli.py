@@ -267,9 +267,9 @@ def test_can_invoke_run(
     ), patch.object(Path, "cwd", return_value=tmp_path), patch(
         "kedro_azureml.client.MLClient"
     ) as ml_client_patched, patch(
-        "kedro_azureml.client.DefaultAzureCredential"
+        "kedro_azureml.auth.utils.DefaultAzureCredential"
     ) as default_credentials, patch(
-        "kedro_azureml.client.InteractiveBrowserCredential"
+        "kedro_azureml.auth.utils.InteractiveBrowserCredential"
     ) as interactive_credentials, patch.dict(
         os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
     ):
@@ -355,7 +355,7 @@ def test_run_is_interrupted_if_used_on_empty_env(
     ), patch.object(Path, "cwd", return_value=tmp_path), patch.dict(
         os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
     ), patch(
-        "kedro_azureml.client.DefaultAzureCredential"
+        "kedro_azureml.auth.utils.DefaultAzureCredential"
     ), patch(
         "click.confirm", return_value=confirm
     ) as click_confirm:
@@ -379,7 +379,7 @@ def test_can_invoke_run_with_failed_pipeline(
     ), patch.object(Path, "cwd", return_value=tmp_path), patch(
         "kedro_azureml.client.MLClient"
     ) as ml_client_patched, patch(
-        "kedro_azureml.client.DefaultAzureCredential"
+        "kedro_azureml.auth.utils.DefaultAzureCredential"
     ), patch.dict(
         os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
     ):
@@ -422,7 +422,7 @@ def test_fail_if_invalid_env_provided_in_run(
     ), patch.object(Path, "cwd", return_value=tmp_path), patch(
         "kedro_azureml.client.MLClient"
     ) as ml_client_patched, patch(
-        "kedro_azureml.client.DefaultAzureCredential"
+        "kedro_azureml.auth.utils.DefaultAzureCredential"
     ), patch.dict(
         os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
     ):

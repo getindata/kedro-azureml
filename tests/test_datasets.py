@@ -435,7 +435,7 @@ def test_can_save_python_objects_using_fspec(obj, comparer, patched_azure_datase
 
 @pytest.mark.parametrize(
     "workspace_patch_class",
-    ["kedro_azureml.datasets.utils.Run", "kedro_azureml.datasets.utils.Workspace"],
+    ["kedro_azureml.auth.utils.Run", "kedro_azureml.auth.utils.Workspace"],
 )
 def test_can_use_pandas_to_azure(workspace_patch_class):
     with patch(
