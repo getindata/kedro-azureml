@@ -23,3 +23,13 @@ preprocessed_shuttles:
   dataset:
     type: pandas.CSVDataSet
     filepath: "shuttles.csv"
+
+model_input_table:
+  type: kedro_azureml.datasets.AzureMLAssetDataSet
+  azureml_dataset: e2e_tests_pdp
+  root_dir: data/02_intermediate
+  dataset:
+    type: pandas.CSVDataSet
+    filepath: model_input_table.csv
+    save_args:
+      index: false
