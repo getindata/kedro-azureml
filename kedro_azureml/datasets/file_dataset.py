@@ -3,9 +3,9 @@ from dataclasses import dataclass
 
 from azureml.core import Dataset, Datastore, Workspace
 from azureml.data.dataset_factory import FileDatasetFactory
-from kedro.io import PartitionedDataSet
+from kedro.io import PartitionedDataset
 
-from kedro_azureml.auth.utils import get_workspace
+from kedro_azureml.auth.utils import AzureMLDataStoreMixin
 
 
 @dataclass
@@ -27,7 +27,7 @@ class BlobPath:
         return cls(storage_container=p[0], blob_path="/".join(p[1:]))
 
 
-class AzureMLFileDataSet(PartitionedDataSet):
+class AzureMLFileDataSet(PartitionedDataset, AzureMLDataStoreMixin):
     """
     AzureML file dataset integration with Kedro, using `kedro.io.PartitionedDataSet` as base class.
     Can be used to save (register) data stored in azure blob storage as an AzureML file dataset.
@@ -167,27 +167,19 @@ class AzureMLFileDataSet(PartitionedDataSet):
             )
 
         self._workspace_args = workspace_args or dict()
-        self._workspace = workspace or get_workspace(**self._workspace_args)
         self._azureml_dataset = azureml_dataset
         self._azureml_dataset_save_args = azureml_dataset_save_args or dict()
         self._azureml_dataset_load_args = azureml_dataset_load_args or dict()
-        self._azureml_datastore = (
-            azureml_datastore or self._workspace.get_default_datastore().name
+        AzureMLDataStoreMixin.__init__(
+            self, workspace_args, azureml_datastore, workspace
         )
-        ds = Datastore.get(self._workspace, self._azureml_datastore)
-
-        # validate that azureml_datastore exists
-        if self._azureml_datastore not in self._workspace.datastores:
-            raise ValueError(
-                f"Datastore {self._azureml_datastore} not found in workspace {self._workspace.name}"
-            )
 
         # init `PartitionedDataSet` with `path` as the blob storage container (the container of the azureml_datastore)
-        path = f"abfs://{ds.container_name}/"
-        super().__init__(path, **kwargs)
+        PartitionedDataset.__init__(self, "not_initialized_yet", **kwargs)
 
     def _save(self, data: t.Dict[str, t.Any]) -> None:
         # save to azure blob storage
+        self._path = self._azureml_path  # late-resolving
         super()._save(data)
 
         # save to azureml file-azureml_dataset
@@ -208,7 +200,7 @@ class AzureMLFileDataSet(PartitionedDataSet):
         storage. therefore, override existing `_list_partitions` method to return `partitioned_paths`,
         so that we can utilize the existing `PartitionedDataSet._load` method to load the data.
         """
-
+        self._path = self._azureml_path  # late-resolving
         dataset = Dataset.get_by_name(
             self._workspace,
             name=self._azureml_dataset,
@@ -223,3 +215,7 @@ class AzureMLFileDataSet(PartitionedDataSet):
         partitioned_paths = [f"{container}/{p}" for p in azureml_paths]
 
         return partitioned_paths
+
+    def _load(self):
+        self._path = self._azureml_path
+        return super()._load()

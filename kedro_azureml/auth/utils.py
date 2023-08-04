@@ -1,7 +1,8 @@
 import os
+from functools import cached_property
 
 from azure.identity import DefaultAzureCredential, InteractiveBrowserCredential
-from azureml.core import Run, Workspace
+from azureml.core import Datastore, Run, Workspace
 from azureml.exceptions import UserErrorException
 
 
@@ -31,9 +32,6 @@ def get_workspace(*args, **kwargs) -> Workspace:
         **kwargs: Keyword arguments to pass to the Workspace constructor.
     """
     if args or kwargs:
-        if kwargs is not None and "auth" not in kwargs:
-            kwargs["auth"] = get_azureml_credentials()
-
         workspace = Workspace(*args, **kwargs)
     else:
         try:
@@ -48,3 +46,27 @@ def get_workspace(*args, **kwargs) -> Workspace:
                     "Could not connect to AzureML workspace."
                 ) from e
     return workspace
+
+
+class AzureMLDataStoreMixin:
+    def __init__(self, workspace_args, azureml_datastore=None, workspace=None):
+        self._workspace_instance = workspace
+        self._azureml_datastore = azureml_datastore
+        self._workspace_args = workspace_args or dict()
+
+    @cached_property
+    def _workspace(self) -> Workspace:
+        return self._workspace_instance or get_workspace(**self._workspace_args)
+
+    @cached_property
+    def _azureml_datastore(self) -> str:
+        return self._azureml_datastore or self._workspace.get_default_datastore().name
+
+    @cached_property
+    def _datastore_container_name(self) -> str:
+        ds = Datastore.get(self._workspace, self._azureml_datastore)
+        return ds.container_name
+
+    @cached_property
+    def _azureml_path(self):
+        return f"abfs://{self._datastore_container_name}/"
