@@ -51,7 +51,7 @@ def get_workspace(*args, **kwargs) -> Workspace:
 class AzureMLDataStoreMixin:
     def __init__(self, workspace_args, azureml_datastore=None, workspace=None):
         self._workspace_instance = workspace
-        self._azureml_datastore = azureml_datastore
+        self._azureml_datastore_name = azureml_datastore
         self._workspace_args = workspace_args or dict()
 
     @cached_property
@@ -60,7 +60,9 @@ class AzureMLDataStoreMixin:
 
     @cached_property
     def _azureml_datastore(self) -> str:
-        return self._azureml_datastore or self._workspace.get_default_datastore().name
+        return (
+            self._azureml_datastore_name or self._workspace.get_default_datastore().name
+        )
 
     @cached_property
     def _datastore_container_name(self) -> str:
