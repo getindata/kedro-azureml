@@ -151,7 +151,6 @@ jobs:
           cp ../tests/conf/${{ matrix.e2e_config }}/azureml.yml conf/base/azureml.yml
           sed -i 's/{container_registry}/${{ secrets.REGISTRY_LOGIN_SERVER }}/g' conf/base/azureml.yml
           sed -i 's/{image_tag}/${{ matrix.e2e_config }}/g' conf/base/azureml.yml
-          sed -i 's/{subscription_id}/${{ secrets.AZURE_SUBSCRIPTION_ID }}/g' conf/base/catalog.yml
           
           cat conf/base/azureml.yml
 
