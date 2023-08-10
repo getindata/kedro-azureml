@@ -1,4 +1,5 @@
 import typing as t
+import warnings
 from dataclasses import dataclass
 
 from azureml.core import Dataset, Datastore, Workspace
@@ -161,6 +162,14 @@ class AzureMLFileDataSet(PartitionedDataset, AzureMLDataStoreMixin):
                 make sure to not pass `path` argument, as it will be built from `azureml_datastore` argument.
         """
         # validate that `path` is not part of kwargs, as we are building the `path` from `azureml_datastore` argument.
+        warnings.warn(
+            "Dataset AzureMLFileDataSet is deprecated and will"
+            " be removed in the upcoming release of kedro-azureml due to incompatibility"
+            " of Azure ML SDK v1 with ARM macOS\n"
+            "Please use AzureMLAssetDataSet instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if "path" in kwargs:
             raise ValueError(
                 f"`path` is not a valid argument for {self.__class__.__name__}"

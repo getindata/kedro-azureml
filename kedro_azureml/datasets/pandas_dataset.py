@@ -1,4 +1,5 @@
 import typing as t
+import warnings
 
 import pandas as pd
 from azureml.core import Dataset, Datastore, Workspace
@@ -74,6 +75,14 @@ class AzureMLPandasDataSet(AbstractDataSet, AzureMLDataStoreMixin):
             workspace: AzureML Workspace. If not specified, will attempt to load the workspace automatically.
             workspace_args: Additional arguments to pass to `utils.get_workspace()`.
         """
+        warnings.warn(
+            "Dataset AzureMLPandasDataSet is deprecated and will"
+            " be removed in the upcoming release of kedro-azureml due to incompatibility"
+            " of Azure ML SDK v1 with ARM macOS\n"
+            "Please use AzureMLAssetDataSet instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self._azureml_dataset = azureml_dataset
         self._azureml_dataset_save_args = azureml_dataset_save_args or dict()
         self._azureml_dataset_load_args = azureml_dataset_load_args or dict()
