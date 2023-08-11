@@ -1,9 +1,12 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.5.0] - 2023-08-11
+
 -   [🚀 New dataset] Added support for `AzureMLAssetDataSet` based on Azure ML SDK v2 (fsspec) by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh) & [@froessler](https://github.com/fdroessler)
 -   [📝 Docs] Updated datasets docs with sections
--   Bumped minimal required Kedro version to `0.18.11
+-   Bumped minimal required Kedro version to \`0.18.11
 -   [⚠️ Deprecation warning] - starting from `0.4.0` the plugin is not compatible with ARM macOS versions due to internal azure dependencies (v1 SDKs). V1 SDK-based datasets will be removed in the future
 
 ## [0.4.1] - 2023-05-04
@@ -66,7 +69,9 @@
 
 -   Initial plugin release
 
-[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.4.1...HEAD
+[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.5.0...HEAD
+
+[0.5.0]: https://github.com/getindata/kedro-azureml/compare/0.4.1...0.5.0
 
 [0.4.1]: https://github.com/getindata/kedro-azureml/compare/0.4.0...0.4.1
 
