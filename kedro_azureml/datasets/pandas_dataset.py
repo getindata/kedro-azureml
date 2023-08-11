@@ -1,14 +1,15 @@
 import typing as t
+import warnings
 
 import pandas as pd
 from azureml.core import Dataset, Datastore, Workspace
 from azureml.data.dataset_factory import TabularDatasetFactory
 from kedro.io import AbstractDataSet
 
-from kedro_azureml.datasets.utils import get_workspace
+from kedro_azureml.auth.utils import AzureMLDataStoreMixin
 
 
-class AzureMLPandasDataSet(AbstractDataSet):
+class AzureMLPandasDataSet(AbstractDataSet, AzureMLDataStoreMixin):
     """
     AzureML tabular dataset integration with Pandas DataFrame and kedro.
     Can be used to save Pandas DataFrame to AzureML tabular dataset, and load it back to Pandas DataFrame.
@@ -74,20 +75,20 @@ class AzureMLPandasDataSet(AbstractDataSet):
             workspace: AzureML Workspace. If not specified, will attempt to load the workspace automatically.
             workspace_args: Additional arguments to pass to `utils.get_workspace()`.
         """
-        self._workspace_args = workspace_args or dict()
-        self._workspace = workspace or get_workspace(**self._workspace_args)
+        warnings.warn(
+            "Dataset AzureMLPandasDataSet is deprecated and will"
+            " be removed in the upcoming release of kedro-azureml due to incompatibility"
+            " of Azure ML SDK v1 with ARM macOS\n"
+            "Please use AzureMLAssetDataSet instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self._azureml_dataset = azureml_dataset
         self._azureml_dataset_save_args = azureml_dataset_save_args or dict()
         self._azureml_dataset_load_args = azureml_dataset_load_args or dict()
-        self._azureml_datastore = (
-            azureml_datastore or self._workspace.get_default_datastore().name
+        AzureMLDataStoreMixin.__init__(
+            self, workspace_args, azureml_datastore, workspace
         )
-
-        # validate that azureml_datastore exists
-        if self._azureml_datastore not in self._workspace.datastores:
-            raise ValueError(
-                f"Datastore {self._azureml_datastore} not found in workspace {self._workspace.name}"
-            )
 
     def _load(self) -> pd.DataFrame:
         azureml_dataset = Dataset.get_by_name(

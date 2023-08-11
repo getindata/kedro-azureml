@@ -23,6 +23,7 @@ def get_context_and_pipeline(
     params: str,
     aml_env: Optional[str] = None,
     extra_env: Dict[str, str] = {},
+    load_versions: Dict[str, str] = {},
 ):
     with KedroContextManager(
         ctx.metadata.package_name, ctx.env, parse_extra_params(params, True)
@@ -50,11 +51,13 @@ def get_context_and_pipeline(
             ctx.env,
             mgr.plugin_config,
             mgr.context.params,
+            mgr.context.catalog,
             aml_env,
             docker_image,
             params,
             storage_account_key,
             extra_env,
+            load_versions,
         )
         az_pipeline = generator.generate()
         yield mgr, az_pipeline

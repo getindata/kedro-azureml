@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -8,8 +7,8 @@ from typing import Callable, Optional
 
 from azure.ai.ml import MLClient
 from azure.ai.ml.entities import Job
-from azure.identity import DefaultAzureCredential, InteractiveBrowserCredential
 
+from kedro_azureml.auth.utils import get_azureml_credentials
 from kedro_azureml.config import AzureMLConfig
 
 logger = logging.getLogger(__name__)
@@ -23,19 +22,7 @@ def _get_azureml_client(subscription_id: Optional[str], config: AzureMLConfig):
         "workspace_name": config.workspace_name,
     }
 
-    try:
-        # On a AzureML compute instance, the managed identity will take precedence,
-        # while it does not have enough permissions.
-        # So, if we are on an AzureML compute instance, we disable the managed identity.
-        is_azureml_managed_identity = "MSI_ENDPOINT" in os.environ
-        credential = DefaultAzureCredential(
-            exclude_managed_identity_credential=is_azureml_managed_identity
-        )
-        # Check if given credential can get token successfully.
-        credential.get_token("https://management.azure.com/.default")
-    except Exception:
-        # Fall back to InteractiveBrowserCredential in case DefaultAzureCredential not work
-        credential = InteractiveBrowserCredential()
+    credential = get_azureml_credentials()
 
     with TemporaryDirectory() as tmp_dir:
         config_path = Path(tmp_dir) / "config.json"

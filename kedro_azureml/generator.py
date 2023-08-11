@@ -14,6 +14,7 @@ from azure.ai.ml import (
 from azure.ai.ml.dsl import pipeline as azure_pipeline
 from azure.ai.ml.entities import Environment, Job
 from azure.ai.ml.entities._builders import Command
+from kedro.io import DataCatalog
 from kedro.pipeline import Pipeline
 from kedro.pipeline.node import Node
 
@@ -27,6 +28,7 @@ from kedro_azureml.constants import (
     KEDRO_AZURE_RUNNER_CONFIG,
     PARAMS_PREFIX,
 )
+from kedro_azureml.datasets import AzureMLAssetDataSet
 from kedro_azureml.distributed import DistributedNodeConfig
 from kedro_azureml.distributed.config import Framework
 
@@ -44,22 +46,26 @@ class AzureMLPipelineGenerator:
         kedro_environment: str,
         config: KedroAzureMLConfig,
         kedro_params: Dict[str, Any],
+        catalog: DataCatalog,
         aml_env: Optional[str] = None,
         docker_image: Optional[str] = None,
         params: Optional[str] = None,
         storage_account_key: Optional[str] = "",
         extra_env: Dict[str, str] = {},
+        load_versions: Dict[str, str] = {},
     ):
         self.storage_account_key = storage_account_key
         self.kedro_environment = kedro_environment
 
         self.params = params
         self.kedro_params = kedro_params
+        self.catalog = catalog
         self.aml_env = aml_env
         self.docker_image = docker_image
         self.config = config
         self.pipeline_name = pipeline_name
         self.extra_env = extra_env
+        self.load_versions = load_versions
 
     def generate(self) -> Job:
         pipeline = self.get_kedro_pipeline()
@@ -138,6 +144,30 @@ class AzureMLPipelineGenerator:
         else:
             return self.aml_env or self.config.azure.environment_name
 
+    def _get_versioned_azureml_dataset_name(
+        self, catalog_name: str, azureml_dataset_name: str
+    ):
+        version = self.load_versions.get(catalog_name)
+        if version is None or version == "latest":
+            suffix = "@latest"
+        else:
+            suffix = ":" + version
+        return azureml_dataset_name + suffix
+
+    def _get_input_type(self, dataset_name: str, pipeline: Pipeline) -> Input:
+        if self._is_param_or_root_non_azureml_asset_dataset(dataset_name, pipeline):
+            return "string"
+        elif dataset_name in self.catalog.list() and isinstance(
+            ds := self.catalog._get_dataset(dataset_name), AzureMLAssetDataSet
+        ):
+            if ds._azureml_type == "uri_file" and dataset_name not in pipeline.inputs():
+                raise ValueError(
+                    "AzureMLAssetDataSets with azureml_type 'uri_file' can only be used as pipeline inputs"
+                )
+            return ds._azureml_type
+        else:
+            return "uri_folder"
+
     def _from_params_or_value(
         self,
         namespace: Optional[str],
@@ -159,6 +189,17 @@ class AzureMLPipelineGenerator:
             msg += f" while parsing: {hint}"
             msg += f", got {value_to_parse}"
             raise ValueError(msg)
+
+    def _is_param_or_root_non_azureml_asset_dataset(
+        self, dataset_name: str, pipeline: Pipeline
+    ) -> bool:
+        return dataset_name.startswith(PARAMS_PREFIX) or (
+            dataset_name in pipeline.inputs()
+            and dataset_name in self.catalog.list()
+            and not isinstance(
+                self.catalog._get_dataset(dataset_name), AzureMLAssetDataSet
+            )
+        )
 
     def _construct_azure_command(
         self,
@@ -190,13 +231,22 @@ class AzureMLPipelineGenerator:
             },
             environment=self._resolve_azure_environment(),  # TODO: check whether Environment exists
             inputs={
-                self._sanitize_param_name(name): (
-                    Input(type="string") if name in pipeline.inputs() else Input()
+                self._sanitize_param_name(name): Input(
+                    type=self._get_input_type(name, pipeline)
                 )
                 for name in node.inputs
             },
             outputs={
-                self._sanitize_param_name(name): Output() for name in node.outputs
+                self._sanitize_param_name(name): (
+                    # TODO: add versioning
+                    Output(name=ds._azureml_dataset)
+                    if name in self.catalog.list()
+                    and isinstance(
+                        ds := self.catalog._get_dataset(name), AzureMLAssetDataSet
+                    )
+                    else Output()
+                )
+                for name in node.outputs
             },
             code=self.config.azure.code_directory,
             is_deterministic=False,  # TODO: allow setting this to true per node (e.g. by tags as for resources)
@@ -280,8 +330,18 @@ class AzureMLPipelineGenerator:
                     parent_outputs = invoked_components[output_from_deps.name].outputs
                     azure_output = parent_outputs[sanitized_input_name]
                     azure_inputs[sanitized_input_name] = azure_output
+                # 2. try to find AzureMLAssetDataSet in catalog
+                elif node_input in self.catalog.list() and isinstance(
+                    ds := self.catalog._get_dataset(node_input), AzureMLAssetDataSet
+                ):
+                    azure_inputs[sanitized_input_name] = Input(
+                        type=ds._azureml_type,
+                        path=self._get_versioned_azureml_dataset_name(
+                            node_input, ds._azureml_dataset
+                        ),
+                    )
+                # 3. if not found, provide dummy input
                 else:
-                    # 2. if not found, provide dummy input
                     azure_inputs[sanitized_input_name] = node_input
             invoked_components[node.name] = commands[node.name](**azure_inputs)
         return invoked_components
@@ -294,7 +354,7 @@ class AzureMLPipelineGenerator:
                 + self._sanitize_param_name(name)
                 + "}}"
                 for name in node.inputs
-                if not name.startswith("params:") and name not in pipeline.inputs()
+                if not self._is_param_or_root_non_azureml_asset_dataset(name, pipeline)
             ]
             if node.inputs
             else []

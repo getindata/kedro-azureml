@@ -16,6 +16,7 @@ from kedro_azureml.datasets import (
     KedroAzureRunnerDataset,
     KedroAzureRunnerDistributedDataset,
 )
+from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataSet
 from kedro_azureml.distributed.utils import is_distributed_environment
 
 logger = logging.getLogger(__name__)
@@ -49,12 +50,17 @@ class AzurePipelinesRunner(SequentialRunner):
         catalog_set = set(catalog.list())
 
         # Loop over datasets in arguments to set their paths
-        for ds_name, azure_dataset_folder in self.data_paths.items():
+        for ds_name, azure_dataset_path in self.data_paths.items():
             if ds_name in catalog_set:
                 ds = catalog._get_dataset(ds_name)
                 if isinstance(ds, AzureMLPipelineDataSet):
-                    file_name = Path(ds.path).name
-                    ds.path = str(Path(azure_dataset_folder) / file_name)
+                    if (
+                        isinstance(ds, AzureMLAssetDataSet)
+                        and ds._azureml_type == "uri_file"
+                    ):
+                        ds.root_dir = str(Path(azure_dataset_path).parent)
+                    else:
+                        ds.root_dir = azure_dataset_path
                     catalog.add(ds_name, ds, replace=True)
             else:
                 catalog.add(ds_name, self.create_default_data_set(ds_name))
@@ -68,9 +74,13 @@ class AzurePipelinesRunner(SequentialRunner):
 
     def create_default_data_set(self, ds_name: str) -> AbstractDataSet:
         if self.pipeline_data_passing:
-            path = str(Path(self.data_paths[ds_name]) / f"{ds_name}.pickle")
             return AzureMLPipelineDataSet(
-                {"type": PickleDataSet, "backend": "cloudpickle", "filepath": path}
+                {
+                    "type": PickleDataSet,
+                    "backend": "cloudpickle",
+                    "filepath": f"{ds_name}.pickle",
+                },
+                root_dir=self.data_paths[ds_name],
             )
         else:
             # TODO: handle credentials better (probably with built-in Kedro credentials

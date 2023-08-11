@@ -134,6 +134,7 @@ jobs:
           find "../dist" -name "*.tar.gz" | xargs -I@ cp @ kedro-azureml.tar.gz
           echo -e "\n./kedro-azureml.tar.gz\n" >> src/requirements.txt
           echo -e "kedro-docker\n" >> src/requirements.txt
+          echo -e "openpyxl\n" >> src/requirements.txt  # temp fix for kedro-datasets issues with optional packages
           sed -i '/kedro-telemetry/d' src/requirements.txt
           echo $(cat src/requirements.txt)
           pip install -r src/requirements.txt
@@ -150,6 +151,7 @@ jobs:
           cp ../tests/conf/${{ matrix.e2e_config }}/azureml.yml conf/base/azureml.yml
           sed -i 's/{container_registry}/${{ secrets.REGISTRY_LOGIN_SERVER }}/g' conf/base/azureml.yml
           sed -i 's/{image_tag}/${{ matrix.e2e_config }}/g' conf/base/azureml.yml
+          
           cat conf/base/azureml.yml
 
       - name: Login via Azure CLI
