@@ -90,6 +90,7 @@ def test_asset_dataset_root_dir_adjustments(
         version=Version(None, None),
         azureml_type=azureml_dataset_type,
     )
+    input_dataset.as_remote()
     input_data = ["yolo :)"]
     input_dataset._save(input_data)
 

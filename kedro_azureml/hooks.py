@@ -17,6 +17,13 @@ class AzureMLLocalRunHook:
         self.azure_config = AzureMLConfig(**context.config_loader["azureml"]["azure"])
 
     @hook_impl
+    def after_catalog_created(self, catalog):
+        for dataset_name, dataset in catalog._data_sets.items():
+            if isinstance(dataset, AzureMLAssetDataSet):
+                dataset.as_local(self.azure_config, download=True)
+                catalog.add(dataset_name, dataset, replace=True)
+
+    @hook_impl
     def before_pipeline_run(self, run_params, pipeline, catalog):
         """Hook implementation to change dataset path for local runs.
         Args:
@@ -36,7 +43,7 @@ class AzureMLLocalRunHook:
                 # from the azureml config for getting the dataset version during
                 # remote runs
                 else:
-                    dataset._version = None
+                    dataset.as_remote()
 
                 catalog.add(dataset_name, dataset, replace=True)
 
