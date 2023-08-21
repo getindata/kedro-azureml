@@ -165,3 +165,34 @@ def test_azure_pipeline_with_custom_env_vars(
         for node in generator.generate().jobs.values():
             assert "ABC" in node.environment_variables
             assert node.environment_variables["ABC"] == "def"
+
+
+def test_azure_pipeline_with_deterministic_node_tag(
+    dummy_pipeline_deterministic_tag, dummy_plugin_config, multi_catalog
+):
+    """
+    Test that when a Node in an Azure Pipeline is tagged with a deterministic tag
+    this gets passed through to the generated azure pipeline
+    """
+
+    with patch.object(
+        AzureMLPipelineGenerator,
+        "get_kedro_pipeline",
+        return_value=dummy_pipeline_deterministic_tag,
+    ):
+        env_name = "unit_test_env"
+        aml_env = "unit_test/aml_env@latest"
+        generator = AzureMLPipelineGenerator(
+            "dummy_pipeline_deterministic_tag",
+            env_name,
+            dummy_plugin_config,
+            {},
+            catalog=multi_catalog,
+            aml_env=aml_env,
+        )
+
+        az_pipeline = generator.generate()
+        for node in dummy_pipeline_deterministic_tag.nodes:
+            assert az_pipeline.jobs[node.name].component.is_deterministic == (
+                "deterministic" in node.tags
+            ), "is_deterministic property does not match node tag"
