@@ -184,11 +184,11 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
                     Path(dataset_root_on_azure)
                     / self._dataset_config[self._filepath_arg]
                 )
-                # if the filepath is to a file in the folder dataset we need the parent folder
-                if fs.isfile(path_on_azure):
-                    path_on_azure = str(Path(path_on_azure).parent)
             else:
                 raise ValueError("Unsupported AzureMLDataset type")
+            # if the filepath is to a file in the folder dataset we need the parent folder
+            if fs.isfile(path_on_azure):
+                path_on_azure = str(Path(path_on_azure).parent)
             # we take the relative within the Azure dataset to avoid downloading
             # all files in a folder dataset.
             for fpath in fs.ls(path_on_azure):
