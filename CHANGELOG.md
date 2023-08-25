@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+-   Added support for pydantic v2 and bumped minimal required pydantic version to `2.0.0`
+
 ## [0.5.0] - 2023-08-11
 
 -   [🚀 New dataset] Added support for `AzureMLAssetDataSet` based on Azure ML SDK v2 (fsspec) by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh) & [@froessler](https://github.com/fdroessler)
