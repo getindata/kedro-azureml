@@ -2,7 +2,8 @@
 
 ## [Unreleased]
 
--   Added support for pydantic v2 and bumped minimal required pydantic version to `2.0.0`
+-   Added support for pydantic v2 and bumped minimal required pydantic version to `2.0.0` by [@froessler](https://github.com/fdroessler)
+-   Added adbility to mark a node as deterministic (enables caching on AzureML) by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
 
 ## [0.5.0] - 2023-08-11
 
