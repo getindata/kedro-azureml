@@ -164,9 +164,19 @@ class AzureMLPipelineGenerator:
                 raise ValueError(
                     "AzureMLAssetDataSets with azureml_type 'uri_file' can only be used as pipeline inputs"
                 )
-            return ds._azureml_type
+
+    def _get_output(self, name):
+        if name in self.catalog.list() and isinstance(
+            ds := self.catalog._get_dataset(name), AzureMLAssetDataSet
+        ):
+            if ds._azureml_type == "uri_file":
+                raise ValueError(
+                    "AzureMLAssetDataSets with azureml_type 'uri_file' cannot be used as outputs"
+                )
+            # TODO: add versioning
+            return Output(type=ds._azureml_type, name=ds._azureml_dataset)
         else:
-            return "uri_folder"
+            return Output(type="uri_folder")
 
     def _from_params_or_value(
         self,
@@ -237,15 +247,7 @@ class AzureMLPipelineGenerator:
                 for name in node.inputs
             },
             outputs={
-                self._sanitize_param_name(name): (
-                    # TODO: add versioning
-                    Output(name=ds._azureml_dataset)
-                    if name in self.catalog.list()
-                    and isinstance(
-                        ds := self.catalog._get_dataset(name), AzureMLAssetDataSet
-                    )
-                    else Output()
-                )
+                self._sanitize_param_name(name): self._get_output(name)
                 for name in node.outputs
             },
             code=self.config.azure.code_directory,
