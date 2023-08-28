@@ -3,7 +3,8 @@
 ## [Unreleased]
 
 -   Added support for pydantic v2 and bumped minimal required pydantic version to `2.0.0` by [@froessler](https://github.com/fdroessler)
--   Added adbility to mark a node as deterministic (enables caching on AzureML) by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
+-   Added ability to mark a node as deterministic (enables caching on Azure ML) by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
+-   Explicitly disabled support for `AzureMLAssetDataSet` outputs of `uri_file` type by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
 
 ## [0.5.0] - 2023-08-11
 
