@@ -154,9 +154,9 @@ class AzureMLPipelineGenerator:
             suffix = ":" + version
         return azureml_dataset_name + suffix
 
-    def _get_input_type(self, dataset_name: str, pipeline: Pipeline) -> Input:
+    def _get_input(self, dataset_name: str, pipeline: Pipeline) -> Input:
         if self._is_param_or_root_non_azureml_asset_dataset(dataset_name, pipeline):
-            return "string"
+            return Input(type="string")
         elif dataset_name in self.catalog.list() and isinstance(
             ds := self.catalog._get_dataset(dataset_name), AzureMLAssetDataSet
         ):
@@ -164,6 +164,9 @@ class AzureMLPipelineGenerator:
                 raise ValueError(
                     "AzureMLAssetDataSets with azureml_type 'uri_file' can only be used as pipeline inputs"
                 )
+            return Input(type=ds._azureml_type)
+        else:
+            return Input(type="uri_folder")
 
     def _get_output(self, name):
         if name in self.catalog.list() and isinstance(
@@ -241,9 +244,7 @@ class AzureMLPipelineGenerator:
             },
             environment=self._resolve_azure_environment(),  # TODO: check whether Environment exists
             inputs={
-                self._sanitize_param_name(name): Input(
-                    type=self._get_input_type(name, pipeline)
-                )
+                self._sanitize_param_name(name): self._get_input(name, pipeline)
                 for name in node.inputs
             },
             outputs={
