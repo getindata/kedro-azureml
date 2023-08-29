@@ -248,7 +248,14 @@ def test_can_invoke_execute_cli(
 )
 @pytest.mark.parametrize("amlignore", ("empty", "missing", "filled"))
 @pytest.mark.parametrize("gitignore", ("empty", "missing", "filled"))
-@pytest.mark.parametrize("extra_env", (([], {}), (["A=B", "C="], {"A": "B", "C": ""})))
+@pytest.mark.parametrize(
+    "extra_env",
+    (
+        ([], {}),
+        (["A=B", "C="], {"A": "B", "C": ""}),
+        (["A=CDE=F123"], {"A": "CDE=F123"}),
+    ),
+)
 def test_can_invoke_run(
     patched_kedro_package,
     cli_context,
