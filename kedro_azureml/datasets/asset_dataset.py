@@ -20,6 +20,7 @@ from kedro.io.core import (
 )
 
 from kedro_azureml.client import _get_azureml_client
+from kedro_azureml.config import AzureMLConfig
 from kedro_azureml.datasets.pipeline_dataset import AzureMLPipelineDataSet
 
 AzureMLDataAssetType = Literal["uri_file", "uri_folder"]
@@ -115,6 +116,15 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
             )
 
     @property
+    def azure_config(self) -> AzureMLConfig:
+        """AzureML config to be used by the dataset."""
+        return self._azureml_config
+
+    @azure_config.setter
+    def azure_config(self, azure_config: AzureMLConfig) -> None:
+        self._azureml_config = azure_config
+
+    @property
     def path(self) -> str:
         # For local runs we want to replicate the folder structure of the remote dataset.
         # Otherwise kedros versioning would version at the file/folder level and not the
@@ -201,14 +211,10 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
     def _save(self, data: Any) -> None:
         self._construct_dataset().save(data)
 
-    def as_local(self, azure_config, download: bool):
-        self._azureml_config = azure_config
-        self._local_run = True
-        if download:
-            self._download = True
+    def as_local_intermediate(self):
+        self._download = False
         # for local runs we want the data to be saved as a "local version"
-        else:
-            self._version = Version("local", "local")
+        self._version = Version("local", "local")
 
     def as_remote(self):
         self._version = None
