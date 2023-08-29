@@ -38,7 +38,7 @@ cloudpickle = "^2.1.0"
 adlfs = ">=2022.2.0"
 azure-ai-ml = ">=1.2.0"
 azureml-mlflow = { version = ">=1.42.0", optional = true}
-pydantic = "~=1.9.1"
+pydantic = "~=2.0"
 mlflow = {version = "^1.27.0", optional = true}
 backoff = "^2.2.1"
 azure-core = ">=1.26.1"

@@ -249,7 +249,7 @@ class AzureMLPipelineGenerator:
                 for name in node.outputs
             },
             code=self.config.azure.code_directory,
-            is_deterministic=False,  # TODO: allow setting this to true per node (e.g. by tags as for resources)
+            is_deterministic=("deterministic" in node.tags),
             **command_kwargs,
         )
 
