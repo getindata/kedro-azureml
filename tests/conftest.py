@@ -55,6 +55,23 @@ def dummy_pipeline_compute_tag() -> Pipeline:
 
 
 @pytest.fixture()
+def dummy_pipeline_deterministic_tag() -> Pipeline:
+    return pipeline(
+        [
+            node(
+                identity,
+                inputs="input_data",
+                outputs="i2",
+                name="node1",
+                tags=["deterministic"],
+            ),
+            node(identity, inputs="i2", outputs="i3", name="node2"),
+            node(identity, inputs="i3", outputs="output_data", name="node3"),
+        ]
+    )
+
+
+@pytest.fixture()
 def dummy_plugin_config() -> KedroAzureMLConfig:
     return _CONFIG_TEMPLATE.copy(deep=True)
 

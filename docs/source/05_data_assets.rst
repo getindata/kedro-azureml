@@ -3,7 +3,9 @@ Azure Data Assets
 
 ``kedro-azureml`` adds support for two new datasets that can be used in the Kedro catalog. Right now we support both Azure ML v1 SDK (direct Python) and Azure ML v2 SDK (fsspec-based) APIs.
 
-**For v2 API (fspec-based)** - use ``AzureMLAssetDataSet`` that enables to use Azure ML v2-sdk Folder/File datasets for remote and local runs.
+**For v2 API (fspec-based)** - use ``AzureMLAssetDataSet`` that enables to use Azure ML v2 SDK Folder/File datasets for remote and local runs.
+Currently only the `uri_file` and `uri_folder` types are supported. Because of limitations of the Azure ML SDK, the `uri_file` type can only be used for pipeline inputs,
+not for outputs. The `uri_folder` type can be used for both inputs and outputs.
 
 **For v1 API** (deprecated ⚠️) use the ``AzureMLFileDataSet`` and the ``AzureMLPandasDataSet`` which translate to `File/Folder dataset`_ and `Tabular dataset`_ respectively in
 Azure Machine Learning. Both fully support the Azure versioning mechanism and can be used in the same way as any
