@@ -195,10 +195,6 @@ class AzureMLFileSystemMock(fsspec.implementations.local.LocalFileSystem):
         path_on_azure = Path(
             AzureMachineLearningFileSystem._infer_storage_options(uri)[-1]
         )
-        if path_on_azure.suffix != "":
-            path_on_azure = str(path_on_azure.parent)
-        else:
-            path_on_azure = str(path_on_azure)
         return [self._prefix / path_on_azure]
 
     def download(self, *args, **kwargs):
