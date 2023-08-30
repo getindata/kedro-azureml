@@ -20,6 +20,7 @@ from kedro.io.core import (
 )
 
 from kedro_azureml.client import _get_azureml_client
+from kedro_azureml.config import AzureMLConfig
 from kedro_azureml.datasets.pipeline_dataset import AzureMLPipelineDataSet
 
 AzureMLDataAssetType = Literal["uri_file", "uri_folder"]
@@ -96,8 +97,8 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         self._version = version
         # 1 entry for load version, 1 for save version
         self._version_cache = Cache(maxsize=2)  # type: Cache
-        self._download = False
-        self._local_run = False
+        self._download = True
+        self._local_run = True
         self._azureml_config = None
         self._azureml_type = azureml_type
         if self._azureml_type not in get_args(AzureMLDataAssetType):
@@ -113,6 +114,15 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
                 f"underlying dataset. Please remove '{VERSIONED_FLAG_KEY}' flag from "
                 f"the dataset definition."
             )
+
+    @property
+    def azure_config(self) -> AzureMLConfig:
+        """AzureML config to be used by the dataset."""
+        return self._azureml_config
+
+    @azure_config.setter
+    def azure_config(self, azure_config: AzureMLConfig) -> None:
+        self._azureml_config = azure_config
 
     @property
     def path(self) -> str:
@@ -203,11 +213,12 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
     def _save(self, data: Any) -> None:
         self._construct_dataset().save(data)
 
-    def as_local(self, azure_config, download: bool):
-        self._azureml_config = azure_config
-        self._local_run = True
-        if download:
-            self._download = True
+    def as_local_intermediate(self):
+        self._download = False
         # for local runs we want the data to be saved as a "local version"
-        else:
-            self._version = Version("local", "local")
+        self._version = Version("local", "local")
+
+    def as_remote(self):
+        self._version = None
+        self._local_run = False
+        self._download = False
