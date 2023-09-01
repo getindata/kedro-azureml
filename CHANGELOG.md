@@ -2,7 +2,6 @@
 
 ## [Unreleased]
 
--   Added support for pydantic v2 and bumped minimal required pydantic version to `2.0.0` by [@froessler](https://github.com/fdroessler)
 -   Added ability to mark a node as deterministic (enables caching on Azure ML) by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
 -   Explicitly disabled support for `AzureMLAssetDataSet` outputs of `uri_file` type by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
 -   Made `AzureMLAssetDataSet` local and downloadable by default allowing their use in kedro sessions outside of pipeline runs e.g. `kedro ipython/jupyterlab` by [@froessler](https://github.com/fdroessler)
