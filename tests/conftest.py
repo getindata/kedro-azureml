@@ -8,10 +8,10 @@ import fsspec
 import pandas as pd
 import pytest
 from azureml.fsspec import AzureMachineLearningFileSystem
-from kedro.extras.datasets.pandas import CSVDataSet, ParquetDataSet
 from kedro.io import DataCatalog
 from kedro.io.core import Version
 from kedro.pipeline import Pipeline, node, pipeline
+from kedro_datasets.pandas import CSVDataSet, ParquetDataSet
 
 from kedro_azureml.config import (
     _CONFIG_TEMPLATE,
@@ -47,6 +47,23 @@ def dummy_pipeline_compute_tag() -> Pipeline:
                 outputs="i2",
                 name="node1",
                 tags=["compute-2"],
+            ),
+            node(identity, inputs="i2", outputs="i3", name="node2"),
+            node(identity, inputs="i3", outputs="output_data", name="node3"),
+        ]
+    )
+
+
+@pytest.fixture()
+def dummy_pipeline_deterministic_tag() -> Pipeline:
+    return pipeline(
+        [
+            node(
+                identity,
+                inputs="input_data",
+                outputs="i2",
+                name="node1",
+                tags=["deterministic"],
             ),
             node(identity, inputs="i2", outputs="i3", name="node2"),
             node(identity, inputs="i3", outputs="output_data", name="node3"),
@@ -178,10 +195,6 @@ class AzureMLFileSystemMock(fsspec.implementations.local.LocalFileSystem):
         path_on_azure = Path(
             AzureMachineLearningFileSystem._infer_storage_options(uri)[-1]
         )
-        if path_on_azure.suffix != "":
-            path_on_azure = str(path_on_azure.parent)
-        else:
-            path_on_azure = str(path_on_azure)
         return [self._prefix / path_on_azure]
 
     def download(self, *args, **kwargs):

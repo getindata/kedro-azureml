@@ -364,6 +364,15 @@ Now we are able to reference this compute target in our kedro pipelines using ke
 When running our project, ``preprocess_companies`` and ``create_model_input_table``
 will be run on ``cpu-cluster-8`` while all other nodes are run on the default ``cpu-cluster``.
 
+Marking a node as deterministic
+------------------
+
+By default the plugin will mark all nodes of the Azure ML pipeline as non-deterministic, which 
+means that Azure ML will not reuse the results of the node if it has been run before.
+
+To mark a node as deterministic, you can simply add the ``deterministic`` tag to the node.
+This also implies the tag is reserved and cannot be used for compute types.
+
 Distributed training
 ------------------
 
