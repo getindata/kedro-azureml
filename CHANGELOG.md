@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2023-09-01
+
 -   Added ability to mark a node as deterministic (enables caching on Azure ML) by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
 -   Explicitly disabled support for `AzureMLAssetDataSet` outputs of `uri_file` type by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
 -   Made `AzureMLAssetDataSet` local and downloadable by default allowing their use in kedro sessions outside of pipeline runs e.g. `kedro ipython/jupyterlab` by [@froessler](https://github.com/fdroessler)
@@ -76,7 +78,9 @@
 
 -   Initial plugin release
 
-[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.5.0...HEAD
+[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.6.0...HEAD
+
+[0.6.0]: https://github.com/getindata/kedro-azureml/compare/0.5.0...0.6.0
 
 [0.5.0]: https://github.com/getindata/kedro-azureml/compare/0.4.1...0.5.0
 
