@@ -8,10 +8,10 @@ import fsspec
 import pandas as pd
 import pytest
 from azureml.fsspec import AzureMachineLearningFileSystem
-from kedro.extras.datasets.pandas import CSVDataSet, ParquetDataSet
 from kedro.io import DataCatalog
 from kedro.io.core import Version
 from kedro.pipeline import Pipeline, node, pipeline
+from kedro_datasets.pandas import CSVDataSet, ParquetDataSet
 
 from kedro_azureml.config import (
     _CONFIG_TEMPLATE,

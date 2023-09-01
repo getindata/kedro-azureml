@@ -7,6 +7,8 @@
 -   Explicitly disabled support for `AzureMLAssetDataSet` outputs of `uri_file` type by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
 -   Made `AzureMLAssetDataSet` local and downloadable by default allowing their use in kedro sessions outside of pipeline runs e.g. `kedro ipython/jupyterlab` by [@froessler](https://github.com/fdroessler)
 -   Fixed FileNotFoundError for local runs (using `kedro run`) when using `AzureMLAssetDataSet` of type `uri_file` by [@Gabriel2409](https://github.com/Gabriel2409)
+-   [❗️ Old datasets removal ] All datasets based on Azure ML SDK v1 (azureml-core) are removed, with only importable stubs left which raise a deprecation warning.
+-   ARM macOS support should work again 🎉 (v1 SDKs are removed)
 
 ## [0.5.0] - 2023-08-11
 
