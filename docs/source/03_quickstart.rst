@@ -216,7 +216,7 @@ can be removed from the ``Dockerfile``.
             COPY src/requirements.txt /tmp/requirements.txt
             RUN pip install -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
 
-11. Ensure ``code_directory: "."`` is set in the ``azureml.yml`` config file (it's set if you've used ``--aml_env`` during ``init`` above).
+11. Ensure ``azure.code_directory: "."`` is set in the ``azureml.yml`` config file (it's set if you've used ``--aml_env`` during ``init`` above).
 
 
 
