@@ -166,11 +166,12 @@ This option is also shown in the video-tutorial above.
     | you will need to build and push the docker image to ACR again.
     | We recommend this option for CI/CD-automated MLOps workflows.
 
-10. Ensure that in the ``azureml.yml`` you have ``code_directory`` set to null, and ``docker.image`` is filled:
+10. Ensure that in the ``azureml.yml`` you have ``azure.code_directory`` set to null, and ``docker.image`` is filled:
 
     .. code:: yaml
 
-       code_directory: ~
+       azure:
+         code_directory: ~
        # rest of the azureml.yml file
        docker:
           image: your-container-registry.azurecr.io/kedro-azureml:latest
