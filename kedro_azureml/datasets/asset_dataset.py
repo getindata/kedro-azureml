@@ -77,6 +77,8 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         self,
         azureml_dataset: str,
         dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
+        datastore: str = "workspaceblobstore",
+        azureml_root_dir: str = "kedro_azureml",  # maybe combine with root_dir?
         root_dir: str = "data",
         filepath_arg: str = "filepath",
         azureml_type: AzureMLDataAssetType = "uri_folder",
@@ -93,6 +95,8 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         """
         super().__init__(dataset=dataset, root_dir=root_dir, filepath_arg=filepath_arg)
 
+        self._azureml_root_dir = azureml_root_dir
+        self._datastore = datastore
         self._azureml_dataset = azureml_dataset
         self._version = version
         # 1 entry for load version, 1 for save version

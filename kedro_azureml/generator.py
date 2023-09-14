@@ -177,7 +177,11 @@ class AzureMLPipelineGenerator:
                     "AzureMLAssetDataSets with azureml_type 'uri_file' cannot be used as outputs"
                 )
             # TODO: add versioning
-            return Output(type=ds._azureml_type, name=ds._azureml_dataset)
+            return Output(
+                type=ds._azureml_type,
+                name=ds._azureml_dataset,
+                path=f"azureml://datastores/{ds._datastore}/paths/{ds._azureml_root_dir}/{ds.resolve_save_version()}",
+            )
         else:
             return Output(type="uri_folder")
 
