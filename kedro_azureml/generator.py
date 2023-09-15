@@ -172,15 +172,23 @@ class AzureMLPipelineGenerator:
         if name in self.catalog.list() and isinstance(
             ds := self.catalog._get_dataset(name), AzureMLAssetDataSet
         ):
+            output_path = (
+                f"azureml://datastores/{ds._datastore}/paths/{ds._azureml_root_dir}"
+            )
+
+            # versioning system: to be discussed
+            output_path = (
+                f"{output_path}/{ds._azureml_dataset}/{ds.resolve_save_version()}"
+            )
+
             if ds._azureml_type == "uri_file":
-                raise ValueError(
-                    "AzureMLAssetDataSets with azureml_type 'uri_file' cannot be used as outputs"
-                )
-            # TODO: add versioning
+                output_path = f"{output_path}/{ds._dataset_config[ds._filepath_arg]}"
+            # note that this will always create a new version of the dataset, even if we
+            # have versioned set to false.
             return Output(
                 type=ds._azureml_type,
                 name=ds._azureml_dataset,
-                path=f"azureml://datastores/{ds._datastore}/paths/{ds._azureml_root_dir}/{ds.resolve_save_version()}",
+                path=output_path,
             )
         else:
             return Output(type="uri_folder")
