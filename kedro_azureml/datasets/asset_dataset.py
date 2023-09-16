@@ -43,6 +43,12 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
      | - ``filepath_arg``: Filepath arg on the wrapped dataset, defaults to `filepath`
      | - ``azureml_type``: Either `uri_folder` or `uri_file`
      | - ``version``: Version of the AzureML dataset to be used in kedro format.
+     | - ``datastore``: datastore name, only used to resolve the path when using the
+        data asset as an output (non local runs).
+     | - azureml_root_dir: The folder where to save the data asset, only used to
+        resolve the path when using the data asset as an output (non local runs).
+        Final output path will be start with
+        "azureml://datastores/<datastore>/paths/<azureml_root_dir>/<job_id>"
 
     Example
     -------
@@ -52,19 +58,17 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
     .. code-block:: yaml
 
         my_folder_dataset:
-          type: kedro_azureml.datasets.AzureMLAssetDataSet
-          azureml_dataset: my_azureml_folder_dataset
-          root_dir: data/01_raw/some_folder/
-          versioned: True
-          dataset:
-            type: pandas.ParquetDataSet
-            filepath: "."
+            type: kedro_azureml.datasets.AzureMLAssetDataSet
+            azureml_dataset: my_azureml_folder_dataset
+            root_dir: data/01_raw/some_folder/
+            dataset:
+                type: pandas.ParquetDataSet
+                filepath: "."
 
         my_file_dataset:
             type: kedro_azureml.datasets.AzureMLAssetDataSet
             azureml_dataset: my_azureml_file_dataset
             root_dir: data/01_raw/some_other_folder/
-            versioned: True
             dataset:
                 type: pandas.ParquetDataSet
                 filepath: "companies.csv"
@@ -77,12 +81,12 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         self,
         azureml_dataset: str,
         dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
-        datastore: str = "workspaceblobstore",
-        azureml_root_dir: str = "kedro_azureml",  # maybe combine with root_dir?
         root_dir: str = "data",
         filepath_arg: str = "filepath",
         azureml_type: AzureMLDataAssetType = "uri_folder",
         version: Optional[Version] = None,
+        datastore: str = "${{default_datastore}}",
+        azureml_root_dir: str = "kedro_azureml",  # maybe combine with root_dir?
     ):
         """
         azureml_dataset: Name of the AzureML file azureml_dataset.
@@ -92,6 +96,12 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         filepath_arg: Filepath arg on the wrapped dataset, defaults to `filepath`
         azureml_type: Either `uri_folder` or `uri_file`
         version: Version of the AzureML dataset to be used in kedro format.
+        datastore: datastore name, only used to resolve the path when using the
+        data asset as an output (non local runs). Defaults to pipeline defaut
+        data store (resolved server side, see
+        https://learn.microsoft.com/en-us/azure/machine-learning/concept-expressions?view=azureml-api-2)
+        azureml_root_dir: The folder where to save the data asset, only used to
+        resolve the path when using the data asset as an output (non local runs).
         """
         super().__init__(dataset=dataset, root_dir=root_dir, filepath_arg=filepath_arg)
 
