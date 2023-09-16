@@ -181,6 +181,9 @@ class AzureMLPipelineGenerator:
                 f"{output_path}/{ds._azureml_dataset}/{ds.resolve_save_version()}"
             )
 
+            # add the job id to the path (actual value is injected when job is run)
+            output_path = f"{output_path}/{{name}}"
+
             if ds._azureml_type == "uri_file":
                 output_path = f"{output_path}/{ds._dataset_config[ds._filepath_arg]}"
             # note that this will always create a new version of the dataset, even if we
