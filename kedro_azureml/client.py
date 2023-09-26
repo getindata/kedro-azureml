@@ -43,7 +43,7 @@ class AzureMLPipelinesClient:
         config: AzureMLConfig,
         wait_for_completion=False,
         on_job_scheduled: Optional[Callable[[Job], None]] = None,
-    ) -> bool:
+    ) -> Job:
         with _get_azureml_client(self.subscription_id, config) as ml_client:
             assert (
                 cluster := ml_client.compute.get(
@@ -68,9 +68,9 @@ class AzureMLPipelinesClient:
             if wait_for_completion:
                 try:
                     ml_client.jobs.stream(pipeline_job.name)
-                    return True
+                    return pipeline_job
                 except Exception:
                     logger.exception("Error while running the pipeline", exc_info=True)
-                    return False
+                    return pipeline_job
             else:
-                return True
+                return pipeline_job
