@@ -218,7 +218,7 @@ def init(
 )
 @click.option(
     "--export-pipeline-infos",
-    "export-pipeline-infos",
+    "export_pipeline_infos",
     is_flag=True,
     default=False,
     help="Set this flag to save the pipeline name to kedro_azureml_pipeline_infos.txt",
