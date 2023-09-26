@@ -216,6 +216,13 @@ def init(
     help=LOAD_VERSION_HELP,
     callback=_split_load_versions,
 )
+@click.option(
+    "--export-pipeline-infos",
+    "export-pipeline-infos",
+    is_flag=True,
+    default=False,
+    help="Set this flag to save the pipeline name to kedro_azureml_pipeline_infos.txt",
+)
 @click.pass_obj
 @click.pass_context
 def run(
@@ -229,6 +236,7 @@ def run(
     wait_for_completion: bool,
     env_var: Tuple[str],
     load_versions: Dict[str, str],
+    export_pipeline_infos: bool,
 ):
     """Runs the specified pipeline in Azure ML Pipelines; Additional parameters can be passed from command line.
     Can be used with --wait-for-completion param to block the caller until the pipeline finishes in Azure ML.
@@ -255,13 +263,17 @@ def run(
     ):
         az_client = AzureMLPipelinesClient(az_pipeline, subscription_id)
 
-        is_ok = az_client.run(
+        pipeline_job = az_client.run(
             mgr.plugin_config.azure,
             wait_for_completion,
             lambda job: click.echo(job.studio_url),
         )
 
-        if is_ok:
+        if export_pipeline_infos:
+            with open("kedro_azureml_pipeline_infos.txt", "w") as f:
+                f.write(pipeline_job.name)
+
+        if pipeline_job.status in ["Running", "Completed"]:
             exit_code = 0
             click.echo(
                 click.style(
