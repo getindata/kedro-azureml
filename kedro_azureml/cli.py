@@ -220,8 +220,6 @@ def init(
 @click.option(
     "--on-job-scheduled",
     "on_job_scheduled",
-    type=str,
-    default="",
     callback=dynamic_import_job_schedule_func_from_str,
     help="""Specify a function to execute when the azureml pipeline job
     is scheduled. The function should be in the format 'path.to.module:function' with
