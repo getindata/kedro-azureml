@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added possibility to use custom callbacks with the azureml pipeline job as an argument by [@Gabriel2409](https://github.com/Gabriel2409)
+
 ## [0.6.0] - 2023-09-01
 
 -   Added ability to mark a node as deterministic (enables caching on Azure ML) by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
