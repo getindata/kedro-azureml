@@ -10,6 +10,7 @@ from kedro.framework.cli.utils import _split_load_versions
 from kedro.framework.startup import ProjectMetadata
 
 from kedro_azureml.cli_functions import (
+    default_job_callback,
     dynamic_import_job_schedule_func_from_str,
     get_context_and_pipeline,
     parse_extra_env_params,
@@ -270,7 +271,7 @@ def run(
         az_client = AzureMLPipelinesClient(az_pipeline, subscription_id)
 
         if not on_job_scheduled:
-            on_job_scheduled = lambda job: click.echo(job.studio_url)
+            on_job_scheduled = default_job_callback
 
         is_ok = az_client.run(
             mgr.plugin_config.azure,

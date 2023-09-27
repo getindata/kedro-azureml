@@ -222,3 +222,7 @@ def dynamic_import_job_schedule_func_from_str(
     except (ImportError, AttributeError, ValueError) as e:
         # catches errors if module or attribute does not exist
         raise click.BadParameter(f"Error: {e}", param=param)
+
+
+def default_job_callback(job):
+    click.echo(job.studio_url)
