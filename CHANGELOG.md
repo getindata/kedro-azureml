@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Added possibility to use custom callbacks with the azureml pipeline job as an argument by [@Gabriel2409](https://github.com/Gabriel2409)
+-   Added `--on-job-scheduled` argument to `kedro azureml run` to plug-in custom behaviour after Azure ML job is scheduled [@Gabriel2409](https://github.com/Gabriel2409)
 
 ## [0.6.0] - 2023-09-01
 
