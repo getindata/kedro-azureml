@@ -439,6 +439,19 @@ In case you need to customize pipeline run context, modifying configuration file
 - ``--pipeline`` allows to select a pipeline to run (by default, the ``__default__`` pipeline is started),
 - ``--params`` takes a JSON string with parameters override (JSONed version of ``conf/*/parameters.yml``, not the Kedro's ``params:`` syntax),
 - ``--env-var KEY=VALUE`` sets the OS environment variable injected to the steps during runtime (can be used multiple times).
+- ``--load-versions`` specifies a particular dataset version (timestamp) for loading (similar behavior as Kedro)
+- ``--on-job-scheduled  path.to.module:my_function`` specifies a callback function to be called on the azureml pipeline job start (example below)
+
+.. code:: python
+    # src/mymodule/myfile.py
+    def save_output_callback(job):
+        """saves the pipeline job name to a file"""
+        with open("myfile.txt", "w") as f:
+            f.write(job.name)
+
+.. code:: console
+    kedro azureml run --on-job-scheduled mymodule.myfile:save_output_callback
+
 
 .. |br| raw:: html
 
