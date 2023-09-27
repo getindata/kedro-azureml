@@ -256,6 +256,17 @@ def test_can_invoke_execute_cli(
         (["A=CDE=F123"], {"A": "CDE=F123"}),
     ),
 )
+@pytest.mark.parametrize(
+    "on_job_scheduled",
+    (
+        None,
+        "tests.job_schedule_callback.existing_module:existing_callback",
+    ),
+    ids=(
+        "no_job_scheduled",
+        "existing_callback",
+    ),
+)
 def test_can_invoke_run(
     patched_kedro_package,
     cli_context,
@@ -267,6 +278,7 @@ def test_can_invoke_run(
     amlignore: str,
     gitignore: str,
     extra_env: list,
+    on_job_scheduled: str,
 ):
     create_kedro_conf_dirs(tmp_path)
     with patch.dict(
@@ -299,7 +311,8 @@ def test_can_invoke_run(
             ["-s", "subscription_id"]
             + (["--wait-for-completion"] if wait_for_completion else [])
             + (["--aml-env", aml_env] if aml_env else [])
-            + (sum([["--env-var", k] for k in extra_env[0]], [])),
+            + (sum([["--env-var", k] for k in extra_env[0]], []))
+            + (["--on-job-scheduled", on_job_scheduled] if on_job_scheduled else []),
             obj=cli_context,
         )
         assert result.exit_code == 0
@@ -443,3 +456,46 @@ def test_fail_if_invalid_env_provided_in_run(
             str(result.exception)
             == f"Invalid env-var: {env_var}, expected format: KEY=VALUE"
         )
+
+
+@pytest.mark.parametrize(
+    "on_job_scheduled",
+    (
+        "bad_str_format",
+        "unexisting_module:func",
+        "tests.job_schedule_callback.existing_module:unexisting_attr",
+        "tests.job_schedule_callback.existing_module:attr_is_not_callable"
+        "tests.job_schedule_callback.existing_module:func_has_wrong_number_or_args",
+    ),
+    ids=(
+        "no_module",
+        "no_attr",
+        "not_func",
+        "wrong_nb_arg",
+    ),
+)
+def test_fail_if_invalid_on_job_scheduled_provided_in_run(
+    patched_kedro_package,
+    cli_context,
+    dummy_pipeline,
+    tmp_path: Path,
+    on_job_scheduled: str,
+):
+    create_kedro_conf_dirs(tmp_path)
+    with patch.dict(
+        "kedro.framework.project.pipelines", {"__default__": dummy_pipeline}
+    ), patch.object(Path, "cwd", return_value=tmp_path), patch(
+        "kedro_azureml.client.MLClient"
+    ) as ml_client_patched, patch(
+        "kedro_azureml.auth.utils.DefaultAzureCredential"
+    ), patch.dict(
+        os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
+    ):
+        ml_client = ml_client_patched.from_config()
+        ml_client.jobs.stream.side_effect = ValueError()
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli.run, ["--on-job-scheduled", on_job_scheduled], obj=cli_context
+        )
+        assert result.exit_code != 0
