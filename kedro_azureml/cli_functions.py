@@ -1,5 +1,4 @@
 import importlib
-import inspect
 import json
 import logging
 import os
@@ -179,7 +178,6 @@ def dynamic_import_job_schedule_func_from_str(
         if the specified module cannot be imported,
         if the specified attribute cannot be retrieved from the module,
         if the retrieved attribute is not a callable function,
-        if the function does not have exactly one parameter,
 
     Example usage:
     >>> instance = dynamic_import_job_schedule_func_from_str(
@@ -204,18 +202,9 @@ def dynamic_import_job_schedule_func_from_str(
         instance = getattr(module, attrs_str)
 
         # fails if we try to import an attribute that is not a function
-        if not inspect.isfunction(instance):
+        if not callable(instance):
             raise click.BadParameter(
                 f"The attribute '{attrs_str}' is not a callable function.", param=param
-            )
-
-        # fails if we try to use a function that has an incorrect nb of parameters
-        parameters = inspect.signature(instance).parameters
-        nb_parameters = len(parameters)
-        if nb_parameters != 1:
-            raise click.BadParameter(
-                f"The function '{attrs_str}' must have exactly one parameter.",
-                param=param,
             )
 
         return instance
