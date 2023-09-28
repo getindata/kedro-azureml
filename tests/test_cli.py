@@ -1,4 +1,3 @@
-import importlib
 import os
 from pathlib import Path
 from typing import List
@@ -482,7 +481,7 @@ def test_fail_if_invalid_env_provided_in_run(
     (
         "bad_str_format",
         "nonexistant_module:func",
-        "tests.helpers.on_job_scheduled_helper:nonexistant_attr",
+        "tests.helpers.on_job_scheduled_helper:absent_attr",
         "tests.helpers.on_job_scheduled_helper:existing_attr",
     ),
     ids=(
@@ -509,22 +508,6 @@ def test_fail_if_invalid_on_job_scheduled_provided_in_run(
     ), patch.dict(
         os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
     ):
-        # extra checks to make sure the tests actually checks the usecase
-        # and that we are not always in the case of an invalid string
-        if ":" in on_job_scheduled:
-            module_str, attr_str = on_job_scheduled.split(":")
-            if module_str == "nonexistant_module":
-                with pytest.raises(ModuleNotFoundError):
-                    importlib.import_module(module_str)
-            elif module_str == "tests.helpers.on_job_scheduled_helper":
-                module = importlib.import_module(module_str)
-                if attr_str == "nonexistant_attr":
-                    with pytest.raises(AttributeError):
-                        getattr(module, attr_str)
-                elif attr_str == "existing_attr":
-                    module_attr = getattr(module, attr_str)
-                    assert callable(module_attr) is False
-
         ml_client = ml_client_patched.from_config()
         ml_client.jobs.stream.side_effect = ValueError()
 
@@ -533,3 +516,19 @@ def test_fail_if_invalid_on_job_scheduled_provided_in_run(
             cli.run, ["--on-job-scheduled", on_job_scheduled], obj=cli_context
         )
         assert result.exit_code != 0
+        assert result.exception, "Exception should have been raised"
+
+        if on_job_scheduled == "bad_str_format":
+            assert "import_str must be in format <module>:<function>" in result.output
+        elif on_job_scheduled == "nonexistant_module:func":
+            assert "No module named 'nonexistant_module'" in result.output
+        elif on_job_scheduled == "tests.helpers.on_job_scheduled_helper:absent_attr":
+            assert (
+                "module 'tests.helpers.on_job_scheduled_helper' has no attribute 'absent_attr'"
+                in result.output
+            )
+        elif on_job_scheduled == "tests.helpers.on_job_scheduled_helper:existing_attr":
+            assert (
+                "The attribute 'existing_attr' is not a callable function"
+                in result.output
+            )
