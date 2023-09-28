@@ -1,3 +1,4 @@
+import importlib
 import os
 from pathlib import Path
 from typing import List
@@ -258,9 +259,11 @@ def test_can_invoke_execute_cli(
 )
 @pytest.mark.parametrize(
     "on_job_scheduled",
+    # we pass args as True/False but the test will generate a valid string
+    # if we pass True
     (
-        None,
-        "tests.job_schedule_callback.existing_module:existing_callback",
+        False,
+        True,
     ),
     ids=(
         "no_job_scheduled",
@@ -291,7 +294,11 @@ def test_can_invoke_run(
         "kedro_azureml.auth.utils.InteractiveBrowserCredential"
     ) as interactive_credentials, patch.dict(
         os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
-    ):
+    ), patch(
+        # mock of existing_function to test --on-job-scheduled
+        "tests.helpers.on_job_scheduled_helper.existing_function",
+        return_value=MagicMock(),
+    ) as on_job_scheduled_callback_mock:
         if not use_default_credentials:
             default_credentials.side_effect = ValueError()
 
@@ -312,7 +319,14 @@ def test_can_invoke_run(
             + (["--wait-for-completion"] if wait_for_completion else [])
             + (["--aml-env", aml_env] if aml_env else [])
             + (sum([["--env-var", k] for k in extra_env[0]], []))
-            + (["--on-job-scheduled", on_job_scheduled] if on_job_scheduled else []),
+            + (
+                [
+                    "--on-job-scheduled",
+                    "tests.helpers.on_job_scheduled_helper:existing_function",
+                ]
+                if on_job_scheduled
+                else []
+            ),
             obj=cli_context,
         )
         assert result.exit_code == 0
@@ -320,6 +334,11 @@ def test_can_invoke_run(
         ml_client = ml_client_patched.from_config()
         ml_client.jobs.create_or_update.assert_called_once()
         ml_client.compute.get.assert_called_once()
+
+        if on_job_scheduled:
+            on_job_scheduled_callback_mock.assert_called_once()
+        else:
+            on_job_scheduled_callback_mock.assert_not_called()
 
         if wait_for_completion:
             ml_client.jobs.stream.assert_called_once()
@@ -462,16 +481,15 @@ def test_fail_if_invalid_env_provided_in_run(
     "on_job_scheduled",
     (
         "bad_str_format",
-        "unexisting_module:func",
-        "tests.job_schedule_callback.existing_module:unexisting_attr",
-        "tests.job_schedule_callback.existing_module:attr_is_not_callable"
-        "tests.job_schedule_callback.existing_module:func_has_wrong_number_or_args",
+        "nonexistant_module:func",
+        "tests.helpers.on_job_scheduled_helper:nonexistant_attr",
+        "tests.helpers.on_job_scheduled_helper:existing_attr",
     ),
     ids=(
+        "bad_str_format",
         "no_module",
         "no_attr",
-        "not_func",
-        "wrong_nb_arg",
+        "not_callable",
     ),
 )
 def test_fail_if_invalid_on_job_scheduled_provided_in_run(
@@ -491,6 +509,22 @@ def test_fail_if_invalid_on_job_scheduled_provided_in_run(
     ), patch.dict(
         os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
     ):
+        # extra checks to make sure the tests actually checks the usecase
+        # and that we are not always in the case of an invalid string
+        if ":" in on_job_scheduled:
+            module_str, attr_str = on_job_scheduled.split(":")
+            if module_str == "nonexistant_module":
+                with pytest.raises(ModuleNotFoundError):
+                    importlib.import_module(module_str)
+            elif module_str == "tests.helpers.on_job_scheduled_helper":
+                module = importlib.import_module(module_str)
+                if attr_str == "nonexistant_attr":
+                    with pytest.raises(AttributeError):
+                        getattr(module, attr_str)
+                elif attr_str == "existing_attr":
+                    module_attr = getattr(module, attr_str)
+                    assert callable(module_attr) is False
+
         ml_client = ml_client_patched.from_config()
         ml_client.jobs.stream.side_effect = ValueError()
 
