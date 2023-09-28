@@ -443,6 +443,7 @@ In case you need to customize pipeline run context, modifying configuration file
 - ``--on-job-scheduled  path.to.module:my_function`` specifies a callback function to be called on the azureml pipeline job start (example below)
 
 .. code:: python
+
     # src/mymodule/myfile.py
     def save_output_callback(job):
         """saves the pipeline job name to a file"""
@@ -450,6 +451,7 @@ In case you need to customize pipeline run context, modifying configuration file
             f.write(job.name)
 
 .. code:: console
+
     kedro azureml run --on-job-scheduled mymodule.myfile:save_output_callback
 
 
