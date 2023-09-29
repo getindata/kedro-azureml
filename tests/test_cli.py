@@ -256,6 +256,19 @@ def test_can_invoke_execute_cli(
         (["A=CDE=F123"], {"A": "CDE=F123"}),
     ),
 )
+@pytest.mark.parametrize(
+    "on_job_scheduled",
+    # we pass args as True/False but the test will generate a valid string
+    # if we pass True
+    (
+        False,
+        True,
+    ),
+    ids=(
+        "no_job_scheduled",
+        "existing_callback",
+    ),
+)
 def test_can_invoke_run(
     patched_kedro_package,
     cli_context,
@@ -267,6 +280,7 @@ def test_can_invoke_run(
     amlignore: str,
     gitignore: str,
     extra_env: list,
+    on_job_scheduled: str,
 ):
     create_kedro_conf_dirs(tmp_path)
     with patch.dict(
@@ -279,7 +293,11 @@ def test_can_invoke_run(
         "kedro_azureml.auth.utils.InteractiveBrowserCredential"
     ) as interactive_credentials, patch.dict(
         os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
-    ):
+    ), patch(
+        # mock of existing_function to test --on-job-scheduled
+        "tests.helpers.on_job_scheduled_helper.existing_function",
+        return_value=MagicMock(),
+    ) as on_job_scheduled_callback_mock:
         if not use_default_credentials:
             default_credentials.side_effect = ValueError()
 
@@ -299,7 +317,15 @@ def test_can_invoke_run(
             ["-s", "subscription_id"]
             + (["--wait-for-completion"] if wait_for_completion else [])
             + (["--aml-env", aml_env] if aml_env else [])
-            + (sum([["--env-var", k] for k in extra_env[0]], [])),
+            + (sum([["--env-var", k] for k in extra_env[0]], []))
+            + (
+                [
+                    "--on-job-scheduled",
+                    "tests.helpers.on_job_scheduled_helper:existing_function",
+                ]
+                if on_job_scheduled
+                else []
+            ),
             obj=cli_context,
         )
         assert result.exit_code == 0
@@ -307,6 +333,11 @@ def test_can_invoke_run(
         ml_client = ml_client_patched.from_config()
         ml_client.jobs.create_or_update.assert_called_once()
         ml_client.compute.get.assert_called_once()
+
+        if on_job_scheduled:
+            on_job_scheduled_callback_mock.assert_called_once()
+        else:
+            on_job_scheduled_callback_mock.assert_not_called()
 
         if wait_for_completion:
             ml_client.jobs.stream.assert_called_once()
@@ -443,3 +474,61 @@ def test_fail_if_invalid_env_provided_in_run(
             str(result.exception)
             == f"Invalid env-var: {env_var}, expected format: KEY=VALUE"
         )
+
+
+@pytest.mark.parametrize(
+    "on_job_scheduled",
+    (
+        "bad_str_format",
+        "nonexistant_module:func",
+        "tests.helpers.on_job_scheduled_helper:absent_attr",
+        "tests.helpers.on_job_scheduled_helper:existing_attr",
+    ),
+    ids=(
+        "bad_str_format",
+        "no_module",
+        "no_attr",
+        "not_callable",
+    ),
+)
+def test_fail_if_invalid_on_job_scheduled_provided_in_run(
+    patched_kedro_package,
+    cli_context,
+    dummy_pipeline,
+    tmp_path: Path,
+    on_job_scheduled: str,
+):
+    create_kedro_conf_dirs(tmp_path)
+    with patch.dict(
+        "kedro.framework.project.pipelines", {"__default__": dummy_pipeline}
+    ), patch.object(Path, "cwd", return_value=tmp_path), patch(
+        "kedro_azureml.client.MLClient"
+    ) as ml_client_patched, patch(
+        "kedro_azureml.auth.utils.DefaultAzureCredential"
+    ), patch.dict(
+        os.environ, {"AZURE_STORAGE_ACCOUNT_KEY": "dummy_key"}
+    ):
+        ml_client = ml_client_patched.from_config()
+        ml_client.jobs.stream.side_effect = ValueError()
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli.run, ["--on-job-scheduled", on_job_scheduled], obj=cli_context
+        )
+        assert result.exit_code != 0
+        assert result.exception, "Exception should have been raised"
+
+        if on_job_scheduled == "bad_str_format":
+            assert "import_str must be in format <module>:<function>" in result.output
+        elif on_job_scheduled == "nonexistant_module:func":
+            assert "No module named 'nonexistant_module'" in result.output
+        elif on_job_scheduled == "tests.helpers.on_job_scheduled_helper:absent_attr":
+            assert (
+                "module 'tests.helpers.on_job_scheduled_helper' has no attribute 'absent_attr'"
+                in result.output
+            )
+        elif on_job_scheduled == "tests.helpers.on_job_scheduled_helper:existing_attr":
+            assert (
+                "The attribute 'existing_attr' is not a callable function"
+                in result.output
+            )

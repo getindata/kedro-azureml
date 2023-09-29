@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+-   Added `--on-job-scheduled` argument to `kedro azureml run` to plug-in custom behaviour after Azure ML job is scheduled [@Gabriel2409](https://github.com/Gabriel2409)
+
 ## [0.6.0] - 2023-09-01
 
 -   Added ability to mark a node as deterministic (enables caching on Azure ML) by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)

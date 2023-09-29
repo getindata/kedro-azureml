@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 import click
 from kedro.framework.cli.project import LOAD_VERSION_HELP
@@ -10,6 +10,8 @@ from kedro.framework.cli.utils import _split_load_versions
 from kedro.framework.startup import ProjectMetadata
 
 from kedro_azureml.cli_functions import (
+    default_job_callback,
+    dynamic_import_job_schedule_func_from_str,
     get_context_and_pipeline,
     parse_extra_env_params,
     parse_extra_params,
@@ -216,6 +218,18 @@ def init(
     help=LOAD_VERSION_HELP,
     callback=_split_load_versions,
 )
+@click.option(
+    "--on-job-scheduled",
+    "on_job_scheduled",
+    callback=dynamic_import_job_schedule_func_from_str,
+    help="""Specify a function to execute when the azureml pipeline job
+    is scheduled. The function should be in the format 'path.to.module:function' with
+    'path.to.module' being the relative path starting from the src folder created on
+    kedro initialisation.
+    The function will be called with the scheduled pipeline job as an argument just
+    after the job creation. Return values will be discarded.
+    Defaults to echoing the job.studio_url""",
+)
 @click.pass_obj
 @click.pass_context
 def run(
@@ -229,6 +243,7 @@ def run(
     wait_for_completion: bool,
     env_var: Tuple[str],
     load_versions: Dict[str, str],
+    on_job_scheduled: Optional[Callable],
 ):
     """Runs the specified pipeline in Azure ML Pipelines; Additional parameters can be passed from command line.
     Can be used with --wait-for-completion param to block the caller until the pipeline finishes in Azure ML.
@@ -255,10 +270,13 @@ def run(
     ):
         az_client = AzureMLPipelinesClient(az_pipeline, subscription_id)
 
+        if not on_job_scheduled:
+            on_job_scheduled = default_job_callback
+
         is_ok = az_client.run(
             mgr.plugin_config.azure,
             wait_for_completion,
-            lambda job: click.echo(job.studio_url),
+            on_job_scheduled,
         )
 
         if is_ok:
