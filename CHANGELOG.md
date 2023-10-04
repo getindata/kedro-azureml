@@ -3,6 +3,8 @@
 ## [Unreleased]
 
 -   Added `--on-job-scheduled` argument to `kedro azureml run` to plug-in custom behaviour after Azure ML job is scheduled [@Gabriel2409](https://github.com/Gabriel2409)
+-   Added two new arguments (`datastore` and `azureml_root_dir`, to `AzureMLAssetDataSet` (`datastore` and `azureml_root_dir`) allowing users to specify where to save the data if `AzureMLAssetDataSet` is used as a node output (non local runs) by [@Gabriel2409](https://github.com/Gabriel2409)
+-   Added support for using `AzureMLAssetDataSet uri_file` as node output by [@Gabriel2409](https://github.com/Gabriel2409)
 
 ## [0.6.0] - 2023-09-01
 
