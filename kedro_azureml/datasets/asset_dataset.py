@@ -45,7 +45,7 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
      | - ``version``: Version of the AzureML dataset to be used in kedro format.
      | - ``datastore``: datastore name, only used to resolve the path when using the
         data asset as an output (non local runs).
-     | - azureml_root_dir: The folder where to save the data asset, only used to
+     | - ``azureml_root_dir``: The folder where to save the data asset, only used to
         resolve the path when using the data asset as an output (non local runs).
         Final output path will be start with
         "azureml://datastores/<datastore>/paths/<azureml_root_dir>/<job_id>"

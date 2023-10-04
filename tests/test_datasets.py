@@ -333,12 +333,16 @@ def test_azureml_asset_dataset(
     local_run,
     download,
 ):
+    # ensure that AzureMLAssetDataSet type matches path in the mock_azureml_client
+    with mock_azureml_client() as mac:
+        azureml_type = mac.data.get().type
     ds = AzureMLAssetDataSet(
         dataset={
             "type": dataset_type,
             "filepath": path_in_aml,
         },
         azureml_dataset="test_dataset",
+        azureml_type=azureml_type,
         version=Version(None, None),
     )
     ds._local_run = local_run

@@ -256,6 +256,7 @@ def multi_catalog():
             "filepath": "abc.csv",
         },
         azureml_dataset="test_dataset",
+        azureml_type="uri_file",
         version=Version(None, None),
     )
     parq = AzureMLAssetDataSet(
@@ -264,6 +265,9 @@ def multi_catalog():
             "filepath": "xyz.parq",
         },
         azureml_dataset="test_dataset_2",
+        azureml_type="uri_folder",
+        azureml_root_dir="azureml_root",
+        datastore="mydatastore",
         version=Version(None, None),
     )
     return DataCatalog({"input_data": csv, "i2": parq})
