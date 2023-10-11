@@ -1,9 +1,11 @@
 import json
 from dataclasses import asdict, dataclass
+from enum import Enum
 from typing import Optional, Union
 
 
-class Framework:
+# can be replaced by StrEnum starting from python 3.11
+class Framework(str, Enum):
     PyTorch = "PyTorch"
     TensorFlow = "TensorFlow"
     MPI = "MPI"
