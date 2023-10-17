@@ -171,7 +171,7 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
 
         :rtype: None
         """
-        if not re.match(r"^([\w\-_]+\/?)+$", azureml_root_dir):
+        if not re.match(r"^\/?([\w\-_]\/?)+$", azureml_root_dir):
             raise ValueError(
                 "azureml_root_dir must only contain "
                 "lowercase letters, numbers, and underscores. "
