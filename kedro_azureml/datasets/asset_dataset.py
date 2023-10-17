@@ -1,4 +1,5 @@
 import logging
+import re
 from functools import partial
 from operator import attrgetter
 from pathlib import Path
@@ -43,6 +44,13 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
      | - ``filepath_arg``: Filepath arg on the wrapped dataset, defaults to `filepath`
      | - ``azureml_type``: Either `uri_folder` or `uri_file`
      | - ``version``: Version of the AzureML dataset to be used in kedro format.
+     | - ``datastore``: datastore name, only used to resolve the path when using the
+        data asset as an output (non local runs).
+     | - ``azureml_root_dir``: The folder where to save the data asset, only used to
+        resolve the path when using the data asset as an output (non local runs). Must
+        be a linux file type without any spaces. Leading and trailing slash are stripped
+        Final output path will be start with
+        "azureml://datastores/<datastore>/paths/<azureml_root_dir>/<job_id>"
 
     Example
     -------
@@ -52,19 +60,17 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
     .. code-block:: yaml
 
         my_folder_dataset:
-          type: kedro_azureml.datasets.AzureMLAssetDataSet
-          azureml_dataset: my_azureml_folder_dataset
-          root_dir: data/01_raw/some_folder/
-          versioned: True
-          dataset:
-            type: pandas.ParquetDataSet
-            filepath: "."
+            type: kedro_azureml.datasets.AzureMLAssetDataSet
+            azureml_dataset: my_azureml_folder_dataset
+            root_dir: data/01_raw/some_folder/
+            dataset:
+                type: pandas.ParquetDataSet
+                filepath: "."
 
         my_file_dataset:
             type: kedro_azureml.datasets.AzureMLAssetDataSet
             azureml_dataset: my_azureml_file_dataset
             root_dir: data/01_raw/some_other_folder/
-            versioned: True
             dataset:
                 type: pandas.ParquetDataSet
                 filepath: "companies.csv"
@@ -81,6 +87,8 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         filepath_arg: str = "filepath",
         azureml_type: AzureMLDataAssetType = "uri_folder",
         version: Optional[Version] = None,
+        datastore: str = "${{default_datastore}}",
+        azureml_root_dir: str = "kedro_azureml",
     ):
         """
         azureml_dataset: Name of the AzureML file azureml_dataset.
@@ -90,9 +98,23 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         filepath_arg: Filepath arg on the wrapped dataset, defaults to `filepath`
         azureml_type: Either `uri_folder` or `uri_file`
         version: Version of the AzureML dataset to be used in kedro format.
+        datastore: datastore name, only used to resolve the path when using the
+        data asset as an output (non local runs). Defaults to pipeline defaut
+        data store (resolved server side, see
+        https://learn.microsoft.com/en-us/azure/machine-learning/concept-expressions?view=azureml-api-2)
+        azureml_root_dir: The folder where to save the data asset, only used to
+        resolve the path when using the data asset as an output (non local runs). Must
+        be a linux file type without any spaces. Leading and trailing slash are stripped
         """
         super().__init__(dataset=dataset, root_dir=root_dir, filepath_arg=filepath_arg)
 
+        self._validate_datastore_name(datastore)
+        # needed to ensure there is no extra / in the string passed to Output
+        azureml_root_dir = azureml_root_dir.strip("/")
+        self._validate_azureml_root_dir(azureml_root_dir)
+
+        self._azureml_root_dir = azureml_root_dir
+        self._datastore = datastore
         self._azureml_dataset = azureml_dataset
         self._version = version
         # 1 entry for load version, 1 for save version
@@ -113,6 +135,48 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
                 f"'{self.__class__.__name__}' does not support versioning of the "
                 f"underlying dataset. Please remove '{VERSIONED_FLAG_KEY}' flag from "
                 f"the dataset definition."
+            )
+
+    def _validate_datastore_name(self, datastore: str):
+        """
+        Validates a datastore name to check it contains exclusively lowercase letters,
+        digits and underscores or if it matches ${{default_datastore}}
+
+        :param datastore: The name of the datastore to be validated.
+        :type datastore: str
+
+        :raises ValueError: If the provided `datastore` name is incorrect.
+
+        :rtype: None
+
+        Learn more about the special expression "${{default_datastore}}" at:
+        https://learn.microsoft.com/azure/machine-learning/concept-expressions
+        """
+        if not re.match(r"(^[a-z0-9_]+$|^\${{default_datastore}}$)", datastore):
+            raise ValueError(
+                "The datastore name must exclusively contain "
+                "lowercase letters, numbers, and underscores. "
+                "You can also use ${[default_datastore]}: "
+                "https://learn.microsoft.com/azure/machine-learning/concept-expressions"
+            )
+
+    def _validate_azureml_root_dir(self, azureml_root_dir: str):
+        """
+        Validates the azureml root_dir to check it is a valid unix file path
+
+        :param azureml_root_dir: The name to be validated.
+        :type datastore: str
+
+        :raises ValueError: If the provided `azureml_root_dir` name is incorrect.
+
+        :rtype: None
+        """
+        if not re.match(r"^\/?([\w\-_]\/?)+$", azureml_root_dir):
+            raise ValueError(
+                "azureml_root_dir must only contain "
+                "lowercase letters, numbers, and underscores. "
+                "Folders should be separated by a '/'. "
+                "Spaces are not allowed."
             )
 
     @property

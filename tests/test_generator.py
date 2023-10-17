@@ -71,6 +71,23 @@ def test_can_generate_azure_pipeline(
                 for node in az_pipeline.jobs.values()
             ), "Invalid docker image set on commands"
 
+        # check Output of generated command for AzuremlDataAssets
+
+        i2_job = az_pipeline.jobs["node1"].outputs["i2"]._to_job_output()
+        i2_dataset = multi_catalog.datasets.i2
+        assert i2_dataset._azureml_type == i2_job.type, "Wrong Output type"
+        assert i2_dataset._azureml_dataset == i2_job.name, "Wrong Output name"
+        assert i2_dataset._datastore in i2_job.path, "datastore not passed to Output"
+        assert (
+            i2_dataset._azureml_root_dir in i2_job.path
+        ), "azureml root dir not passed to Output"
+
+        # check Output for non AzuremlDataAssets
+        i3_job = az_pipeline.jobs["node2"].outputs["i3"]._to_job_output()
+        assert i3_job.type == "uri_folder", "Wrong Output type"
+        assert i3_job.path is None, "Output path is not empty"
+        assert i3_job.name is None, "Output name is not empty"
+
 
 def test_azure_pipeline_with_different_compute(
     dummy_pipeline_compute_tag, dummy_plugin_config, multi_catalog

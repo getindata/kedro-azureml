@@ -333,12 +333,16 @@ def test_azureml_asset_dataset(
     local_run,
     download,
 ):
+    # ensure that AzureMLAssetDataSet type matches path in the mock_azureml_client
+    with mock_azureml_client() as mac:
+        azureml_type = mac.data.get().type
     ds = AzureMLAssetDataSet(
         dataset={
             "type": dataset_type,
             "filepath": path_in_aml,
         },
         azureml_dataset="test_dataset",
+        azureml_type=azureml_type,
         version=Version(None, None),
     )
     ds._local_run = local_run
@@ -357,6 +361,29 @@ def test_azureml_asset_dataset(
     else:
         ds._save(df)
         assert (ds._load()["data"] == df["data"]).all()
+
+
+@pytest.mark.parametrize(
+    "azureml_root_dir",
+    [
+        "azureml/root",
+        "/azureml/root",
+        "azureml/root/",
+        "/azureml/root/",
+    ],
+    ids=("noslash", "leading", "trailing", "both"),
+)
+def test_azureml_root_dir_has_no_leading_and_trailing_slashes(azureml_root_dir):
+    aml_dataset = AzureMLAssetDataSet(
+        dataset={
+            "type": PickleDataSet,
+            "filepath": "some/random/path/test.pickle",
+        },
+        azureml_dataset="test_dataset",
+        version=Version(None, None),
+        azureml_root_dir=azureml_root_dir,
+    )
+    assert aml_dataset._azureml_root_dir == azureml_root_dir.strip("/")
 
 
 def test_azureml_assetdataset_raises_DataSetError_azureml_type():
@@ -382,6 +409,46 @@ def test_azureml_assetdataset_raises_DataSetError_wrapped_dataset_versioned():
             },
             azureml_dataset="test_dataset",
             version=Version(None, None),
+        )
+
+
+@pytest.mark.parametrize(
+    "datastore",
+    [
+        "my-datastore",
+        "my/datastore",
+        "MyDatastore",
+    ],
+    ids=("hyphen", "slash", "uppercase"),
+)
+def test_azureml_assetdataset_raises_ValueError_bad_datastore_name(datastore):
+    with pytest.raises(ValueError, match=r".*datastore.*"):
+        AzureMLAssetDataSet(
+            dataset={
+                "type": PickleDataSet,
+                "filepath": "some/random/path/test.pickle",
+            },
+            azureml_dataset="test_dataset",
+            version=Version(None, None),
+            datastore=datastore,
+        )
+
+
+@pytest.mark.parametrize(
+    "azureml_root_dir",
+    ["my dir", "my//dir", "my\\dir", "my$dir"],
+    ids=("space", "doubleslash", "backslash", "special_char"),
+)
+def test_azureml_assetdataset_raises_ValueError_bad_azureml_root_dir(azureml_root_dir):
+    with pytest.raises(ValueError, match=r".*azureml_root_dir.*"):
+        AzureMLAssetDataSet(
+            dataset={
+                "type": PickleDataSet,
+                "filepath": "some/random/path/test.pickle",
+            },
+            azureml_dataset="test_dataset",
+            version=Version(None, None),
+            azureml_root_dir=azureml_root_dir,
         )
 
 
