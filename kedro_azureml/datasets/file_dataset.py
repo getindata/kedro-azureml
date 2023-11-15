@@ -1,5 +1,5 @@
-from kedro_azureml.datasets.pandas_dataset import AzureMLPandasDataSet
+from kedro_azureml.datasets.pandas_dataset import AzureMLPandasDataset
 
 
-class AzureMLFileDataSet(AzureMLPandasDataSet):
+class AzureMLFileDataset(AzureMLPandasDataset):
     pass

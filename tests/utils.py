@@ -20,7 +20,7 @@ def create_kedro_conf_dirs(tmp_path: Path):
             {
                 "input_data": {
                     "filepath": str(dummy_data_path.absolute()),
-                    "type": "text.TextDataSet",
+                    "type": "text.TextDataset",
                 },
             },
             f,

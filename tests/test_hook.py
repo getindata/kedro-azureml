@@ -4,7 +4,7 @@ import pytest
 from kedro.io.core import Version
 from kedro.runner import SequentialRunner
 
-from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataSet
+from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataset
 from kedro_azureml.hooks import azureml_local_run_hook
 from kedro_azureml.runner import AzurePipelinesRunner
 
@@ -34,7 +34,7 @@ def test_hook_after_context_created(
 
     azureml_local_run_hook.after_catalog_created(multi_catalog)
     for dataset in multi_catalog._data_sets.values():
-        if isinstance(dataset, AzureMLAssetDataSet):
+        if isinstance(dataset, AzureMLAssetDataset):
             assert dataset._download is True
             assert dataset._local_run is True
             assert dataset._azureml_config is not None
