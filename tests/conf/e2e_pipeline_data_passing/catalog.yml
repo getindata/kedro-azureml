@@ -1,30 +1,30 @@
 companies:
-  type: pandas.CSVDataSet
+  type: pandas.CSVDataset
   filepath: data/01_raw/companies.csv
   layer: raw
 
 reviews:
-  type: pandas.CSVDataSet
+  type: pandas.CSVDataset
   filepath: data/01_raw/reviews.csv
   layer: raw
 
 shuttles:
-  type: pandas.ExcelDataSet
+  type: pandas.ExcelDataset
   filepath: data/01_raw/shuttles.xlsx
   layer: raw
 
 preprocessed_shuttles:
-  type: kedro_azureml.datasets.AzureMLPipelineDataSet
+  type: kedro_azureml.datasets.AzureMLPipelineDataset
   dataset:
-    type: pandas.CSVDataSet
+    type: pandas.CSVDataset
     filepath: "shuttles.csv"
 
 model_input_table:
-  type: kedro_azureml.datasets.AzureMLAssetDataSet
+  type: kedro_azureml.datasets.AzureMLAssetDataset
   azureml_dataset: e2e_tests_pdp
   root_dir: data/02_intermediate
   dataset:
-    type: pandas.CSVDataSet
+    type: pandas.CSVDataset
     filepath: model_input_table.csv
     save_args:
       index: false

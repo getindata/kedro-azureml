@@ -11,25 +11,25 @@ from cachetools.keys import hashkey
 from kedro.io.core import (
     VERSION_KEY,
     VERSIONED_FLAG_KEY,
-    AbstractDataSet,
-    AbstractVersionedDataSet,
-    DataSetError,
-    DataSetNotFoundError,
+    AbstractDataset,
+    AbstractVersionedDataset,
+    DatasetError,
+    DatasetNotFoundError,
     Version,
     VersionNotFoundError,
 )
 
 from kedro_azureml.client import _get_azureml_client
 from kedro_azureml.config import AzureMLConfig
-from kedro_azureml.datasets.pipeline_dataset import AzureMLPipelineDataSet
+from kedro_azureml.datasets.pipeline_dataset import AzureMLPipelineDataset
 
 AzureMLDataAssetType = Literal["uri_file", "uri_folder"]
 logger = logging.getLogger(__name__)
 
 
-class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
+class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
     """
-    AzureMLAssetDataSet enables kedro-azureml to use azureml
+    AzureMLAssetDataset enables kedro-azureml to use azureml
     v2-sdk Folder/File datasets for remote and local runs.
 
     Args
@@ -52,21 +52,21 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
     .. code-block:: yaml
 
         my_folder_dataset:
-          type: kedro_azureml.datasets.AzureMLAssetDataSet
+          type: kedro_azureml.datasets.AzureMLAssetDataset
           azureml_dataset: my_azureml_folder_dataset
           root_dir: data/01_raw/some_folder/
           versioned: True
           dataset:
-            type: pandas.ParquetDataSet
+            type: pandas.ParquetDataset
             filepath: "."
 
         my_file_dataset:
-            type: kedro_azureml.datasets.AzureMLAssetDataSet
+            type: kedro_azureml.datasets.AzureMLAssetDataset
             azureml_dataset: my_azureml_file_dataset
             root_dir: data/01_raw/some_other_folder/
             versioned: True
             dataset:
-                type: pandas.ParquetDataSet
+                type: pandas.ParquetDataset
                 filepath: "companies.csv"
 
     """
@@ -76,7 +76,7 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
     def __init__(
         self,
         azureml_dataset: str,
-        dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
+        dataset: Union[str, Type[AbstractDataset], Dict[str, Any]],
         root_dir: str = "data",
         filepath_arg: str = "filepath",
         azureml_type: AzureMLDataAssetType = "uri_folder",
@@ -102,14 +102,14 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         self._azureml_config = None
         self._azureml_type = azureml_type
         if self._azureml_type not in get_args(AzureMLDataAssetType):
-            raise DataSetError(
+            raise DatasetError(
                 f"Invalid azureml_type '{self._azureml_type}' in dataset definition. "
                 f"Valid values are: {get_args(AzureMLDataAssetType)}"
             )
 
         # TODO: remove and disable versioning in Azure ML runner?
         if VERSION_KEY in self._dataset_config:
-            raise DataSetError(
+            raise DatasetError(
                 f"'{self.__class__.__name__}' does not support versioning of the "
                 f"underlying dataset. Please remove '{VERSIONED_FLAG_KEY}' flag from "
                 f"the dataset definition."
@@ -148,7 +148,7 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
         else:
             return str(self.path)
 
-    def _construct_dataset(self) -> AbstractDataSet:
+    def _construct_dataset(self) -> AbstractDataset:
         dataset_config = self._dataset_config.copy()
         dataset_config[self._filepath_arg] = str(self.path)
         return self._dataset_type(**dataset_config)
@@ -160,7 +160,7 @@ class AzureMLAssetDataSet(AzureMLPipelineDataSet, AbstractVersionedDataSet):
             ) as ml_client:
                 return ml_client.data.get(self._azureml_dataset, label="latest").version
         except ResourceNotFoundError:
-            raise DataSetNotFoundError(f"Did not find Azure ML Data Asset for {self}")
+            raise DatasetNotFoundError(f"Did not find Azure ML Data Asset for {self}")
 
     @cachedmethod(cache=attrgetter("_version_cache"), key=partial(hashkey, "load"))
     def _fetch_latest_load_version(self) -> str:

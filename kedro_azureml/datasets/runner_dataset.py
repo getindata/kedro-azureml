@@ -8,7 +8,7 @@ from typing import Any, Dict
 import backoff
 import cloudpickle
 import fsspec
-from kedro.io import AbstractDataSet
+from kedro.io import AbstractDataset
 
 from kedro_azureml.constants import (
     KEDRO_AZURE_BLOB_TEMP_DIR_NAME,
@@ -19,7 +19,7 @@ from kedro_azureml.distributed.utils import is_distributed_master_node
 logger = logging.getLogger(__name__)
 
 
-class KedroAzureRunnerDataset(AbstractDataSet):
+class KedroAzureRunnerDataset(AbstractDataset):
     def __init__(
         self,
         storage_account_name,
@@ -83,5 +83,5 @@ class KedroAzureRunnerDistributedDataset(KedroAzureRunnerDataset):
             super()._save(data)
         else:
             logger.warning(
-                f"DataSet {self.dataset_name} will not be saved on a distributed node"
+                f"Dataset {self.dataset_name} will not be saved on a distributed node"
             )

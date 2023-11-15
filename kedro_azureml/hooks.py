@@ -1,7 +1,7 @@
 from kedro.framework.hooks import hook_impl
 
 from kedro_azureml.config import AzureMLConfig
-from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataSet
+from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataset
 from kedro_azureml.runner import AzurePipelinesRunner
 
 
@@ -19,7 +19,7 @@ class AzureMLLocalRunHook:
     @hook_impl
     def after_catalog_created(self, catalog):
         for dataset_name, dataset in catalog._data_sets.items():
-            if isinstance(dataset, AzureMLAssetDataSet):
+            if isinstance(dataset, AzureMLAssetDataset):
                 dataset.azure_config = self.azure_config
                 catalog.add(dataset_name, dataset, replace=True)
 
@@ -32,9 +32,9 @@ class AzureMLLocalRunHook:
             catalog: The ``DataCatalog`` from which to fetch data.
         """
         for dataset_name, dataset in catalog._data_sets.items():
-            if isinstance(dataset, AzureMLAssetDataSet):
+            if isinstance(dataset, AzureMLAssetDataset):
                 if AzurePipelinesRunner.__name__ not in run_params["runner"]:
-                    # when running locally using an AzureMLAssetDataSet
+                    # when running locally using an AzureMLAssetDataset
                     # as an intermediate dataset we don't want download
                     # but still set to run local with a local version.
                     if dataset_name not in pipeline.inputs():

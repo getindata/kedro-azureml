@@ -5,14 +5,14 @@ from uuid import uuid4
 import numpy as np
 import pandas as pd
 import pytest
-from kedro.io.core import VERSIONED_FLAG_KEY, DataSetError, Version
-from kedro_datasets.pandas import ParquetDataSet
-from kedro_datasets.pickle import PickleDataSet
+from kedro.io.core import VERSIONED_FLAG_KEY, DatasetError, Version
+from kedro_datasets.pandas import ParquetDataset
+from kedro_datasets.pickle import PickleDataset
 
 from kedro_azureml.constants import KEDRO_AZURE_BLOB_TEMP_DIR_NAME
 from kedro_azureml.datasets import (
-    AzureMLAssetDataSet,
-    AzureMLPipelineDataSet,
+    AzureMLAssetDataset,
+    AzureMLPipelineDataset,
     KedroAzureRunnerDataset,
     KedroAzureRunnerDistributedDataset,
 )
@@ -49,7 +49,7 @@ def test_azure_dataset_config(dataset_class: Type):
     "dataset_type,path_in_aml,path_locally,download_path,local_run,download,mock_azureml_client",
     [
         (
-            PickleDataSet,
+            PickleDataset,
             "test.pickle",
             "data/test.pickle",
             "data",
@@ -64,7 +64,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            PickleDataSet,
+            PickleDataset,
             "test.pickle",
             "data/test_dataset/1/test.pickle",
             "data/test_dataset/1",
@@ -79,7 +79,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            PickleDataSet,
+            PickleDataset,
             "test.pickle",
             "data/test_dataset/1/test.pickle",
             "data/test_dataset/1",
@@ -94,7 +94,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            PickleDataSet,
+            PickleDataset,
             "random/subfolder/test.pickle",
             "data/random/subfolder/test.pickle",
             "data/random/subfolder",
@@ -109,7 +109,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            PickleDataSet,
+            PickleDataset,
             "random/subfolder/test.pickle",
             "data/test_dataset/1/random/subfolder/test.pickle",
             "data/test_dataset/1/random/subfolder",
@@ -124,7 +124,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            PickleDataSet,
+            PickleDataset,
             "random/subfolder/test.pickle",
             "data/test_dataset/1/random/subfolder/test.pickle",
             "data/test_dataset/1/random/subfolder",
@@ -139,7 +139,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            ParquetDataSet,
+            ParquetDataset,
             ".",
             "data/",
             "data",
@@ -154,7 +154,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            ParquetDataSet,
+            ParquetDataset,
             ".",
             "data/test_dataset/1/",
             "data/test_dataset/1",
@@ -169,7 +169,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            ParquetDataSet,
+            ParquetDataset,
             ".",
             "data/test_dataset/1/",
             "data/test_dataset/1",
@@ -184,7 +184,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            ParquetDataSet,
+            ParquetDataset,
             "random/subfolder/",
             "data/random/subfolder/",
             "data/random/subfolder",
@@ -199,7 +199,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            ParquetDataSet,
+            ParquetDataset,
             "random/subfolder/",
             "data/test_dataset/1/random/subfolder/",
             "data/test_dataset/1/random/subfolder",
@@ -214,7 +214,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            ParquetDataSet,
+            ParquetDataset,
             "random/subfolder/",
             "data/test_dataset/1/random/subfolder/",
             "data/test_dataset/1/random/subfolder",
@@ -229,7 +229,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            PickleDataSet,
+            PickleDataset,
             "test.pickle",
             "data/test.pickle",
             "data",
@@ -244,7 +244,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            PickleDataSet,
+            PickleDataset,
             "test.pickle",
             "data/test_dataset/1/test.pickle",
             "data/test_dataset/1",
@@ -259,7 +259,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            PickleDataSet,
+            PickleDataset,
             "test.pickle",
             "data/test_dataset/1/test.pickle",
             "data/test_dataset/1",
@@ -274,7 +274,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            PickleDataSet,
+            PickleDataset,
             "random/subfolder/test.pickle",
             "data/random/subfolder/test.pickle",
             "data/random/subfolder",
@@ -289,7 +289,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            PickleDataSet,
+            PickleDataset,
             "random/subfolder/test.pickle",
             "data/test_dataset/1/random/subfolder/test.pickle",
             "data/test_dataset/1/random/subfolder",
@@ -304,7 +304,7 @@ def test_azure_dataset_config(dataset_class: Type):
             },
         ),
         (
-            PickleDataSet,
+            PickleDataset,
             "random/subfolder/test.pickle",
             "data/test_dataset/1/random/subfolder/test.pickle",
             "data/test_dataset/1/random/subfolder",
@@ -333,7 +333,7 @@ def test_azureml_asset_dataset(
     local_run,
     download,
 ):
-    ds = AzureMLAssetDataSet(
+    ds = AzureMLAssetDataset(
         dataset={
             "type": dataset_type,
             "filepath": path_in_aml,
@@ -349,7 +349,7 @@ def test_azureml_asset_dataset(
     df = pd.DataFrame({"data": [1, 2, 3], "partition_idx": [1, 2, 3]})
     if download:
         assert (ds._load()["data"] == df["data"]).all()
-        if dataset_type is not ParquetDataSet:
+        if dataset_type is not ParquetDataset:
             ds.path.unlink()
             assert not ds.path.exists()
             ds._save(df)
@@ -359,11 +359,11 @@ def test_azureml_asset_dataset(
         assert (ds._load()["data"] == df["data"]).all()
 
 
-def test_azureml_assetdataset_raises_DataSetError_azureml_type():
-    with pytest.raises(DataSetError, match="mltable"):
-        AzureMLAssetDataSet(
+def test_azureml_assetdataset_raises_DatasetError_azureml_type():
+    with pytest.raises(DatasetError, match="mltable"):
+        AzureMLAssetDataset(
             dataset={
-                "type": PickleDataSet,
+                "type": PickleDataset,
                 "filepath": "some/random/path/test.pickle",
             },
             azureml_dataset="test_dataset",
@@ -372,11 +372,11 @@ def test_azureml_assetdataset_raises_DataSetError_azureml_type():
         )
 
 
-def test_azureml_assetdataset_raises_DataSetError_wrapped_dataset_versioned():
-    with pytest.raises(DataSetError, match=VERSIONED_FLAG_KEY):
-        AzureMLAssetDataSet(
+def test_azureml_assetdataset_raises_DatasetError_wrapped_dataset_versioned():
+    with pytest.raises(DatasetError, match=VERSIONED_FLAG_KEY):
+        AzureMLAssetDataset(
             dataset={
-                "type": PickleDataSet,
+                "type": PickleDataset,
                 "filepath": "some/random/path/test.pickle",
                 "versioned": True,
             },
@@ -386,9 +386,9 @@ def test_azureml_assetdataset_raises_DataSetError_wrapped_dataset_versioned():
 
 
 def test_azureml_pipeline_dataset(tmp_path: Path):
-    ds = AzureMLPipelineDataSet(
+    ds = AzureMLPipelineDataset(
         {
-            "type": PickleDataSet,
+            "type": PickleDataset,
             "backend": "cloudpickle",
             "filepath": (original_path := str(tmp_path / "test.pickle")),
         }

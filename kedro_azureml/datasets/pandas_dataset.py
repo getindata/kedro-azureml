@@ -1,9 +1,9 @@
-from kedro.io import AbstractDataSet
+from kedro.io import AbstractDataset
 
 from kedro_azureml.datasets.v1_datasets import REMOVED_DATASETS_WARNING
 
 
-class AzureMLPandasDataSet(AbstractDataSet):
+class AzureMLPandasDataset(AbstractDataset):
     def _load(self):
         raise REMOVED_DATASETS_WARNING
 

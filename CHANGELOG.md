@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+-   [💔 Breaking change] Renamed all `*DataSet` classes to `*Dataset` to follow Kedro's naming convention which will be introduced in 0.19.
+-   Upgraded minimal requirements for MLflow to `>=2.0.0,<3.0.0` to be compatible with `azureml-mlflow`
 
 -   Added `--on-job-scheduled` argument to `kedro azureml run` to plug-in custom behaviour after Azure ML job is scheduled [@Gabriel2409](https://github.com/Gabriel2409)
 

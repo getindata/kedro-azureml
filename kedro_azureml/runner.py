@@ -3,20 +3,20 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from kedro.io import AbstractDataSet, DataCatalog
+from kedro.io import AbstractDataset, DataCatalog
 from kedro.pipeline import Pipeline
 from kedro.runner import SequentialRunner
-from kedro_datasets.pickle import PickleDataSet
+from kedro_datasets.pickle import PickleDataset
 from pluggy import PluginManager
 
 from kedro_azureml.config import KedroAzureRunnerConfig
 from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
 from kedro_azureml.datasets import (
-    AzureMLPipelineDataSet,
+    AzureMLPipelineDataset,
     KedroAzureRunnerDataset,
     KedroAzureRunnerDistributedDataset,
 )
-from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataSet
+from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataset
 from kedro_azureml.distributed.utils import is_distributed_environment
 
 logger = logging.getLogger(__name__)
@@ -53,9 +53,9 @@ class AzurePipelinesRunner(SequentialRunner):
         for ds_name, azure_dataset_path in self.data_paths.items():
             if ds_name in catalog_set:
                 ds = catalog._get_dataset(ds_name)
-                if isinstance(ds, AzureMLPipelineDataSet):
+                if isinstance(ds, AzureMLPipelineDataset):
                     if (
-                        isinstance(ds, AzureMLAssetDataSet)
+                        isinstance(ds, AzureMLAssetDataset)
                         and ds._azureml_type == "uri_file"
                     ):
                         ds.root_dir = str(Path(azure_dataset_path).parent)
@@ -72,11 +72,11 @@ class AzurePipelinesRunner(SequentialRunner):
 
         return super().run(pipeline, catalog, hook_manager, session_id)
 
-    def create_default_data_set(self, ds_name: str) -> AbstractDataSet:
+    def create_default_data_set(self, ds_name: str) -> AbstractDataset:
         if self.pipeline_data_passing:
-            return AzureMLPipelineDataSet(
+            return AzureMLPipelineDataset(
                 {
-                    "type": PickleDataSet,
+                    "type": PickleDataset,
                     "backend": "cloudpickle",
                     "filepath": f"{ds_name}.pickle",
                 },
