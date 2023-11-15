@@ -1,13 +1,13 @@
 from pathlib import Path
 
 import pytest
-from kedro.extras.datasets.pickle import PickleDataSet
-from kedro.io import DataCatalog, MemoryDataSet
+from kedro.io import DataCatalog, MemoryDataset
 from kedro.io.core import Version
 from kedro.pipeline import Pipeline
+from kedro_datasets.pickle import PickleDataset
 
-from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataSet
-from kedro_azureml.datasets.pipeline_dataset import AzureMLPipelineDataSet
+from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataset
+from kedro_azureml.datasets.pipeline_dataset import AzureMLPipelineDataset
 from kedro_azureml.runner import AzurePipelinesRunner
 
 
@@ -17,7 +17,7 @@ def test_can_invoke_dummy_pipeline(
     runner = patched_azure_runner
     catalog = DataCatalog()
     input_data = ["yolo :)"]
-    catalog.add("input_data", MemoryDataSet(data=input_data))
+    catalog.add("input_data", MemoryDataset(data=input_data))
     results = runner.run(
         dummy_pipeline,
         catalog,
@@ -31,7 +31,7 @@ def test_runner_fills_missing_datasets(
     input_data = ["yolo :)"]
     runner = patched_azure_runner
     catalog = DataCatalog()
-    catalog.add("input_data", MemoryDataSet(data=input_data))
+    catalog.add("input_data", MemoryDataset(data=input_data))
     for node_no in range(3):
         results = runner.run(
             dummy_pipeline.filter(node_names=[f"node{node_no+1}"]),
@@ -42,15 +42,15 @@ def test_runner_fills_missing_datasets(
 
 def test_runner_pipeline_data_passing(dummy_pipeline: Pipeline, tmp_path: Path):
     input_path = str(tmp_path / "input_data.pickle")
-    input_dataset = AzureMLPipelineDataSet(
-        {"type": PickleDataSet, "backend": "cloudpickle", "filepath": input_path}
+    input_dataset = AzureMLPipelineDataset(
+        {"type": PickleDataset, "backend": "cloudpickle", "filepath": input_path}
     )
     input_data = ["yolo :)"]
     input_dataset.save(input_data)
 
     output_path = str(tmp_path / "i2.pickle")
-    output_dataset = AzureMLPipelineDataSet(
-        {"type": PickleDataSet, "backend": "cloudpickle", "filepath": output_path}
+    output_dataset = AzureMLPipelineDataset(
+        {"type": PickleDataset, "backend": "cloudpickle", "filepath": output_path}
     )
 
     runner = AzurePipelinesRunner(
@@ -80,9 +80,9 @@ def test_asset_dataset_root_dir_adjustments(
     dummy_pipeline: Pipeline, tmp_path: Path, azureml_dataset_type, data_path
 ):
     input_path = str(tmp_path / "input_data.pickle")
-    input_dataset = AzureMLAssetDataSet(
+    input_dataset = AzureMLAssetDataset(
         dataset={
-            "type": PickleDataSet,
+            "type": PickleDataset,
             "backend": "cloudpickle",
             "filepath": input_path,
         },

@@ -28,7 +28,7 @@ from kedro_azureml.constants import (
     KEDRO_AZURE_RUNNER_CONFIG,
     PARAMS_PREFIX,
 )
-from kedro_azureml.datasets import AzureMLAssetDataSet
+from kedro_azureml.datasets import AzureMLAssetDataset
 from kedro_azureml.distributed import DistributedNodeConfig
 from kedro_azureml.distributed.config import Framework
 
@@ -158,11 +158,11 @@ class AzureMLPipelineGenerator:
         if self._is_param_or_root_non_azureml_asset_dataset(dataset_name, pipeline):
             return Input(type="string")
         elif dataset_name in self.catalog.list() and isinstance(
-            ds := self.catalog._get_dataset(dataset_name), AzureMLAssetDataSet
+            ds := self.catalog._get_dataset(dataset_name), AzureMLAssetDataset
         ):
             if ds._azureml_type == "uri_file" and dataset_name not in pipeline.inputs():
                 raise ValueError(
-                    "AzureMLAssetDataSets with azureml_type 'uri_file' can only be used as pipeline inputs"
+                    "AzureMLAssetDatasets with azureml_type 'uri_file' can only be used as pipeline inputs"
                 )
             return Input(type=ds._azureml_type)
         else:
@@ -170,11 +170,11 @@ class AzureMLPipelineGenerator:
 
     def _get_output(self, name):
         if name in self.catalog.list() and isinstance(
-            ds := self.catalog._get_dataset(name), AzureMLAssetDataSet
+            ds := self.catalog._get_dataset(name), AzureMLAssetDataset
         ):
             if ds._azureml_type == "uri_file":
                 raise ValueError(
-                    "AzureMLAssetDataSets with azureml_type 'uri_file' cannot be used as outputs"
+                    "AzureMLAssetDatasets with azureml_type 'uri_file' cannot be used as outputs"
                 )
             # TODO: add versioning
             return Output(type=ds._azureml_type, name=ds._azureml_dataset)
@@ -210,7 +210,7 @@ class AzureMLPipelineGenerator:
             dataset_name in pipeline.inputs()
             and dataset_name in self.catalog.list()
             and not isinstance(
-                self.catalog._get_dataset(dataset_name), AzureMLAssetDataSet
+                self.catalog._get_dataset(dataset_name), AzureMLAssetDataset
             )
         )
 
@@ -333,9 +333,9 @@ class AzureMLPipelineGenerator:
                     parent_outputs = invoked_components[output_from_deps.name].outputs
                     azure_output = parent_outputs[sanitized_input_name]
                     azure_inputs[sanitized_input_name] = azure_output
-                # 2. try to find AzureMLAssetDataSet in catalog
+                # 2. try to find AzureMLAssetDataset in catalog
                 elif node_input in self.catalog.list() and isinstance(
-                    ds := self.catalog._get_dataset(node_input), AzureMLAssetDataSet
+                    ds := self.catalog._get_dataset(node_input), AzureMLAssetDataset
                 ):
                     azure_inputs[sanitized_input_name] = Input(
                         type=ds._azureml_type,

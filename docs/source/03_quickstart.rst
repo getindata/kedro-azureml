@@ -124,17 +124,17 @@ Adjusting the Data Catalog
    .. code:: yaml
 
       companies:
-        type: pandas.CSVDataSet
+        type: pandas.CSVDataset
         filepath: data/01_raw/companies.csv
         layer: raw
 
       reviews:
-        type: pandas.CSVDataSet
+        type: pandas.CSVDataset
         filepath: data/01_raw/reviews.csv
         layer: raw
 
       shuttles:
-        type: pandas.ExcelDataSet
+        type: pandas.ExcelDataset
         filepath: data/01_raw/shuttles.xlsx
         layer: raw
 
@@ -166,11 +166,12 @@ This option is also shown in the video-tutorial above.
     | you will need to build and push the docker image to ACR again.
     | We recommend this option for CI/CD-automated MLOps workflows.
 
-10. Ensure that in the ``azureml.yml`` you have ``code_directory`` set to null, and ``docker.image`` is filled:
+10. Ensure that in the ``azureml.yml`` you have ``azure.code_directory`` set to null, and ``docker.image`` is filled:
 
     .. code:: yaml
 
-       code_directory: ~
+       azure:
+         code_directory: ~
        # rest of the azureml.yml file
        docker:
           image: your-container-registry.azurecr.io/kedro-azureml:latest
@@ -215,7 +216,7 @@ can be removed from the ``Dockerfile``.
             COPY src/requirements.txt /tmp/requirements.txt
             RUN pip install -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
 
-11. Ensure ``code_directory: "."`` is set in the ``azureml.yml`` config file (it's set if you've used ``--aml_env`` during ``init`` above).
+11. Ensure ``azure.code_directory: "."`` is set in the ``azureml.yml`` config file (it's set if you've used ``--aml_env`` during ``init`` above).
 
 
 
@@ -438,6 +439,21 @@ In case you need to customize pipeline run context, modifying configuration file
 - ``--pipeline`` allows to select a pipeline to run (by default, the ``__default__`` pipeline is started),
 - ``--params`` takes a JSON string with parameters override (JSONed version of ``conf/*/parameters.yml``, not the Kedro's ``params:`` syntax),
 - ``--env-var KEY=VALUE`` sets the OS environment variable injected to the steps during runtime (can be used multiple times).
+- ``--load-versions`` specifies a particular dataset version (timestamp) for loading (similar behavior as Kedro)
+- ``--on-job-scheduled  path.to.module:my_function`` specifies a callback function to be called on the azureml pipeline job start (example below)
+
+.. code:: python
+
+    # src/mymodule/myfile.py
+    def save_output_callback(job):
+        """saves the pipeline job name to a file"""
+        with open("myfile.txt", "w") as f:
+            f.write(job.name)
+
+.. code:: console
+
+    kedro azureml run --on-job-scheduled mymodule.myfile:save_output_callback
+
 
 .. |br| raw:: html
 

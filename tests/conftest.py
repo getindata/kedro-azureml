@@ -11,7 +11,7 @@ from azureml.fsspec import AzureMachineLearningFileSystem
 from kedro.io import DataCatalog
 from kedro.io.core import Version
 from kedro.pipeline import Pipeline, node, pipeline
-from kedro_datasets.pandas import CSVDataSet, ParquetDataSet
+from kedro_datasets.pandas import CSVDataset, ParquetDataset
 
 from kedro_azureml.config import (
     _CONFIG_TEMPLATE,
@@ -20,7 +20,7 @@ from kedro_azureml.config import (
     KedroAzureRunnerConfig,
 )
 from kedro_azureml.constants import KEDRO_AZURE_RUNNER_CONFIG
-from kedro_azureml.datasets import AzureMLAssetDataSet, KedroAzureRunnerDataset
+from kedro_azureml.datasets import AzureMLAssetDataset, KedroAzureRunnerDataset
 from kedro_azureml.runner import AzurePipelinesRunner
 from kedro_azureml.utils import CliContext
 from tests.utils import identity
@@ -250,17 +250,17 @@ def in_temp_dir(tmp_path):
 
 @pytest.fixture
 def multi_catalog():
-    csv = AzureMLAssetDataSet(
+    csv = AzureMLAssetDataset(
         dataset={
-            "type": CSVDataSet,
+            "type": CSVDataset,
             "filepath": "abc.csv",
         },
         azureml_dataset="test_dataset",
         version=Version(None, None),
     )
-    parq = AzureMLAssetDataSet(
+    parq = AzureMLAssetDataset(
         dataset={
-            "type": ParquetDataSet,
+            "type": ParquetDataset,
             "filepath": "xyz.parq",
         },
         azureml_dataset="test_dataset_2",

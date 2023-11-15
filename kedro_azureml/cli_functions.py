@@ -1,10 +1,11 @@
+import importlib
 import json
 import logging
 import os
 import re
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Callable, Dict, Optional
 
 import click
 
@@ -148,3 +149,69 @@ def parse_extra_env_params(extra_env):
             raise Exception(f"Invalid env-var: {entry}, expected format: KEY=VALUE")
 
     return {(e := entry.split("=", maxsplit=1))[0]: e[1] for entry in extra_env}
+
+
+def dynamic_import_job_schedule_func_from_str(
+    ctx: click.Context,
+    param: click.Parameter,
+    import_str: str,
+) -> Optional[Callable]:
+    """
+    Dynamically import and retrieve a function from a specified module.
+
+    The function must have exactly one parameter of type azure.ai.ml.entities.Job.
+    Note that there is no  check on the parameter type
+    This function is designed to be used in Click-based command-line applications.
+
+    :param ctx: The Click context.
+    :type ctx: click.Context
+    :param param: The Click parameter associated with this function.
+    :type param: click.Parameter
+    :param import_str: A string in the format 'path.to.file:function'
+        specifying the module and function to import.
+    :type import_str: str
+
+    :returns: The imported function.
+    :rtype: Any
+
+    :raises click.BadParameter: If the `import_str` is not in the correct format,
+        if the specified module cannot be imported,
+        if the specified attribute cannot be retrieved from the module,
+        if the retrieved attribute is not a callable function,
+
+    Example usage:
+    >>> instance = dynamic_import_job_schedule_func_from_str(
+        ctx, param, "my_module:my_function"
+    )
+
+    Inspired by the `uvicorn/importer.py` module's `import_from_string` function.
+    """
+    # base case: no callback
+    if import_str is None:
+        return
+
+    # check format
+    module_str, _, attrs_str = import_str.partition(":")
+    if not module_str or not attrs_str:
+        raise click.BadParameter(
+            "import_str must be in format <module>:<function>", param=param
+        )
+
+    try:
+        module = importlib.import_module(module_str)
+        instance = getattr(module, attrs_str)
+
+        # fails if we try to import an attribute that is not a function
+        if not callable(instance):
+            raise click.BadParameter(
+                f"The attribute '{attrs_str}' is not a callable function.", param=param
+            )
+
+        return instance
+    except (ImportError, AttributeError, ValueError) as e:
+        # catches errors if module or attribute does not exist
+        raise click.BadParameter(f"Error: {e}", param=param)
+
+
+def default_job_callback(job):
+    click.echo(job.studio_url)

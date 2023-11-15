@@ -5,8 +5,8 @@ from typing import Any, Dict, Type, Union
 from kedro.io.core import (
     VERSION_KEY,
     VERSIONED_FLAG_KEY,
-    AbstractDataSet,
-    DataSetError,
+    AbstractDataset,
+    DatasetError,
     parse_dataset_definition,
 )
 
@@ -18,9 +18,9 @@ from kedro_azureml.distributed.utils import (
 logger = logging.getLogger(__name__)
 
 
-class AzureMLPipelineDataSet(AbstractDataSet):
+class AzureMLPipelineDataset(AbstractDataset):
     """
-    Dataset to support pipeline data passing in Azure ML between nodes, using `kedro.io.AbstractDataSet` as base class.
+    Dataset to support pipeline data passing in Azure ML between nodes, using `kedro.io.AbstractDataset` as base class.
     Wraps around an underlying dataset, which can be any dataset supported by Kedro, and adds the ability to modify the
     file path of the underlying dataset, to point to the mount paths on the Azure ML compute where the node is run.
 
@@ -29,7 +29,7 @@ class AzureMLPipelineDataSet(AbstractDataSet):
 
      | - ``dataset``: Underlying dataset definition.
             Accepted formats are:
-            a) object of a class that inherits from ``AbstractDataSet``
+            a) object of a class that inherits from ``AbstractDataset``
             b) a string representing a fully qualified class name to such class
             c) a dictionary with ``type`` key pointing to a string from b),
             other keys are passed to the Dataset initializer.
@@ -47,26 +47,26 @@ class AzureMLPipelineDataSet(AbstractDataSet):
     .. code-block:: yaml
 
         processed_images:
-          type: kedro_azureml.datasets.AzureMLPipelineDataSet
+          type: kedro_azureml.datasets.AzureMLPipelineDataset
           root_dir: 'data/01_raw'
           dataset:
-            type: pillow.ImageDataSet
+            type: pillow.ImageDataset
             filepath: 'images.png'
 
     """
 
     def __init__(
         self,
-        dataset: Union[str, Type[AbstractDataSet], Dict[str, Any]],
+        dataset: Union[str, Type[AbstractDataset], Dict[str, Any]],
         root_dir: str = "data",
         filepath_arg: str = "filepath",
     ):
-        """Creates a new instance of ``AzureMLPipelineDataSet``.
+        """Creates a new instance of ``AzureMLPipelineDataset``.
 
         Args:
             dataset: Underlying dataset definition.
                 Accepted formats are:
-                a) object of a class that inherits from ``AbstractDataSet``
+                a) object of a class that inherits from ``AbstractDataset``
                 b) a string representing a fully qualified class name to such class
                 c) a dictionary with ``type`` key pointing to a string from b),
                 other keys are passed to the Dataset initializer.
@@ -75,7 +75,7 @@ class AzureMLPipelineDataSet(AbstractDataSet):
                 If unspecified, defaults to "filepath".
 
         Raises:
-            DataSetError: If versioning is enabled for the underlying dataset.
+            DatasetError: If versioning is enabled for the underlying dataset.
         """
 
         dataset = dataset if isinstance(dataset, dict) else {"type": dataset}
@@ -94,7 +94,7 @@ class AzureMLPipelineDataSet(AbstractDataSet):
 
         # TODO: remove and disable versioning in Azure ML runner?
         if VERSION_KEY in self._dataset_config:
-            raise DataSetError(
+            raise DatasetError(
                 f"'{self.__class__.__name__}' does not support versioning of the "
                 f"underlying dataset. Please remove '{VERSIONED_FLAG_KEY}' flag from "
                 f"the dataset definition."
@@ -112,7 +112,7 @@ class AzureMLPipelineDataSet(AbstractDataSet):
         """
         return self.path
 
-    def _construct_dataset(self) -> AbstractDataSet:
+    def _construct_dataset(self) -> AbstractDataset:
         dataset_config = self._dataset_config.copy()
         dataset_config[self._filepath_arg] = str(self.path)
         return self._dataset_type(**dataset_config)
@@ -122,7 +122,7 @@ class AzureMLPipelineDataSet(AbstractDataSet):
 
     def _save(self, data: Any) -> None:
         if is_distributed_environment() and not is_distributed_master_node():
-            logger.warning(f"DataSet {self} will not be saved on a distributed node")
+            logger.warning(f"Dataset {self} will not be saved on a distributed node")
         else:
             self._construct_dataset().save(data)
 
