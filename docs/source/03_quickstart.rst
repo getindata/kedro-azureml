@@ -124,17 +124,17 @@ Adjusting the Data Catalog
    .. code:: yaml
 
       companies:
-        type: pandas.CSVDataSet
+        type: pandas.CSVDataset
         filepath: data/01_raw/companies.csv
         layer: raw
 
       reviews:
-        type: pandas.CSVDataSet
+        type: pandas.CSVDataset
         filepath: data/01_raw/reviews.csv
         layer: raw
 
       shuttles:
-        type: pandas.ExcelDataSet
+        type: pandas.ExcelDataset
         filepath: data/01_raw/shuttles.xlsx
         layer: raw
 
