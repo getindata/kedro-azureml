@@ -1,7 +1,11 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.7.0] - 2023-11-15
+
 -   [💔 Breaking change] Renamed all `*DataSet` classes to `*Dataset` to follow Kedro's naming convention which will be introduced in 0.19.
+
 -   Upgraded minimal requirements for MLflow to `>=2.0.0,<3.0.0` to be compatible with `azureml-mlflow`
 
 -   Added `--on-job-scheduled` argument to `kedro azureml run` to plug-in custom behaviour after Azure ML job is scheduled [@Gabriel2409](https://github.com/Gabriel2409)
@@ -82,7 +86,9 @@
 
 -   Initial plugin release
 
-[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.6.0...HEAD
+[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.7.0...HEAD
+
+[0.7.0]: https://github.com/getindata/kedro-azureml/compare/0.6.0...0.7.0
 
 [0.6.0]: https://github.com/getindata/kedro-azureml/compare/0.5.0...0.6.0
 
