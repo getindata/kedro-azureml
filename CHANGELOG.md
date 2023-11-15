@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+-   [💔 Breaking change] Renamed all `*DataSet` classes to `*Dataset` to follow Kedro's naming convention which will be introduced in 0.19.
+-   Upgraded minimal requirements for MLflow to `>=2.0.0,<3.0.0` to be compatible with `azureml-mlflow`
 
 ## [0.6.0] - 2023-09-01
 

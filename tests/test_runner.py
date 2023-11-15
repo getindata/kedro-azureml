@@ -1,10 +1,10 @@
 from pathlib import Path
 
 import pytest
-from kedro.extras.datasets.pickle import PickleDataset
 from kedro.io import DataCatalog, MemoryDataset
 from kedro.io.core import Version
 from kedro.pipeline import Pipeline
+from kedro_datasets.pickle import PickleDataset
 
 from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataset
 from kedro_azureml.datasets.pipeline_dataset import AzureMLPipelineDataset
