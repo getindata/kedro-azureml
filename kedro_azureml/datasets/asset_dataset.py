@@ -81,7 +81,7 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
         filepath_arg: str = "filepath",
         azureml_type: AzureMLDataAssetType = "uri_folder",
         version: Optional[Version] = None,
-        metadata: dict[str, Any] = None,
+        metadata: Dict[str, Any] = None,
     ):
         """
         azureml_dataset: Name of the AzureML file azureml_dataset.

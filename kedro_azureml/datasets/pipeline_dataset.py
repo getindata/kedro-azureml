@@ -60,7 +60,7 @@ class AzureMLPipelineDataset(AbstractDataset):
         dataset: Union[str, Type[AbstractDataset], Dict[str, Any]],
         root_dir: str = "data",
         filepath_arg: str = "filepath",
-        metadata: dict[str, Any] = None,
+        metadata: Dict[str, Any] = None,
     ):
         """Creates a new instance of ``AzureMLPipelineDataset``.
 
