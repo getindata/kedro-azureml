@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+-   Fixed azureml-fsspec version update changed return type of `_infer_storage_options` and pinned fsspec version to patch only [@froessler](https://github.com/fdroessler)
+
 ## [0.7.0] - 2023-11-15
 
 -   [💔 Breaking change] Renamed all `*DataSet` classes to `*Dataset` to follow Kedro's naming convention which will be introduced in 0.19.
