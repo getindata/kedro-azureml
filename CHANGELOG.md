@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+-   Added support for `metadata` argument in Azure ML datasets by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
+
 ## [0.7.0] - 2023-11-15
 
 -   [💔 Breaking change] Renamed all `*DataSet` classes to `*Dataset` to follow Kedro's naming convention which will be introduced in 0.19.
