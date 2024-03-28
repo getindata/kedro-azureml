@@ -2,7 +2,8 @@ from collections import defaultdict
 from typing import Dict, Optional, Type
 
 import yaml
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, Field, field_validator
+from typing_extensions import Annotated
 
 from kedro_azureml.utils import update_dict
 
@@ -39,7 +40,8 @@ class AzureMLConfig(BaseModel):
         default_value = (value := value or {}).get("__default__", default)
         return dict_cls(lambda: default_value, value)
 
-    @validator("compute", always=True)
+    @field_validator("compute")
+    @classmethod
     def _validate_compute(cls, value):
         return AzureMLConfig._create_default_dict_with(
             value, ComputeConfig(cluster_name="{cluster_name}")
@@ -49,11 +51,13 @@ class AzureMLConfig(BaseModel):
     resource_group: str
     workspace_name: str
     experiment_name: str
-    compute: Optional[Dict[str, ComputeConfig]]
-    temporary_storage: Optional[AzureTempStorageConfig]
-    environment_name: Optional[str]
-    code_directory: Optional[str]
-    working_directory: Optional[str]
+    compute: Annotated[
+        Optional[Dict[str, ComputeConfig]], Field(validate_default=True)
+    ] = None
+    temporary_storage: Optional[AzureTempStorageConfig] = None
+    environment_name: Optional[str] = None
+    code_directory: Optional[str] = None
+    working_directory: Optional[str] = None
     pipeline_data_passing: Optional[PipelineDataPassingConfig] = None
 
 

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+-   Added support for pydantic v2 and bumped minimal required pydantic version to `2.0.0` by [@froessler](https://github.com/fdroessler)
+
 ## [0.7.0] - 2023-11-15
 
 -   [💔 Breaking change] Renamed all `*DataSet` classes to `*Dataset` to follow Kedro's naming convention which will be introduced in 0.19.
