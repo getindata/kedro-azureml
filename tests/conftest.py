@@ -193,9 +193,9 @@ class AzureMLFileSystemMock(fsspec.implementations.local.LocalFileSystem):
 
     def _infer_storage_options(self, uri):
         path_on_azure = Path(
-            AzureMachineLearningFileSystem._infer_storage_options(uri)[-1]
+            AzureMachineLearningFileSystem._infer_storage_options(uri)[1]
         )
-        return [self._prefix / path_on_azure]
+        return ["AmlDatastore", self._prefix / path_on_azure]
 
     def download(self, *args, **kwargs):
         p = Path(args[1])
