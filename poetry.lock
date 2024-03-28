@@ -194,20 +194,19 @@ files = [
 
 [[package]]
 name = "anyconfig"
-version = "0.10.1"
+version = "0.13.0"
 description = "Library provides common APIs to load and dump configuration files in various formats"
 optional = false
 python-versions = "*"
 files = [
-    {file = "anyconfig-0.10.1-py2.py3-none-any.whl", hash = "sha256:60c795cc6ef3e6f0a74182c52dfa6e8825d852b2b9128404e1aef3b84ca077a4"},
-    {file = "anyconfig-0.10.1.tar.gz", hash = "sha256:f04a5490da8563c97fad15810b0debc92351dbd4b8058dfd82d32a30a41e7e5c"},
+    {file = "anyconfig-0.13.0-py2.py3-none-any.whl", hash = "sha256:17cb189938d6cda4d21a2dabcd63db86658d2556e767dfd4835b1011544a1f8e"},
+    {file = "anyconfig-0.13.0.tar.gz", hash = "sha256:03ff2e1762af388fbbbed1c1ab7f9f1ec006a91da7db3a68b963da6e7795d2ac"},
 ]
 
 [package.dependencies]
 setuptools = "*"
 
 [package.extras]
-devel = ["coveralls", "flake8 (<3.5.0)", "mock", "nose", "pycodestyle (<2.4.0)", "pylint"]
 query = ["jmespath"]
 schema = ["jsonschema"]
 template = ["Jinja2"]
@@ -1829,17 +1828,17 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "kedro"
-version = "0.18.12"
+version = "0.18.13"
 description = "Kedro helps you build production-ready data and analytics pipelines"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "kedro-0.18.12-py3-none-any.whl", hash = "sha256:f532c186f38711a08df89a86732468b1f931739c3c78454cea0c6b753be2e7c3"},
-    {file = "kedro-0.18.12.tar.gz", hash = "sha256:5bd995dc710507427097488200f9f40ac8fb5085bec415ae6dd2335a53ffbf49"},
+    {file = "kedro-0.18.13-py3-none-any.whl", hash = "sha256:bbaf845c483f26a74e3dfd6c25485f0c63ef0b9cd462107c945234da67ef84b1"},
+    {file = "kedro-0.18.13.tar.gz", hash = "sha256:89c6684fb6c530300759fc58d93ee55162bbae949c04b5a7fdd234e9cf117149"},
 ]
 
 [package.dependencies]
-anyconfig = ">=0.10.0,<0.11.0"
+anyconfig = ">=0.10,<0.14"
 attrs = ">=21.3"
 build = "*"
 cachetools = ">=5.3,<6.0"
@@ -1855,7 +1854,7 @@ more-itertools = ">=9,<11"
 omegaconf = ">=2.3,<3.0"
 parse = ">=1.19.0,<1.20.0"
 pip-tools = ">=6.5,<8"
-pluggy = ">=1.0,<2.0"
+pluggy = ">=1.0,<1.3"
 PyYAML = ">=4.2,<7.0"
 rich = ">=12.0,<14.0"
 rope = ">=0.21,<2.0"
@@ -1864,18 +1863,18 @@ toml = ">=0.10,<1.0"
 toposort = ">=1.5,<2.0"
 
 [package.extras]
-all = ["Jinja2 (<3.1.0)", "Pillow (>=9.0,<10.0)", "PyYAML (>=4.2,<7.0)", "SQLAlchemy (>=1.2,<2.0)", "biopython (>=1.73,<2.0)", "compress-pickle[lz4] (>=2.1.0,<2.2.0)", "dask[complete] (>=2021.10,<2022.0)", "delta-spark (>=1.0,<3.0)", "docutils (==0.16)", "geopandas (>=0.6.0,<1.0)", "hdfs (>=2.5.8,<3.0)", "holoviews (>=1.13.0,<1.14.0)", "ipykernel (>=5.3,<7.0)", "kedro-datasets[all,pandas-deltatabledataset] (>=1.5.1,<1.6.0)", "lxml (>=4.6,<5.0)", "matplotlib (>=3.0.3,<4.0)", "myst-parser (>=1.0.0,<1.1.0)", "networkx (>=2.4,<3.0)", "opencv-python (>=4.5.5.64,<4.6.0.0)", "openpyxl (>=3.0.6,<4.0)", "pandas (>=1.3,<2.0)", "pandas-gbq (>=0.12.0,<0.18.0)", "plotly (>=4.8.0,<6.0)", "pyarrow (>=1.0,<7.0)", "pyproj (>=3.0,<4.0)", "pyspark (>=2.2,<4.0)", "redis (>=4.1,<5.0)", "requests (>=2.20,<3.0)", "s3fs (>=0.3.0,<0.5)", "scikit-learn (>=1.0.2,<1.1.0)", "scipy (>=1.7.3,<1.8.0)", "sphinx (>=5.3.0,<5.4.0)", "sphinx-autodoc-typehints (==1.20.2)", "sphinx-copybutton (==0.3.1)", "sphinx-notfound-page", "sphinx-rtd-theme (==1.2.0)", "sphinxcontrib-mermaid (>=0.7.1,<0.8.0)", "tables (>=3.6,<4.0)", "tables (>=3.6.0,<3.7.0)", "tensorflow (>=2.0,<3.0)", "tensorflow-macos (>=2.0,<3.0)", "triad (>=0.6.7,<1.0)"]
+all = ["Jinja2 (<3.1.0)", "Pillow (>=9.0,<10.0)", "PyYAML (>=4.2,<7.0)", "SQLAlchemy (>=1.2,<2.0)", "biopython (>=1.73,<2.0)", "compress-pickle[lz4] (>=2.1.0,<2.2.0)", "dask[complete] (>=2021.10,<2022.0)", "delta-spark (>=1.0,<3.0)", "docutils (==0.16)", "geopandas (>=0.6.0,<1.0)", "hdfs (>=2.5.8,<3.0)", "holoviews (>=1.13.0)", "ipykernel (>=5.3,<7.0)", "kedro-datasets[all] (>=1.6.0,<1.7.0)", "lxml (>=4.6,<5.0)", "matplotlib (>=3.0.3,<4.0)", "myst-parser (>=1.0.0,<1.1.0)", "networkx (>=2.4,<3.0)", "opencv-python (>=4.5.5.64,<4.6.0.0)", "openpyxl (>=3.0.6,<4.0)", "pandas (>=1.3,<2.0)", "pandas-gbq (>=0.12.0,<0.18.0)", "plotly (>=4.8.0,<6.0)", "pyarrow (>=1.0,<7.0)", "pyproj (>=3.0,<4.0)", "pyspark (>=2.2,<3.4)", "redis (>=4.1,<5.0)", "requests (>=2.20,<3.0)", "s3fs (>=0.3.0,<0.5)", "scikit-learn (>=1.0.2,<1.1.0)", "scipy (>=1.7.3,<1.8.0)", "sphinx (>=5.3.0,<5.4.0)", "sphinx-autodoc-typehints (==1.20.2)", "sphinx-copybutton (==0.3.1)", "sphinx-notfound-page", "sphinx-rtd-theme (==1.2.0)", "sphinxcontrib-mermaid (>=0.7.1,<0.8.0)", "tables (>=3.6,<4.0)", "tables (>=3.6.0,<3.7.0)", "tensorflow (>=2.0,<3.0)", "tensorflow-macos (>=2.0,<3.0)", "triad (>=0.6.7,<1.0)"]
 api = ["requests (>=2.20,<3.0)"]
 api-apidataset = ["requests (>=2.20,<3.0)"]
 biosequence = ["biopython (>=1.73,<2.0)"]
 biosequence-biosequencedataset = ["biopython (>=1.73,<2.0)"]
 dask = ["dask[complete] (>=2021.10,<2022.0)", "triad (>=0.6.7,<1.0)"]
 dask-parquetdataset = ["dask[complete] (>=2021.10,<2022.0)", "triad (>=0.6.7,<1.0)"]
-docs = ["Jinja2 (<3.1.0)", "docutils (==0.16)", "ipykernel (>=5.3,<7.0)", "kedro-datasets[all,pandas-deltatabledataset] (>=1.5.1,<1.6.0)", "myst-parser (>=1.0.0,<1.1.0)", "sphinx (>=5.3.0,<5.4.0)", "sphinx-autodoc-typehints (==1.20.2)", "sphinx-copybutton (==0.3.1)", "sphinx-notfound-page", "sphinx-rtd-theme (==1.2.0)", "sphinxcontrib-mermaid (>=0.7.1,<0.8.0)"]
+docs = ["Jinja2 (<3.1.0)", "docutils (==0.16)", "ipykernel (>=5.3,<7.0)", "kedro-datasets[all] (>=1.6.0,<1.7.0)", "myst-parser (>=1.0.0,<1.1.0)", "sphinx (>=5.3.0,<5.4.0)", "sphinx-autodoc-typehints (==1.20.2)", "sphinx-copybutton (==0.3.1)", "sphinx-notfound-page", "sphinx-rtd-theme (==1.2.0)", "sphinxcontrib-mermaid (>=0.7.1,<0.8.0)"]
 geopandas = ["geopandas (>=0.6.0,<1.0)", "pyproj (>=3.0,<4.0)"]
 geopandas-geojsondataset = ["geopandas (>=0.6.0,<1.0)", "pyproj (>=3.0,<4.0)"]
-holoviews = ["holoviews (>=1.13.0,<1.14.0)"]
-holoviews-holoviewswriter = ["holoviews (>=1.13.0,<1.14.0)"]
+holoviews = ["holoviews (>=1.13.0)"]
+holoviews-holoviewswriter = ["holoviews (>=1.13.0)"]
 matplotlib = ["matplotlib (>=3.0.3,<4.0)"]
 matplotlib-matplotlibwriter = ["matplotlib (>=3.0.3,<4.0)"]
 networkx = ["networkx (>=2.4,<3.0)"]
@@ -1901,16 +1900,16 @@ plotly = ["pandas (>=1.3,<2.0)", "plotly (>=4.8.0,<6.0)"]
 plotly-jsondataset = ["plotly (>=4.8.0,<6.0)"]
 plotly-plotlydataset = ["pandas (>=1.3,<2.0)", "plotly (>=4.8.0,<6.0)"]
 redis = ["redis (>=4.1,<5.0)"]
-spark = ["delta-spark (>=1.0,<3.0)", "hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<4.0)", "s3fs (>=0.3.0,<0.5)"]
-spark-deltatabledataset = ["delta-spark (>=1.0,<3.0)", "hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<4.0)", "s3fs (>=0.3.0,<0.5)"]
-spark-sparkdataset = ["hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<4.0)", "s3fs (>=0.3.0,<0.5)"]
-spark-sparkhivedataset = ["hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<4.0)", "s3fs (>=0.3.0,<0.5)"]
-spark-sparkjdbcdataset = ["hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<4.0)", "s3fs (>=0.3.0,<0.5)"]
+spark = ["delta-spark (>=1.0,<3.0)", "hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<3.4)", "s3fs (>=0.3.0,<0.5)"]
+spark-deltatabledataset = ["delta-spark (>=1.0,<3.0)", "hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<3.4)", "s3fs (>=0.3.0,<0.5)"]
+spark-sparkdataset = ["hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<3.4)", "s3fs (>=0.3.0,<0.5)"]
+spark-sparkhivedataset = ["hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<3.4)", "s3fs (>=0.3.0,<0.5)"]
+spark-sparkjdbcdataset = ["hdfs (>=2.5.8,<3.0)", "pyspark (>=2.2,<3.4)", "s3fs (>=0.3.0,<0.5)"]
 svmlight = ["scikit-learn (>=1.0.2,<1.1.0)", "scipy (>=1.7.3,<1.8.0)"]
 svmlight-svmlightdataset = ["scikit-learn (>=1.0.2,<1.1.0)", "scipy (>=1.7.3,<1.8.0)"]
 tensorflow = ["tensorflow (>=2.0,<3.0)", "tensorflow-macos (>=2.0,<3.0)"]
 tensorflow-tensorflowmodeldataset = ["tensorflow (>=2.0,<3.0)", "tensorflow-macos (>=2.0,<3.0)"]
-test = ["Jinja2 (<3.1.0)", "Pillow (>=9.0,<10.0)", "SQLAlchemy (>=1.2,<2.0)", "adlfs (>=2021.7.1,<=2022.2)", "adlfs (>=2023.1,<2024.0)", "bandit (>=1.6.2,<2.0)", "behave (==1.2.6)", "biopython (>=1.73,<2.0)", "black (>=22.0,<23.0)", "blacken-docs (==1.9.2)", "compress-pickle[lz4] (>=2.1.0,<2.2.0)", "coverage[toml]", "dask[complete] (>=2021.10,<2022.0)", "delta-spark (>=1.2.1,<1.3.0)", "dill (>=0.3.1,<0.4.0)", "filelock (>=3.4.0,<4.0)", "gcsfs (>=2021.4,<=2023.1)", "gcsfs (>=2023.1,<2023.3)", "geopandas (>=0.6.0,<1.0)", "hdfs (>=2.5.8,<3.0)", "holoviews (>=1.13.0,<1.14.0)", "import-linter[toml] (==1.8.0)", "ipython (>=7.31.1,<8.0)", "ipython (>=8.10,<9.0)", "isort (>=5.0,<6.0)", "joblib (>=0.14)", "jupyter (>=1.0,<2.0)", "jupyterlab (>=3.0,<3.6.0)", "jupyterlab-server (>=2.11.1,<2.16.0)", "lxml (>=4.6,<5.0)", "matplotlib (>=3.0.3,<3.4)", "matplotlib (>=3.5,<3.6)", "memory-profiler (>=0.50.0,<1.0)", "moto (==1.3.7)", "moto (==3.0.4)", "networkx (>=2.4,<3.0)", "opencv-python (>=4.5.5.64,<4.6.0.0)", "openpyxl (>=3.0.3,<4.0)", "pandas (>=1.3,<2.0)", "pandas-gbq (>=0.12.0,<0.18.0)", "plotly (>=4.8.0,<6.0)", "pre-commit (>=2.9.2,<3.0)", "psutil (>=5.8,<6.0)", "pyarrow (>=6.0)", "pylint (>=2.17.0,<3.0)", "pyproj (>=3.0,<4.0)", "pyspark (>=2.2,<4.0)", "pytest (>=7.2,<8.0)", "pytest-cov (>=3.0,<4.0)", "pytest-mock (>=1.7.1,<2.0)", "pytest-xdist[psutil] (>=2.2.1,<2.3.0)", "redis (>=4.1,<5.0)", "requests (>=2.20,<3.0)", "requests-mock (>=1.6,<2.0)", "s3fs (>=0.3.0,<0.5)", "scikit-learn (>=1.0.2,<1.1.0)", "scipy (>=1.7.3,<1.8.0)", "tables (>=3.6,<4.0)", "tables (>=3.6.0,<3.7.0)", "tensorflow (>=2.0,<3.0)", "tensorflow-macos (>=2.0,<3.0)", "triad (>=0.6.7,<1.0)", "trufflehog (>=2.1,<3.0)", "xlsxwriter (>=1.0,<2.0)"]
+test = ["Jinja2 (<3.1.0)", "Pillow (>=9.0,<10.0)", "SQLAlchemy (>=1.2,<2.0)", "adlfs (>=2021.7.1,<=2022.2)", "adlfs (>=2023.1,<2024.0)", "bandit (>=1.6.2,<2.0)", "behave (==1.2.6)", "biopython (>=1.73,<2.0)", "black (>=22.0,<23.0)", "blacken-docs (==1.9.2)", "compress-pickle[lz4] (>=2.1.0,<2.2.0)", "coverage[toml]", "dask[complete] (>=2021.10,<2022.0)", "delta-spark (>=1.2.1)", "delta-spark (>=1.2.1,<1.3.0)", "dill (>=0.3.1,<0.4.0)", "filelock (>=3.4.0,<4.0)", "gcsfs (>=2021.4,<=2023.1)", "gcsfs (>=2023.1,<2023.3)", "geopandas (>=0.6.0,<1.0)", "hdfs (>=2.5.8,<3.0)", "holoviews (>=1.13.0)", "import-linter[toml] (==1.8.0)", "ipython (>=7.31.1,<8.0)", "ipython (>=8.10,<9.0)", "isort (>=5.0,<6.0)", "joblib (>=0.14)", "jupyter (>=1.0,<2.0)", "jupyterlab (>=3.0,<3.6.0)", "jupyterlab-server (>=2.11.1,<2.16.0)", "lxml (>=4.6,<5.0)", "matplotlib (>=3.0.3,<3.4)", "matplotlib (>=3.5,<3.6)", "memory-profiler (>=0.50.0,<1.0)", "moto (==1.3.7)", "moto (==4.1.12)", "networkx (>=2.4,<3.0)", "opencv-python (>=4.5.5.64,<4.6.0.0)", "openpyxl (>=3.0.3,<4.0)", "pandas (>=1.3,<2.0)", "pandas-gbq (>=0.12.0,<0.18.0)", "pandas-gbq (>=0.18.0)", "plotly (>=4.8.0,<6.0)", "pre-commit (>=2.9.2,<3.0)", "pyarrow (>=1.0)", "pyarrow (>=7.0)", "pylint (>=2.17.0,<3.0)", "pyproj (>=3.0,<4.0)", "pyspark (>=2.2,<3.4)", "pyspark (>=3.4)", "pytest (>=7.2,<8.0)", "pytest-cov (>=3.0,<4.0)", "pytest-mock (>=1.7.1,<2.0)", "pytest-xdist[psutil] (>=2.2.1,<2.3.0)", "redis (>=4.1,<5.0)", "requests (>=2.20,<3.0)", "requests-mock (>=1.6,<2.0)", "s3fs (>=0.3.0,<0.5)", "scikit-learn (>=1.0.2,<2)", "scipy (>=1.7.3)", "semver", "tables (>=3.6,<4.0)", "tables (>=3.6.0,<3.7.0)", "tables (>=3.8.0,<3.9.0)", "tensorflow (>=2.0,<3.0)", "tensorflow-macos (>=2.0,<3.0)", "triad (>=0.6.7,<1.0)", "trufflehog (>=2.1,<3.0)", "xlsxwriter (>=1.0,<2.0)"]
 video = ["opencv-python (>=4.5.5.64,<4.6.0.0)"]
 video-videodataset = ["opencv-python (>=4.5.5.64,<4.6.0.0)"]
 yaml = ["PyYAML (>=4.2,<7.0)", "pandas (>=1.3,<2.0)"]
@@ -2956,13 +2955,13 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4.3)", "pytest-
 
 [[package]]
 name = "pluggy"
-version = "1.4.0"
+version = "1.2.0"
 description = "plugin and hook calling mechanisms for python"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.7"
 files = [
-    {file = "pluggy-1.4.0-py3-none-any.whl", hash = "sha256:7db9f7b503d67d1c5b95f59773ebb58a8c1c288129a88665838012cfb07b8981"},
-    {file = "pluggy-1.4.0.tar.gz", hash = "sha256:8c85c2876142a764e5b7548e7d9a0e0ddb46f5185161049a79b7e974454223be"},
+    {file = "pluggy-1.2.0-py3-none-any.whl", hash = "sha256:c2fd55a7d7a3863cba1a013e4e2414658b1d07b6bc57b3919e0c63c9abb99849"},
+    {file = "pluggy-1.2.0.tar.gz", hash = "sha256:d12f0c4b579b15f5e054301bb226ee85eeeba08ffec228092f8defbaa3a4c4b3"},
 ]
 
 [package.extras]
@@ -4090,30 +4089,30 @@ files = [
 
 [[package]]
 name = "tox"
-version = "4.14.2"
+version = "4.10.0"
 description = "tox is a generic virtualenv management and test command line tool"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "tox-4.14.2-py3-none-any.whl", hash = "sha256:2900c4eb7b716af4a928a7fdc2ed248ad6575294ed7cfae2ea41203937422847"},
-    {file = "tox-4.14.2.tar.gz", hash = "sha256:0defb44f6dafd911b61788325741cc6b2e12ea71f987ac025ad4d649f1f1a104"},
+    {file = "tox-4.10.0-py3-none-any.whl", hash = "sha256:e4a1b1438955a6da548d69a52350054350cf6a126658c20943261c48ed6d4c92"},
+    {file = "tox-4.10.0.tar.gz", hash = "sha256:e041b2165375be690aca0ec4d96360c6906451380520e4665bf274f66112be35"},
 ]
 
 [package.dependencies]
-cachetools = ">=5.3.2"
+cachetools = ">=5.3.1"
 chardet = ">=5.2"
 colorama = ">=0.4.6"
-filelock = ">=3.13.1"
-packaging = ">=23.2"
-platformdirs = ">=4.1"
-pluggy = ">=1.3"
-pyproject-api = ">=1.6.1"
+filelock = ">=3.12.2"
+packaging = ">=23.1"
+platformdirs = ">=3.10"
+pluggy = ">=1.2"
+pyproject-api = ">=1.5.3"
 tomli = {version = ">=2.0.1", markers = "python_version < \"3.11\""}
-virtualenv = ">=20.25"
+virtualenv = ">=20.24.3"
 
 [package.extras]
-docs = ["furo (>=2023.9.10)", "sphinx (>=7.2.6)", "sphinx-argparse-cli (>=1.11.1)", "sphinx-autodoc-typehints (>=1.25.2)", "sphinx-copybutton (>=0.5.2)", "sphinx-inline-tabs (>=2023.4.21)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=23.11)"]
-testing = ["build[virtualenv] (>=1.0.3)", "covdefaults (>=2.3)", "detect-test-pollution (>=1.2)", "devpi-process (>=1)", "diff-cover (>=8.0.2)", "distlib (>=0.3.8)", "flaky (>=3.7)", "hatch-vcs (>=0.4)", "hatchling (>=1.21)", "psutil (>=5.9.7)", "pytest (>=7.4.4)", "pytest-cov (>=4.1)", "pytest-mock (>=3.12)", "pytest-xdist (>=3.5)", "re-assert (>=1.1)", "time-machine (>=2.13)", "wheel (>=0.42)"]
+docs = ["furo (>=2023.7.26)", "sphinx (>=7.1.2)", "sphinx-argparse-cli (>=1.11.1)", "sphinx-autodoc-typehints (>=1.24)", "sphinx-copybutton (>=0.5.2)", "sphinx-inline-tabs (>=2023.4.21)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=23.6)"]
+testing = ["build[virtualenv] (>=0.10)", "covdefaults (>=2.3)", "detect-test-pollution (>=1.1.1)", "devpi-process (>=0.3.1)", "diff-cover (>=7.7)", "distlib (>=0.3.7)", "flaky (>=3.7)", "hatch-vcs (>=0.3)", "hatchling (>=1.18)", "psutil (>=5.9.5)", "pytest (>=7.4)", "pytest-cov (>=4.1)", "pytest-mock (>=3.11.1)", "pytest-xdist (>=3.3.1)", "re-assert (>=1.1)", "time-machine (>=2.12)", "wheel (>=0.41.1)"]
 
 [[package]]
 name = "tqdm"
@@ -4364,4 +4363,4 @@ mlflow = ["azureml-mlflow", "mlflow"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "f1809ecc2b8d57faf45168a939f894bdb6e916b8ca4eec529fbc91cae84cfb5a"
+content-hash = "f4f5fbbfef27d779f8d09cd4a92006b59775fd0ee08e951d460bbe8c884658ae"
