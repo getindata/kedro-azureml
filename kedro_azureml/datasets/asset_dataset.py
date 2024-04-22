@@ -195,10 +195,10 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
                 # relative (to storage account root) path of the file dataset on azure
                 # Note that path is converted to str for compatibility reasons with
                 # fsspec AbstractFileSystem expand_path function
-                path_on_azure = str(fs._infer_storage_options(azureml_ds.path)[-1])
+                path_on_azure = str(fs._infer_storage_options(azureml_ds.path)[1])
             elif azureml_ds.type == "uri_folder":
                 # relative (to storage account root) path of the folder dataset on azure
-                dataset_root_on_azure = fs._infer_storage_options(azureml_ds.path)[-1]
+                dataset_root_on_azure = fs._infer_storage_options(azureml_ds.path)[1]
                 # relative (to storage account root) path of the dataset in the folder on azure
                 path_on_azure = str(
                     Path(dataset_root_on_azure)
