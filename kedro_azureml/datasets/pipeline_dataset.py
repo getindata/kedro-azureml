@@ -60,6 +60,7 @@ class AzureMLPipelineDataset(AbstractDataset):
         dataset: Union[str, Type[AbstractDataset], Dict[str, Any]],
         root_dir: str = "data",
         filepath_arg: str = "filepath",
+        metadata: Dict[str, Any] = None,
     ):
         """Creates a new instance of ``AzureMLPipelineDataset``.
 
@@ -73,6 +74,8 @@ class AzureMLPipelineDataset(AbstractDataset):
             filepath_arg: Underlying dataset initializer argument that will
                 set the filepath.
                 If unspecified, defaults to "filepath".
+            metadata: Any arbitrary metadata.
+                This is ignored by Kedro, but may be consumed by users or external plugins.
 
         Raises:
             DatasetError: If versioning is enabled for the underlying dataset.
@@ -83,6 +86,7 @@ class AzureMLPipelineDataset(AbstractDataset):
 
         self.root_dir = root_dir
         self._filepath_arg = filepath_arg
+        self.metadata = metadata
         try:
             # Convert filepath to relative path
             self._dataset_config[self._filepath_arg] = str(

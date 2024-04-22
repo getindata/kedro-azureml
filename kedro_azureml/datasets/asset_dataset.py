@@ -81,6 +81,7 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
         filepath_arg: str = "filepath",
         azureml_type: AzureMLDataAssetType = "uri_folder",
         version: Optional[Version] = None,
+        metadata: Dict[str, Any] = None,
     ):
         """
         azureml_dataset: Name of the AzureML file azureml_dataset.
@@ -90,8 +91,15 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
         filepath_arg: Filepath arg on the wrapped dataset, defaults to `filepath`
         azureml_type: Either `uri_folder` or `uri_file`
         version: Version of the AzureML dataset to be used in kedro format.
+        metadata: Any arbitrary metadata.
+            This is ignored by Kedro, but may be consumed by users or external plugins.
         """
-        super().__init__(dataset=dataset, root_dir=root_dir, filepath_arg=filepath_arg)
+        super().__init__(
+            dataset=dataset,
+            root_dir=root_dir,
+            filepath_arg=filepath_arg,
+            metadata=metadata,
+        )
 
         self._azureml_dataset = azureml_dataset
         self._version = version
