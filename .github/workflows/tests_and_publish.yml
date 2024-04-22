@@ -22,10 +22,10 @@ jobs:
         python-version: [ '3.8', '3.9', '3.10']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     
     - name: Setup python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2.2.1
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -45,7 +45,7 @@ jobs:
         tox -v
 
     - name: Store coverage reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-${{ matrix.python-version }}
         path: coverage.xml
@@ -56,11 +56,11 @@ jobs:
     needs: unit_tests
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: coverage-3.9
         path: .
@@ -83,7 +83,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
@@ -107,10 +107,10 @@ jobs:
       matrix:
         e2e_config: ["e2e", "e2e_pipeline_data_passing"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
@@ -133,7 +133,7 @@ jobs:
         run: |
           find "../dist" -name "*.tar.gz" | xargs -I@ cp @ kedro-azureml.tar.gz
           echo -e "\n./kedro-azureml.tar.gz\n" >> src/requirements.txt
-          echo -e "kedro-docker\n" >> src/requirements.txt
+          echo -e "kedro-docker<0.5.0\n" >> src/requirements.txt
           echo -e "openpyxl\n" >> src/requirements.txt  # temp fix for kedro-datasets issues with optional packages
           sed -i '/kedro-telemetry/d' src/requirements.txt
           echo $(cat src/requirements.txt)
