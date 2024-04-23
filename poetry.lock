@@ -548,17 +548,17 @@ files = [
 
 [[package]]
 name = "azureml-fsspec"
-version = "1.3.0"
+version = "1.3.1"
 description = "Access datastore uri with fsspec"
 optional = false
 python-versions = ">=3.6,< 4.0"
 files = [
-    {file = "azureml_fsspec-1.3.0-py3-none-any.whl", hash = "sha256:79e2fde429e89ca06d5e9da0c650877ba90ed9ad566fdfb0fb43c9b082e68f32"},
+    {file = "azureml_fsspec-1.3.1-py3-none-any.whl", hash = "sha256:a0cf479e74bb213513a9995c7131f83e15b85cf7fb3a9fe56e65aad8c24b04f8"},
 ]
 
 [package.dependencies]
 azureml-dataprep = ">=5.1.0a,<5.2.0a"
-fsspec = ">=2021.6.1"
+fsspec = ">=2021.6.1,<=2023.10.0"
 pytz = "*"
 
 [[package]]
