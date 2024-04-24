@@ -137,6 +137,7 @@ jobs:
           echo -e "kedro-docker<0.5.0\n" >> src/requirements.txt
           echo -e "openpyxl\n" >> src/requirements.txt  # temp fix for kedro-datasets issues with optional packages
           sed -i '/kedro-telemetry/d' src/requirements.txt
+          sed -i '/kedro-viz/d' src/requirements.txt
           echo $(cat src/requirements.txt)
           pip install -r src/requirements.txt
 
