@@ -32,7 +32,7 @@ exclude_lines = [
 known_third_party = ["azure", "tabulate", "pydantic","semver","setuptools"]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.12"
+python = ">=3.8,<3.13"
 kedro = ">=0.18.13,<0.19"
 cloudpickle = "^2.1.0"
 adlfs = ">=2022.2.0"
