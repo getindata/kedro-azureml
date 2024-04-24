@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+-   Added support for pydantic v2 and bumped minimal required pydantic version to `2.6.4` by [@froessler](https://github.com/fdroessler)
 -   Added support for `metadata` argument in Azure ML datasets by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
 -   Fixed azureml-fsspec version update changed return type of `_infer_storage_options` and pinned fsspec version to patch only [@froessler](https://github.com/fdroessler)
 
