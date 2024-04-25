@@ -83,7 +83,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
 
-  sonarcloud_fork_branch:
+  sonarcloud_forked_branch:
     if: |
       github.event_name == 'repository_dispatch' &&
       github.event.client_payload.slash_command.args.named.sha != '' &&
