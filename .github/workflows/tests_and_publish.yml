@@ -21,6 +21,8 @@ on:
       - CONTRIBUTING.md
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  repository_dispatch:
+    types: [ok-to-test-command]
 jobs:
   unit_tests:
     runs-on: ubuntu-latest
@@ -58,7 +60,8 @@ jobs:
         path: coverage.xml
         if-no-files-found: error
 
-  sonarcloud:
+  sonarcloud_trusted_branch:
+    if: (github.event.pull_request.head.repo.full_name == github.repository || github.event.pull_request == null)
     runs-on: ubuntu-latest
     needs: unit_tests
     steps:
@@ -79,6 +82,72 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+
+  sonarcloud_fork_branch:
+    if: |
+      github.event_name == 'repository_dispatch' &&
+      github.event.client_payload.slash_command.args.named.sha != '' &&
+      contains(
+        github.event.client_payload.pull_request.head.sha,
+        github.event.client_payload.slash_command.args.named.sha
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      checks: write
+    needs: unit_tests
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: 'refs/pull/${{ github.event.client_payload.pull_request.number }}/merge'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage-3.9
+          path: .
+
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@master
+        with:
+          projectBaseDir: ${{ github.workspace }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+
+      - uses: actions/github-script@v6
+        id: update-check-run
+        if: ${{ always() }}
+        env:
+          number: ${{ github.event.client_payload.pull_request.number }}
+          job: ${{ github.job }}
+          # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
+          conclusion: ${{ job.status }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: pull } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: process.env.number
+            });
+            const ref = pull.head.sha;
+
+            const { data: checks } = await github.rest.checks.listForRef({
+              ...context.repo,
+              ref
+            });
+
+            const check = checks.check_runs.filter(c => c.name === process.env.job);
+
+            const { data: result } = await github.rest.checks.update({
+              ...context.repo,
+              check_run_id: check[0].id,
+              status: 'completed',
+              conclusion: process.env.conclusion
+            });
+
+            return result;
 
   codeql:
     runs-on: ubuntu-latest
@@ -106,9 +175,9 @@ jobs:
 
   ### PROJECT SPECIFIC CONFIGURATION HERE
 
-  e2e_tests:
+  e2e_tests_trusted_branch:
     if: (github.event.pull_request.head.repo.full_name == github.repository || github.event.pull_request == null)
-    needs: [unit_tests, sonarcloud]
+    needs: [unit_tests, sonarcloud_trusted_branch]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -192,11 +261,137 @@ jobs:
         run: |
           kedro azureml run --wait-for-completion --env-var 'GETINDATA=ROCKS!'
 
+  e2e_tests_forked_branch:
+    if: |
+      github.event_name == 'repository_dispatch' &&
+      github.event.client_payload.slash_command.args.named.sha != '' &&
+      contains(
+        github.event.client_payload.pull_request.head.sha,
+        github.event.client_payload.slash_command.args.named.sha
+      )
+    needs: [unit_tests, sonarcloud_forked_branch]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        e2e_config: ["e2e", "e2e_pipeline_data_passing"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: 'refs/pull/${{ github.event.client_payload.pull_request.number }}/merge'
 
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Setup poetry
+        run: |
+          python -V
+          python -m pip install poetry
+
+      - name: Build the package
+        run: |
+          poetry build -f sdist
+
+      - name: Initialize starter project
+        run: |
+          pip install $(find "./dist" -name "*.tar.gz")
+          kedro new --starter spaceflights --config tests/conf/${{ matrix.e2e_config }}/starter-config.yml --verbose
+
+      - name: Install starter requirements
+        working-directory: ./spaceflights
+        run: |
+          find "../dist" -name "*.tar.gz" | xargs -I@ cp @ kedro-azureml.tar.gz
+          echo -e "\n./kedro-azureml.tar.gz\n" >> src/requirements.txt
+          echo -e "kedro-docker<0.5.0\n" >> src/requirements.txt
+          echo -e "openpyxl\n" >> src/requirements.txt  # temp fix for kedro-datasets issues with optional packages
+          sed -i '/kedro-telemetry/d' src/requirements.txt
+          sed -i '/kedro-viz/d' src/requirements.txt # starter version requirements make tests fail
+          echo $(cat src/requirements.txt)
+          pip install -r src/requirements.txt
+
+      - name: Update starter configs
+        working-directory: ./spaceflights
+        run: |
+          kedro docker init
+          sed -i 's/\(COPY src\/requirements.txt.*\)$/\1\nCOPY kedro-azureml.tar.gz ./g' Dockerfile
+          cat Dockerfile
+          echo "!data/01_raw" >> .dockerignore
+          rm conf/base/catalog.yml
+          cp ../tests/conf/${{ matrix.e2e_config }}/catalog.yml conf/base/catalog.yml
+          cp ../tests/conf/${{ matrix.e2e_config }}/azureml.yml conf/base/azureml.yml
+          sed -i 's/{container_registry}/${{ secrets.REGISTRY_LOGIN_SERVER }}/g' conf/base/azureml.yml
+          sed -i 's/{image_tag}/${{ matrix.e2e_config }}/g' conf/base/azureml.yml
+          
+          cat conf/base/azureml.yml
+
+      - name: Login via Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to acr.io
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+          username: ${{ secrets.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+      - name: Build and push docker image
+        working-directory: ./spaceflights
+        run: |
+          docker pull ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:${{ matrix.e2e_config }} || true
+          docker build --build-arg BASE_IMAGE=python:3.10-buster -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:${{ matrix.e2e_config }} --cache-from=${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:${{ matrix.e2e_config }} .
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/kedro-azureml-e2e:${{ matrix.e2e_config }}
+
+      - name: Run on Azure ML Pipelines
+        working-directory: ./spaceflights
+        env:
+          AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        run: |
+          kedro azureml run --wait-for-completion --env-var 'GETINDATA=ROCKS!'
+          
+      - uses: actions/github-script@v6
+        id: update-check-run
+        if: ${{ always() }}
+        env:
+          number: ${{ github.event.client_payload.pull_request.number }}
+          job: ${{ github.job }}
+          # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
+          conclusion: ${{ job.status }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: pull } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: process.env.number
+            });
+            const ref = pull.head.sha;
+
+            const { data: checks } = await github.rest.checks.listForRef({
+              ...context.repo,
+              ref
+            });
+
+            const check = checks.check_runs.filter(c => c.name === process.env.job);
+
+            const { data: result } = await github.rest.checks.update({
+              ...context.repo,
+              check_run_id: check[0].id,
+              status: 'completed',
+              conclusion: process.env.conclusion
+            });
+
+            return result;
   publish:
     # only run on push to master
     if: github.event.pull_request == null && github.ref == 'refs/heads/master'
-    needs: [e2e_tests, codeql]
+    needs: [e2e_tests_trusted_branch, codeql]
     runs-on: ubuntu-latest
     strategy:
       matrix:
