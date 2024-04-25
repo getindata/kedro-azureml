@@ -7,19 +7,26 @@ on:
       - develop
     paths-ignore:
       - "docs/**"
+      - CHANGELOG.md
+      - README.md
+      - CONTRIBUTING.md
   pull_request:
     branches:
       - master
       - develop
     paths-ignore:
       - "docs/**"
-
+      - CHANGELOG.md
+      - README.md
+      - CONTRIBUTING.md
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 jobs:
   unit_tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.8', '3.9', '3.10']
+        python-version: [ '3.8', '3.9', '3.10', '3.11']
 
     steps:
     - uses: actions/checkout@v4
@@ -87,15 +94,15 @@ jobs:
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: python
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+        uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
 
   ### PROJECT SPECIFIC CONFIGURATION HERE
 
@@ -136,6 +143,7 @@ jobs:
           echo -e "kedro-docker<0.5.0\n" >> src/requirements.txt
           echo -e "openpyxl\n" >> src/requirements.txt  # temp fix for kedro-datasets issues with optional packages
           sed -i '/kedro-telemetry/d' src/requirements.txt
+          sed -i '/kedro-viz/d' src/requirements.txt # starter version requirements make tests fail
           echo $(cat src/requirements.txt)
           pip install -r src/requirements.txt
 
