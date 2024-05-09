@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.8.0] - 2024-05-09
+
+-   Added support for python 3.11 by [@em-pe](https://github.com/em-pe)
+-   Added support for pydantic v2 and bumped minimal required pydantic version to `2.6.4` by [@froessler](https://github.com/fdroessler)
+-   Added support for `metadata` argument in Azure ML datasets by [@tomasvanpottelbergh](https://github.com/tomasvanpottelbergh)
+-   Fixed azureml-fsspec version update changed return type of `_infer_storage_options` and pinned fsspec version to patch only [@froessler](https://github.com/fdroessler)
+
 ## [0.7.0] - 2023-11-15
 
 -   [💔 Breaking change] Renamed all `*DataSet` classes to `*Dataset` to follow Kedro's naming convention which will be introduced in 0.19.
@@ -86,7 +93,9 @@
 
 -   Initial plugin release
 
-[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.7.0...HEAD
+[Unreleased]: https://github.com/getindata/kedro-azureml/compare/0.8.0...HEAD
+
+[0.8.0]: https://github.com/getindata/kedro-azureml/compare/0.7.0...0.8.0
 
 [0.7.0]: https://github.com/getindata/kedro-azureml/compare/0.6.0...0.7.0
 

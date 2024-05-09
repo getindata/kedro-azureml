@@ -110,7 +110,7 @@ For **code upload flow** (2.), use the following ``init`` command:
     If you want to pass data between nodes using the built-in Azure ML pipeline data passing, specify
     option ``--use-pipeline-data-passing`` instead of `-a` and `-c` options.
 
-    Note that pipeline data passing feature is experimental 🧑‍🔬 See :doc:`04_data_assets` for more information about this.
+    Note that pipeline data passing feature is experimental 🧑‍🔬 See :doc:`05_data_assets` for more information about this.
 
 Adjusting the Data Catalog
 --------------------------
