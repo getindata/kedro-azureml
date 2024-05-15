@@ -34,20 +34,24 @@ runs:
               python-version: "3.10"
 
         - name: Setup poetry
+          shell: bash
           run: |
               python -V
               python -m pip install poetry
 
         - name: Build the package
+          shell: bash
           run: |
               poetry build -f sdist
 
         - name: Initialize starter project
+          shell: bash
           run: |
               pip install $(find "./dist" -name "*.tar.gz")
               kedro new --starter spaceflights --config tests/conf/${{ inputs.e2e_config }}/starter-config.yml --verbose
 
         - name: Install starter requirements
+          shell: bash
           working-directory: ./spaceflights
           run: |
               find "../dist" -name "*.tar.gz" | xargs -I@ cp @ kedro-azureml.tar.gz
@@ -60,6 +64,7 @@ runs:
               pip install -r src/requirements.txt
 
         - name: Update starter configs
+          shell: bash
           working-directory: ./spaceflights
           run: |
               kedro docker init
@@ -87,6 +92,7 @@ runs:
               password: ${{ inputs.azure_client_secret }}
 
         - name: Build and push docker image
+          shell: bash
           working-directory: ./spaceflights
           run: |
               docker pull ${{ inputs.registry_login_server }}/kedro-azureml-e2e:${{ inputs.e2e_config }} || true
@@ -94,6 +100,7 @@ runs:
               docker push ${{ inputs.registry_login_server }}/kedro-azureml-e2e:${{ inputs.e2e_config }}
 
         - name: Run on Azure ML Pipelines
+          shell: bash
           working-directory: ./spaceflights
           env:
               AZURE_STORAGE_ACCOUNT_KEY: ${{ inputs.azure_storage_account_key }}
