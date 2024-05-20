@@ -25,7 +25,7 @@ runs:
         # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
         conclusion: ${{ inputs.conclusion }}
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ inputs.github_token }}
         script: |
           const { data: pull } = await github.rest.pulls.get({
             ...context.repo,
