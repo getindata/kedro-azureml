@@ -52,6 +52,7 @@ def commands():
 @click.pass_obj
 @click.pass_context
 def azureml_group(ctx, metadata: ProjectMetadata, env):
+    # Dummy comment
     ctx.obj = CliContext(env, metadata)
 
 
