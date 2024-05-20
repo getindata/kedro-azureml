@@ -1,0 +1,27 @@
+name: SonarCloud Scan
+description: Run SonarCloud scan on the codebase
+inputs:
+    github_token:
+        description: 'GitHub token'
+        required: true
+    sonarcloud_token:
+        description: 'SonarCloud token'
+        required: true
+    project_base_dir:
+        description: 'Project base directory'
+        required: true
+runs:
+    using: 'composite'
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+          name: coverage-3.9
+          path: .
+
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      with:
+          projectBaseDir: ${{ inputs.project_base_dir }}
+      env:
+          GITHUB_TOKEN: ${{ inputs.github_token }}
+          SONAR_TOKEN: ${{ inputs.sonarcloud_token }}
