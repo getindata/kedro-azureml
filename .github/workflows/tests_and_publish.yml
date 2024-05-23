@@ -216,7 +216,7 @@ jobs:
       PYTHON_PACKAGE: kedro_azureml
     steps:
       - name: Checkout the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0  # necessary to enable merging, all the history is needed
       - name: Set up Python ${{ matrix.python-version }}
