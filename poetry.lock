@@ -562,12 +562,12 @@ pytz = "*"
 
 [[package]]
 name = "azureml-mlflow"
-version = "1.55.0"
+version = "1.56.0"
 description = "Contains the integration code of AzureML with Mlflow."
 optional = true
-python-versions = ">=3.7,<4.0"
+python-versions = "<4.0,>=3.8"
 files = [
-    {file = "azureml_mlflow-1.55.0-py3-none-any.whl", hash = "sha256:048cd60c483d778b1f52fc219a32c925706dceac871d829946099609959c0eef"},
+    {file = "azureml_mlflow-1.56.0-py3-none-any.whl", hash = "sha256:e5a66e0cf29c98b81bde3bcecdaba79101e14b8c251cd5483bfd427597cf9283"},
 ]
 
 [package.dependencies]
