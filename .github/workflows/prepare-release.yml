@@ -33,7 +33,7 @@ jobs:
           bumpversion ${{ github.event.inputs.version_part }}
           echo "::set-output name=package_version::$(cat $PYTHON_PACKAGE/__init__.py | grep -Po  '\d+\.\d+\.\d+')"
       - name: Update the CHANGELOG according to 'Keep a Changelog' guidelines
-        uses: thomaseizinger/keep-a-changelog-new-release@v1
+        uses: thomaseizinger/keep-a-changelog-new-release@v3
         with:
           version: ${{ steps.bump_version.outputs.package_version }}
       - name: Create a new release branch
