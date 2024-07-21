@@ -84,7 +84,7 @@ class AzurePipelinesRunner(SequentialRunner):
             )
         else:
             # TODO: handle credentials better (probably with built-in Kedro credentials
-            #  via ConfigLoader (but it's not available here...)
+            #  via OmegaConfigLoader (but it's not available here...)
             dataset_cls = KedroAzureRunnerDataset
             if is_distributed_environment():
                 logger.info("Using distributed dataset class as a default")

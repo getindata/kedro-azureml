@@ -2,7 +2,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from kedro.config import ConfigLoader, OmegaConfigLoader
+from kedro.config import  OmegaConfigLoader
 from kedro.framework.context import KedroContext
 
 from kedro_azureml.config import KedroAzureMLConfig
@@ -44,7 +44,7 @@ def test_context_manager_with_missing_config(
             context.mock_add_spec(KedroContext)
             context.config_loader = (cl := MagicMock())
             if not as_custom_config_loader:
-                cl.mock_add_spec(ConfigLoader)
+                cl.mock_add_spec(OmegaConfigLoader)
             cl.get = lambda *_: None
             cl.__getitem__ = lambda *_: None
             with pytest.raises(
