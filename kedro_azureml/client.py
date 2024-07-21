@@ -52,8 +52,7 @@ class AzureMLPipelinesClient:
             ), f"Cluster {config.compute['__default__'].cluster_name} does not exist"
 
             logger.info(
-                f"Creating job on cluster {cluster.name} ({cluster.size}, min instances: {cluster.min_instances}, "
-                f"max instances: {cluster.max_instances})"
+                f"Creating job on cluster {cluster.name} ({cluster.size})"
             )
 
             pipeline_job = ml_client.jobs.create_or_update(
