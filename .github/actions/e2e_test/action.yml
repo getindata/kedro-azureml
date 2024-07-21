@@ -48,7 +48,7 @@ runs:
           shell: bash
           run: |
               pip install $(find "./dist" -name "*.tar.gz")
-              kedro new --starter spaceflights --config tests/conf/${{ inputs.e2e_config }}/starter-config.yml --verbose
+              kedro new --starter spaceflights-pandas --config tests/conf/${{ inputs.e2e_config }}/starter-config.yml --verbose
 
         - name: Install starter requirements
           shell: bash
