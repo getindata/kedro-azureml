@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='kdero-azureml',
+    name='kedro-azureml',
     version='0.8.0.1',
     packages=find_packages(),
     entry_points={
