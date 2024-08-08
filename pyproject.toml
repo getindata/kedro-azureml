@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kedro-azureml"
-version = "0.8.1"
+version = "0.8.0.1"
 description = "Kedro plugin with Azure ML Pipelines support"
 readme = "README.md"
 authors = ['marcin.zablocki <marcin.zablocki@getindata.com>']
@@ -33,7 +33,7 @@ known_third_party = ["azure", "tabulate", "pydantic","semver","setuptools"]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.12"
-kedro = ">=0.18.13,<0.20"
+kedro = ">=0.19.3,<0.20"
 cloudpickle = "^2.1.0"
 adlfs = ">=2022.2.0"
 azure-ai-ml = ">=1.2.0"
