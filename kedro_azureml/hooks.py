@@ -15,13 +15,21 @@ class AzureMLLocalRunHook:
                 {"azureml": ["azureml*", "azureml*/**", "**/azureml*"]}
             )
 
-        azure_creds = {"azureml": AzureMLConfig(**context.config_loader["azureml"]["azure"]).__dict__}
+        self.azure_config = AzureMLConfig(**context.config_loader["azureml"]["azure"])
+
+        azure_creds = {"azureml": self.azure_config.__dict__}
 
         context.config_loader["credentials"] = {
             **context.config_loader["credentials"],
             **azure_creds,
         }
 
+    @hook_impl
+    def after_catalog_created(self, catalog):
+        for dataset_name, dataset in catalog._data_sets.items():
+            if isinstance(dataset, AzureMLAssetDataset):
+                dataset.azure_config = self.azure_config
+                catalog.add(dataset_name, dataset, replace=True)
 
     @hook_impl
     def before_pipeline_run(self, run_params, pipeline, catalog):
