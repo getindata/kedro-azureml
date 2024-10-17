@@ -47,11 +47,10 @@ class AzurePipelinesRunner(SequentialRunner):
         session_id: str = None,
     ) -> Dict[str, Any]:
         catalog = catalog.shallow_copy()
-        catalog_set = set(catalog.list())
 
         # Loop over datasets in arguments to set their paths
         for ds_name, azure_dataset_path in self.data_paths.items():
-            if ds_name in catalog_set:
+            if ds_name in catalog:
                 ds = catalog._get_dataset(ds_name)
                 if isinstance(ds, AzureMLPipelineDataset):
                     if (
@@ -66,7 +65,7 @@ class AzurePipelinesRunner(SequentialRunner):
                 catalog.add(ds_name, self.create_default_data_set(ds_name))
 
         # Loop over remaining input datasets to add them to the catalog
-        unsatisfied = pipeline.inputs() - set(catalog.list())
+        unsatisfied = [input for input in pipeline.inputs() if input not in catalog]
         for ds_name in unsatisfied:
             catalog.add(ds_name, self.create_default_data_set(ds_name))
 
