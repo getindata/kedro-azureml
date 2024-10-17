@@ -47,27 +47,39 @@ class AzurePipelinesRunner(SequentialRunner):
         session_id: str = None,
     ) -> Dict[str, Any]:
         catalog = catalog.shallow_copy()
+        logger.error(f"0 catalog: {catalog}")
 
         # Loop over datasets in arguments to set their paths
+        logger.error(f"self.data_paths.items(): {self.data_paths.items()}")
         for ds_name, azure_dataset_path in self.data_paths.items():
             if ds_name in catalog:
                 ds = catalog._get_dataset(ds_name)
+                logger.error(f"0 ds: {ds}")
                 if isinstance(ds, AzureMLPipelineDataset):
                     if (
                         isinstance(ds, AzureMLAssetDataset)
                         and ds._azureml_type == "uri_file"
                     ):
                         ds.root_dir = str(Path(azure_dataset_path).parent)
+                        logger.error(f"1 ds: {ds}")
                     else:
                         ds.root_dir = azure_dataset_path
+                        logger.error(f"2 ds: {ds}")
                     catalog.add(ds_name, ds, replace=True)
+                    logger.error(f"1 catalog: {catalog}")
             else:
                 catalog.add(ds_name, self.create_default_data_set(ds_name))
+                logger.error(f"2 catalog: {catalog}")
 
         # Loop over remaining input datasets to add them to the catalog
         unsatisfied = [input for input in pipeline.inputs() if input not in catalog]
+        logger.error(f"3 catalog: {unsatisfied}")
         for ds_name in unsatisfied:
-            catalog.add(ds_name, self.create_default_data_set(ds_name))
+            default_ds = self.create_default_data_set(ds_name)
+            logger.error(f"0 default_ds: {default_ds}")
+            catalog.add(ds_name, default_ds)
+
+        logger.error(f"4 catalog: {unsatisfied}")
 
         return super().run(pipeline, catalog, hook_manager, session_id)
 
