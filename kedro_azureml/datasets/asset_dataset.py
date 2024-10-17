@@ -159,8 +159,12 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
 
     def _construct_dataset(self) -> AbstractDataset:
         dataset_config = self._dataset_config.copy()
+        logger.error(f"8: dataset_config {dataset_config}")
+
         dataset_config[self._filepath_arg] = str(self.path)
-        return self._dataset_type(**dataset_config)
+        x = self._dataset_type(**dataset_config)
+        logger.error(f"9: x {x}")
+        return x
 
     def _get_latest_version(self) -> str:
         try:
@@ -184,40 +188,53 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
             )
 
     def _load(self) -> Any:
-        if self._download:
-            try:
-                azureml_ds = self._get_azureml_dataset()
-            except ResourceNotFoundError:
-                raise VersionNotFoundError(
-                    f"Did not find version {self.resolve_load_version()} for {self}"
-                )
-            fs = AzureMachineLearningFileSystem(azureml_ds.path)
-            if azureml_ds.type == "uri_file":
-                # relative (to storage account root) path of the file dataset on azure
-                # Note that path is converted to str for compatibility reasons with
-                # fsspec AbstractFileSystem expand_path function
-                path_on_azure = str(fs._infer_storage_options(azureml_ds.path)[1])
-            elif azureml_ds.type == "uri_folder":
-                # relative (to storage account root) path of the folder dataset on azure
-                dataset_root_on_azure = fs._infer_storage_options(azureml_ds.path)[1]
-                # relative (to storage account root) path of the dataset in the folder on azure
-                path_on_azure = str(
-                    Path(dataset_root_on_azure)
-                    / self._dataset_config[self._filepath_arg]
-                )
-            else:
-                raise ValueError("Unsupported AzureMLDataset type")
-            if fs.isfile(path_on_azure):
-                # using APPEND will keep the local file if it already exists
-                # as versions are unique this will prevent unnecessary file download
-                fs.download(path_on_azure, self.download_path, overwrite="APPEND")
-            else:
-                # we take the relative within the Azure dataset to avoid downloading
-                # all files in a folder dataset.
-                for fpath in fs.ls(path_on_azure):
-                    logger.info(f"Downloading {fpath} for local execution")
-                    fs.download(fpath, self.download_path, overwrite="APPEND")
-        return self._construct_dataset().load()
+        try:
+            logger.error(f"0: self.path: {self.path}")
+            if self._download:
+                try:
+                    azureml_ds = self._get_azureml_dataset()
+                    logger.error(f"1: azureml_ds: {azureml_ds}")
+                except ResourceNotFoundError:
+                    raise VersionNotFoundError(
+                        f"Did not find version {self.resolve_load_version()} for {self}"
+                    )
+                fs = AzureMachineLearningFileSystem(azureml_ds.path)
+                logger.error(f"2: fs: {fs}")
+                if azureml_ds.type == "uri_file":
+                    # relative (to storage account root) path of the file dataset on azure
+                    # Note that path is converted to str for compatibility reasons with
+                    # fsspec AbstractFileSystem expand_path function
+                    path_on_azure = str(fs._infer_storage_options(azureml_ds.path)[1])
+                    logger.error(f"3: path_on_azure: {path_on_azure}")
+                elif azureml_ds.type == "uri_folder":
+                    # relative (to storage account root) path of the folder dataset on azure
+                    dataset_root_on_azure = fs._infer_storage_options(azureml_ds.path)[1]
+                    # relative (to storage account root) path of the dataset in the folder on azure
+                    path_on_azure = str(
+                        Path(dataset_root_on_azure)
+                        / self._dataset_config[self._filepath_arg]
+                    )
+                    logger.error(f"4: path_on_azure: {path_on_azure}")
+
+                else:
+                    raise ValueError("Unsupported AzureMLDataset type")
+                if fs.isfile(path_on_azure):
+                    # using APPEND will keep the local file if it already exists
+                    # as versions are unique this will prevent unnecessary file download
+                    fs.download(path_on_azure, self.download_path, overwrite="APPEND")
+                    logger.error(f"5: path_on_azure: {self.download_path}")
+                    logger.error(f"6: path_on_azure: {self.download_path}")
+                else:
+                    # we take the relative within the Azure dataset to avoid downloading
+                    # all files in a folder dataset.
+                    for fpath in fs.ls(path_on_azure):
+                        logger.error(f"Downloading {fpath} for local execution")
+                        fs.download(fpath, self.download_path, overwrite="APPEND")
+            return self._construct_dataset().load()
+        except Exception as e:
+            logger.error(f"10: {e}")
+            logger.error(e)
+            raise
 
     def _save(self, data: Any) -> None:
         self._construct_dataset().save(data)
