@@ -15,9 +15,9 @@ class AzureMLLocalRunHook:
                 {"azureml": ["azureml*", "azureml*/**", "**/azureml*"]}
             )
 
-        self.azure_config = AzureMLConfig(**context.config_loader["azureml"]["azure"])
+        azure_config = AzureMLConfig(**context.config_loader["azureml"]["azure"])
 
-        azure_creds = {"azureml": self.azure_config.__dict__}
+        azure_creds = {"azureml": azure_config.__dict__}
 
         context.config_loader["credentials"] = {
             **context.config_loader["credentials"],
