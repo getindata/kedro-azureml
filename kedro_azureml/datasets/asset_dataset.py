@@ -77,6 +77,7 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
         self,
         azureml_dataset: str,
         dataset: Union[str, Type[AbstractDataset], Dict[str, Any]],
+        credentials = None,
         root_dir: str = "data",
         filepath_arg: str = "filepath",
         azureml_type: AzureMLDataAssetType = "uri_folder",
@@ -107,7 +108,7 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
         self._version_cache = Cache(maxsize=2)  # type: Cache
         self._download = True
         self._local_run = True
-        self._azureml_config = None
+        self._azureml_config = AzureMLConfig(**credentials) if credentials else None
         self._azureml_type = azureml_type
         if self._azureml_type not in get_args(AzureMLDataAssetType):
             raise DatasetError(

@@ -14,14 +14,16 @@ class AzureMLLocalRunHook:
             context.config_loader.config_patterns.update(
                 {"azureml": ["azureml*", "azureml*/**", "**/azureml*"]}
             )
-        self.azure_config = AzureMLConfig(**context.config_loader["azureml"]["azure"])
 
-    @hook_impl
-    def after_catalog_created(self, catalog):
-        for dataset_name, dataset in catalog._data_sets.items():
-            if isinstance(dataset, AzureMLAssetDataset):
-                dataset.azure_config = self.azure_config
-                catalog.add(dataset_name, dataset, replace=True)
+        azure_config = AzureMLConfig(**context.config_loader["azureml"]["azure"])
+
+        azure_creds = {"azureml": azure_config.__dict__}
+
+        context.config_loader["credentials"] = {
+            **context.config_loader["credentials"],
+            **azure_creds,
+        }
+
 
     @hook_impl
     def before_pipeline_run(self, run_params, pipeline, catalog):
@@ -31,21 +33,22 @@ class AzureMLLocalRunHook:
             pipeline: The ``Pipeline`` object representing the pipeline to be run.
             catalog: The ``DataCatalog`` from which to fetch data.
         """
-        for dataset_name, dataset in catalog._data_sets.items():
-            if isinstance(dataset, AzureMLAssetDataset):
-                if AzurePipelinesRunner.__name__ not in run_params["runner"]:
-                    # when running locally using an AzureMLAssetDataset
-                    # as an intermediate dataset we don't want download
-                    # but still set to run local with a local version.
-                    if dataset_name not in pipeline.inputs():
-                        dataset.as_local_intermediate()
-                # when running remotely we still want to provide information
-                # from the azureml config for getting the dataset version during
-                # remote runs
-                else:
-                    dataset.as_remote()
+        for input in pipeline.all_inputs():
+            if input in catalog:
+                dataset = catalog._get_dataset(input)
+                if isinstance(dataset, AzureMLAssetDataset):
+                    if AzurePipelinesRunner.__name__ not in run_params["runner"]:
+                        # when running locally using an AzureMLAssetDataset
+                        # as an intermediate dataset we don't want download
+                        # but still set to run local with a local version.
+                        if input not in pipeline.inputs():
+                            dataset.as_local_intermediate()
+                        # when running remotely we still want to provide information
+                        # from the azureml config for getting the dataset version during
+                        # remote runs
+                    else:
+                        dataset.as_remote()
 
-                catalog.add(dataset_name, dataset, replace=True)
-
+                    catalog.add(input, dataset, replace=True)
 
 azureml_local_run_hook = AzureMLLocalRunHook()

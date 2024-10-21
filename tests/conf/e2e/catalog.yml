@@ -17,6 +17,7 @@ model_input_table:
   type: kedro_azureml.datasets.AzureMLAssetDataset
   azureml_dataset: e2e_tests_no_pdp
   root_dir: data/02_intermediate
+  credentials: azureml
   dataset:
     type: pandas.CSVDataset
     filepath: model_input_table.csv
