@@ -1,0 +1,14 @@
+AzureMLDataset(dataset_config={'filepa             
+                             th': shuttles.xlsx, 'load_args':                   
+                             {'engine': openpyxl}},                             
+                             dataset_type=ExcelDataset,                         
+                             filepath_arg=filepath,                             
+                             root_dir=/mnt/azureml/cr/j/5f0796d2547             
+                             44ea387fb7b4e5e27d202/cap/data-capabil             
+                             ity/wd/INPUT_shuttles)
+
+
+PickleDataset(backend=cloudpickle, 
+filepath=/mnt/azureml/cr/j/19c6488f0e4644ce9a65e8a6932c8984/cap/data-capability/
+wd/INPUT_companies_csv/companies_csv.pickle, load_args={}, protocol=file, 
+save_args={})
