@@ -4,7 +4,7 @@ from typing import Optional
 
 from kedro.config import (
     AbstractConfigLoader,
-    ConfigLoader,
+    OmegaConfigLoader,
     MissingConfigException,
 )
 from kedro.framework.session import KedroSession
@@ -54,7 +54,7 @@ class KedroContextManager:
                 obj = None
 
         if obj is None:
-            if not isinstance(cl, ConfigLoader):
+            if not isinstance(cl, OmegaConfigLoader):
                 raise ValueError(
                     f"You're using a custom config loader: {cl.__class__.__qualname__}{os.linesep}"
                     f"you need to add the azureml config to it.{os.linesep}"
