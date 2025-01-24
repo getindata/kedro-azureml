@@ -12,13 +12,11 @@ class AzureMLLocalRunHook:
 
     @hook_impl
     def after_context_created(self, context) -> None:
-        # if "azureml" not in context.config_loader.config_patterns.keys():
-        #     context.config_loader.config_patterns.update(
-        #         {"azureml": ["azureml*", "azureml*/**", "**/azureml*"]}
-        #     )
-        cl = OmegaConfigLoader("/app/tests/conf", config_patterns={"azureml": ["azureml*"]}, default_run_env="local",)
-        self.azure_config = AzureMLConfig(**cl["azureml"]["azure"])
-        # self.azure_config = AzureMLConfig(**context.config_loader["azureml"]["azure"])
+        if "azureml" not in context.config_loader.config_patterns.keys():
+            context.config_loader.config_patterns.update(
+                {"azureml": ["azureml*", "azureml*/**", "**/azureml*"]}
+            )
+        self.azure_config = AzureMLConfig(**context.config_loader["azureml"]["azure"])
 
     @hook_impl
     def after_catalog_created(self, catalog):
