@@ -41,15 +41,18 @@ class KedroContextManager:
 
     @cached_property
     def plugin_config(self) -> KedroAzureMLConfig:
-        cl: AbstractConfigLoader = self.context.config_loader
+        # cl: AbstractConfigLoader = self.context.config_loader
+        cl = OmegaConfigLoader("/app/tests/conf", config_patterns={"azureml": ["azureml*"]}, default_run_env="local",)
         try:
-            obj = self.context.config_loader.get("azureml*")
+            # obj = self.context.config_loader["azureml"]
+            obj = cl["azureml"]
         except:  # noqa
             obj = None
 
         if obj is None:
             try:
-                obj = self._ensure_obj_is_dict(self.context.config_loader["azureml"])
+                # obj = self._ensure_obj_is_dict(self.context.config_loader["azureml"])
+                obj = self._ensure_obj_is_dict(cl["azureml"])
             except (KeyError, MissingConfigException):
                 obj = None
 
