@@ -80,9 +80,9 @@ def dummy_plugin_config() -> KedroAzureMLConfig:
 def patched_kedro_package():
     with patch("kedro.framework.project.PACKAGE_NAME", "tests") as patched_package:
         original_dir = os.getcwd()
-        os.chdir("tests")
+        # os.chdir("tests")
         yield patched_package
-        os.chdir(original_dir)
+        # os.chdir(original_dir)
 
 
 @pytest.fixture()

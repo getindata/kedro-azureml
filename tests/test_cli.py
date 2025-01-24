@@ -154,6 +154,7 @@ def test_can_compile_pipeline(
         _ = create_kedro_conf_dirs(tmp_path)
         runner = CliRunner()
         output_path = tmp_path / "pipeline.yml"
+
         result = runner.invoke(
             cli.compile,
             ["--output", str(output_path.absolute()), "--params", extra_params],
