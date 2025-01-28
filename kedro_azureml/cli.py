@@ -419,7 +419,7 @@ def execute(
     data_paths = {**azure_inputs, **azure_outputs}
 
     with KedroContextManager(
-        ctx.metadata.package_name, env=ctx.env, extra_params=parameters
+        env=ctx.env, extra_params=parameters
     ) as mgr:
         pipeline_data_passing = (
             mgr.plugin_config.azure.pipeline_data_passing is not None

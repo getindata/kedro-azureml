@@ -15,11 +15,11 @@ from kedro_azureml.config import KedroAzureMLConfig
 
 class KedroContextManager:
     def __init__(
-        self, package_name: str, env: str, extra_params: Optional[dict] = None
+        self, env: str, project_path: str | None = None, extra_params: Optional[dict] = None
     ):
         self.extra_params = extra_params
         self.env = env
-        self.package_name = package_name
+        self.project_path = project_path
         self.session: Optional[KedroSession] = None
 
     @cached_property
@@ -75,7 +75,7 @@ CONFIG_LOADER_ARGS = {
 
     def __enter__(self):
         self.session = KedroSession.create(
-            env=self.env, extra_params=self.extra_params
+            self.project_path, env=self.env, extra_params=self.extra_params
         )
         return self
 
