@@ -10,7 +10,7 @@ from kedro_azureml.manager import KedroContextManager
 
 
 def test_can_create_context_manager(patched_kedro_package):
-    with KedroContextManager("tests", "base") as mgr:
+    with KedroContextManager(project_path="tests", env="base") as mgr:
         assert mgr is not None and isinstance(
             mgr, KedroContextManager
         ), "Invalid object returned"
@@ -21,7 +21,7 @@ def test_can_create_context_manager(patched_kedro_package):
 
 
 def test_can_create_context_manager_with_omegaconf(patched_kedro_package):
-    with KedroContextManager("tests", "local") as mgr:
+    with KedroContextManager(project_path="tests", env="local") as mgr:
         with patch.object(mgr, "context") as context:
             context.mock_add_spec(KedroContext)
             context.config_loader = OmegaConfigLoader(
@@ -39,7 +39,7 @@ def test_can_create_context_manager_with_omegaconf(patched_kedro_package):
 def test_context_manager_with_missing_config(
     patched_kedro_package, as_custom_config_loader
 ):
-    with KedroContextManager("tests", "local") as mgr:
+    with KedroContextManager(project_path="tests", env="local") as mgr:
         with patch.object(mgr, "context") as context:
             context.mock_add_spec(KedroContext)
             context.config_loader = (cl := MagicMock())

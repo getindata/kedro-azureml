@@ -27,7 +27,7 @@ def get_context_and_pipeline(
     load_versions: Dict[str, str] = {},
 ):
     with KedroContextManager(
-        ctx.metadata.package_name, ctx.env, parse_extra_params(params, True)
+        env=ctx.env, extra_params=parse_extra_params(params, True)
     ) as mgr:
         storage_account_key = os.getenv("AZURE_STORAGE_ACCOUNT_KEY", "")
         pipeline_data_passing = (
