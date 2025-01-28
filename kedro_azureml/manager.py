@@ -75,7 +75,7 @@ CONFIG_LOADER_ARGS = {
 
     def __enter__(self):
         self.session = KedroSession.create(
-            self.package_name, env=self.env, extra_params=self.extra_params
+            env=self.env, extra_params=self.extra_params
         )
         return self
 
