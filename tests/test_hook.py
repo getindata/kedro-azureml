@@ -33,7 +33,8 @@ def test_hook_after_context_created(
     assert azureml_local_run_hook.azure_config.workspace_name == "best"
 
     azureml_local_run_hook.after_catalog_created(multi_catalog)
-    for dataset in multi_catalog._data_sets.values():
+    for dataset_name in multi_catalog.list():
+        dataset = multi_catalog._get_dataset(dataset_name, suggest=False)
         if isinstance(dataset, AzureMLAssetDataset):
             assert dataset._download is True
             assert dataset._local_run is True
