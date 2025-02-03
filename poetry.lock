@@ -5262,6 +5262,7 @@ lock-version = "2.1"
 python-versions = ">=3.8,<3.12"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 content-hash = "50207278a0b186acb40c019192c5f0ece8574684720f709025959a967eaa6bc3"
 =======
 content-hash = "00f59d7d7b0290f0ac287a1c6b7745c2dbef3efe2c73a64c82bf44adcb3142d6"
@@ -5269,3 +5270,6 @@ content-hash = "00f59d7d7b0290f0ac287a1c6b7745c2dbef3efe2c73a64c82bf44adcb3142d6
 =======
 content-hash = "fbbc4982ec5c10782fb7c1cd94b3f59f1b73238feca5f76317a682030fb13d0c"
 >>>>>>> 926e6bd (WIP: fixed config loading by hardcoding the path for now.)
+=======
+content-hash = "2e8f9687e59de4e3b83df48645b5fbc10168b16d2a94ee32fa02597419f7311d"
+>>>>>>> bea8057 (Define range of kedro versions in pyproject.toml.)
