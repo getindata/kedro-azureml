@@ -5242,4 +5242,4 @@ mlflow = ["azureml-mlflow", "mlflow"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.8,<3.12"
-content-hash = "fbbc4982ec5c10782fb7c1cd94b3f59f1b73238feca5f76317a682030fb13d0c"
+content-hash = "2e8f9687e59de4e3b83df48645b5fbc10168b16d2a94ee32fa02597419f7311d"
