@@ -57,7 +57,6 @@ runs:
               find "../dist" -name "*.tar.gz" | xargs -I@ cp @ kedro-azureml.tar.gz
               echo -e "\n./kedro-azureml.tar.gz\n" >> src/requirements.txt
               echo -e "kedro-docker<0.5.0\n" >> src/requirements.txt
-              echo -e "openpyxl\n" >> src/requirements.txt  # temp fix for kedro-datasets issues with optional packages
               sed -i '/kedro-telemetry/d' src/requirements.txt
               sed -i '/kedro-viz/d' src/requirements.txt # starter version requirements make tests fail
               echo $(cat src/requirements.txt)
