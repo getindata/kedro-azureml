@@ -3,8 +3,6 @@ from kedro.framework.hooks import hook_impl
 from kedro_azureml.config import AzureMLConfig
 from kedro_azureml.datasets.asset_dataset import AzureMLAssetDataset
 from kedro_azureml.runner import AzurePipelinesRunner
-from kedro.config import OmegaConfigLoader
-from pathlib import Path
 
 
 class AzureMLLocalRunHook:

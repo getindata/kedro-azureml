@@ -438,7 +438,14 @@ def test_can_invoke_run_with_failed_pipeline(
                 "--wait-for-completion",
             ],
             obj=ProjectMetadata(
-                tmp_path, "tests", "project", tmp_path, "1.0", Path.cwd(), "0.18.5", example_pipeline="__default__"
+                tmp_path,
+                "tests",
+                "project",
+                tmp_path,
+                "1.0",
+                Path.cwd(),
+                "0.18.5",
+                example_pipeline="__default__",
             ),
         )
         assert result.exit_code == 1

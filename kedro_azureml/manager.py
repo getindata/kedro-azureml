@@ -4,8 +4,8 @@ from typing import Optional
 
 from kedro.config import (
     AbstractConfigLoader,
-    OmegaConfigLoader,
     MissingConfigException,
+    OmegaConfigLoader,
 )
 from kedro.framework.session import KedroSession
 from omegaconf import DictConfig, OmegaConf
@@ -15,7 +15,10 @@ from kedro_azureml.config import KedroAzureMLConfig
 
 class KedroContextManager:
     def __init__(
-        self, env: str, project_path: str | None = None, extra_params: Optional[dict] = None
+        self,
+        env: str,
+        project_path: str | None = None,
+        extra_params: Optional[dict] = None,
     ):
         self.extra_params = extra_params
         self.env = env
