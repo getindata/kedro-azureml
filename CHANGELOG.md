@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Support for kedro 0.19.* by [@em-pe](https://github.com/em-pe), [@sfczekalski](https://github.com/sfczekalski), [@kinjaldand](https://github.com/kinjaldand)
+
 ## [0.8.0] - 2024-05-09
 
 -   Added support for python 3.11 by [@em-pe](https://github.com/em-pe)

@@ -154,6 +154,7 @@ def test_can_compile_pipeline(
         _ = create_kedro_conf_dirs(tmp_path)
         runner = CliRunner()
         output_path = tmp_path / "pipeline.yml"
+
         result = runner.invoke(
             cli.compile,
             ["--output", str(output_path.absolute()), "--params", extra_params],
@@ -437,7 +438,14 @@ def test_can_invoke_run_with_failed_pipeline(
                 "--wait-for-completion",
             ],
             obj=ProjectMetadata(
-                tmp_path, "tests", "project", tmp_path, "1.0", Path.cwd(), "0.18.5"
+                tmp_path,
+                "tests",
+                "project",
+                tmp_path,
+                "1.0",
+                Path.cwd(),
+                "0.18.5",
+                example_pipeline="__default__",
             ),
         )
         assert result.exit_code == 1

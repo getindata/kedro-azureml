@@ -4,8 +4,8 @@ from typing import Optional
 
 from kedro.config import (
     AbstractConfigLoader,
-    ConfigLoader,
     MissingConfigException,
+    OmegaConfigLoader,
 )
 from kedro.framework.session import KedroSession
 from omegaconf import DictConfig, OmegaConf
@@ -15,11 +15,14 @@ from kedro_azureml.config import KedroAzureMLConfig
 
 class KedroContextManager:
     def __init__(
-        self, package_name: str, env: str, extra_params: Optional[dict] = None
+        self,
+        env: str,
+        project_path: Optional[str] = None,
+        extra_params: Optional[dict] = None,
     ):
         self.extra_params = extra_params
         self.env = env
-        self.package_name = package_name
+        self.project_path = project_path
         self.session: Optional[KedroSession] = None
 
     @cached_property
@@ -43,7 +46,7 @@ class KedroContextManager:
     def plugin_config(self) -> KedroAzureMLConfig:
         cl: AbstractConfigLoader = self.context.config_loader
         try:
-            obj = self.context.config_loader.get("azureml*")
+            obj = self.context.config_loader["azureml"]
         except:  # noqa
             obj = None
 
@@ -54,7 +57,7 @@ class KedroContextManager:
                 obj = None
 
         if obj is None:
-            if not isinstance(cl, ConfigLoader):
+            if not isinstance(cl, OmegaConfigLoader):
                 raise ValueError(
                     f"You're using a custom config loader: {cl.__class__.__qualname__}{os.linesep}"
                     f"you need to add the azureml config to it.{os.linesep}"
@@ -75,7 +78,7 @@ CONFIG_LOADER_ARGS = {
 
     def __enter__(self):
         self.session = KedroSession.create(
-            self.package_name, env=self.env, extra_params=self.extra_params
+            self.project_path, env=self.env, extra_params=self.extra_params
         )
         return self
 
