@@ -1,0 +1,112 @@
+name: E2E Tests
+description: Runs end to end test against Azure infrastructure
+inputs:
+    e2e_config:
+        description: 'E2E Config name'
+        required: true
+    registry_login_server:
+        description: 'Image registry login server'
+        required: true
+    azure_credentials:
+        description: 'Azure Credentials'
+        required: true
+    azure_client_id:
+        description: 'Azure Client ID'
+        required: true
+    azure_client_secret:
+        description: 'Azure Client Secret'
+        required: true
+    azure_storage_account_key:
+        description: 'Azure Storage Account Key'
+        required: true
+    azure_tenant_id:
+        description: 'Azure Tenant ID'
+        required: true
+    azure_subscription_id:
+        description: 'Azure Subscription ID'
+        required: true
+runs:
+    using: 'composite'
+    steps:
+        - name: Setup python
+          uses: actions/setup-python@v5
+          with:
+              python-version: "3.10"
+
+        - name: Setup poetry
+          shell: bash
+          run: |
+              python -V
+              python -m pip install poetry
+
+        - name: Build the package
+          shell: bash
+          run: |
+              poetry build -f sdist
+
+        - name: Initialize starter project
+          shell: bash
+          run: |
+              pip install $(find "./dist" -name "*.tar.gz")
+              kedro new --starter spaceflights-pandas --config tests/conf/${{ inputs.e2e_config }}/starter-config.yml --verbose
+
+        - name: Install starter requirements
+          shell: bash
+          working-directory: ./spaceflights
+          run: |
+              find "../dist" -name "*.tar.gz" | xargs -I@ cp @ kedro-azureml.tar.gz
+              echo -e "\n./kedro-azureml.tar.gz\n" >> requirements.txt
+              echo -e "kedro-docker~=0.6.2\n" >> requirements.txt
+              sed -i '/kedro-telemetry/d' requirements.txt
+              sed -i '/kedro-viz/d' requirements.txt # starter version requirements make tests fail
+              echo '### REQUIREMENTS:'  
+              cat requirements.txt
+              pip install -r requirements.txt
+
+        - name: Update starter configs
+          shell: bash
+          working-directory: ./spaceflights
+          run: |
+              kedro docker init
+              sed -i 's/\(COPY requirements.txt.*\)$/\1\nCOPY kedro-azureml.tar.gz ./g' Dockerfile
+              cat Dockerfile
+              echo "!data/01_raw" >> .dockerignore
+              rm conf/base/catalog.yml
+              cp ../tests/conf/${{ inputs.e2e_config }}/catalog.yml conf/base/catalog.yml
+              cp ../tests/conf/${{ inputs.e2e_config }}/azureml.yml conf/base/azureml.yml
+              sed -i 's/{container_registry}/${{ inputs.registry_login_server }}/g' conf/base/azureml.yml
+              sed -i 's/{image_tag}/${{ inputs.e2e_config }}/g' conf/base/azureml.yml
+              
+              cat conf/base/azureml.yml
+
+        - name: Login via Azure CLI
+          uses: azure/login@v1
+          with:
+              creds: ${{ inputs.azure_credentials }}
+
+        - name: Login to acr.io
+          uses: azure/docker-login@v1
+          with:
+              login-server: ${{ inputs.registry_login_server }}
+              username: ${{ inputs.azure_client_id }}
+              password: ${{ inputs.azure_client_secret }}
+
+        - name: Build and push docker image
+          shell: bash
+          working-directory: ./spaceflights
+          run: |
+              docker pull ${{ inputs.registry_login_server }}/kedro-azureml-e2e:${{ inputs.e2e_config }} || true
+              docker build --build-arg BASE_IMAGE=python:3.10-buster -t ${{ inputs.registry_login_server }}/kedro-azureml-e2e:${{ inputs.e2e_config }} --cache-from=${{ inputs.registry_login_server }}/kedro-azureml-e2e:${{ inputs.e2e_config }} .
+              docker push ${{ inputs.registry_login_server }}/kedro-azureml-e2e:${{ inputs.e2e_config }}
+
+        - name: Run on Azure ML Pipelines
+          shell: bash
+          working-directory: ./spaceflights
+          env:
+              AZURE_STORAGE_ACCOUNT_KEY: ${{ inputs.azure_storage_account_key }}
+              AZURE_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
+              AZURE_TENANT_ID: ${{ inputs.azure_tenant_id }}
+              AZURE_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
+              AZURE_CLIENT_ID: ${{ inputs.azure_client_id }}
+          run: |
+              kedro azureml run --wait-for-completion --env-var 'GETINDATA=ROCKS!'
