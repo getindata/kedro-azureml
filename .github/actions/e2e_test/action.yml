@@ -59,7 +59,8 @@ runs:
               echo -e "kedro-docker<0.5.0\n" >> src/requirements.txt
               sed -i '/kedro-telemetry/d' src/requirements.txt
               sed -i '/kedro-viz/d' src/requirements.txt # starter version requirements make tests fail
-              echo $(cat src/requirements.txt)
+              echo '### REQUIREMENTS:'  
+              cat src/requirements.txt
               pip install -r src/requirements.txt
 
         - name: Update starter configs
