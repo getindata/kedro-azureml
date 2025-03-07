@@ -61,7 +61,7 @@ jobs:
         if-no-files-found: error
 
   sonarcloud_trusted_branch:
-    if: (github.event.pull_request.head.repo.full_name == github.repository || github.event.pull_request == null)
+    if: (github.event_name != 'repository_dispatch' && (github.event.pull_request.head.repo.full_name == github.repository || github.event.pull_request == null))  &&  (github.actor != 'dependabot[bot]')
     runs-on: ubuntu-latest
     needs: unit_tests
     steps:
@@ -84,7 +84,8 @@ jobs:
       contains(
         github.event.client_payload.pull_request.head.sha,
         github.event.client_payload.slash_command.args.named.sha
-      )
+      ) &&
+      (github.actor != 'dependabot[bot]')
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -114,6 +115,7 @@ jobs:
 
 
   codeql:
+    if: (github.actor != 'dependabot[bot]')
     runs-on: ubuntu-latest
     needs: unit_tests
     permissions:
@@ -140,7 +142,7 @@ jobs:
   ### PROJECT SPECIFIC CONFIGURATION HERE
 
   e2e_tests_trusted_branch:
-    if: (github.event.pull_request.head.repo.full_name == github.repository || github.event.pull_request == null)
+    if: (github.event_name != 'repository_dispatch' && (github.event.pull_request.head.repo.full_name == github.repository || github.event.pull_request == null) || ( ! failure() && ! cancelled() && github.actor == 'dependabot[bot]'))
     needs: [unit_tests, sonarcloud_trusted_branch]
     runs-on: ubuntu-latest
     strategy:
@@ -169,7 +171,8 @@ jobs:
       contains(
         github.event.client_payload.pull_request.head.sha,
         github.event.client_payload.slash_command.args.named.sha
-      )
+      ) ||
+      ( ! failure() && ! cancelled() && github.actor == 'dependabot[bot]')
     needs: [unit_tests, sonarcloud_forked_branch]
     runs-on: ubuntu-latest
     strategy:
@@ -214,11 +217,11 @@ jobs:
       PYTHON_PACKAGE: kedro_azureml
     steps:
       - name: Checkout the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0  # necessary to enable merging, all the history is needed
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build package dist from source # A better way will be : https://packaging.python.org/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/ but pep 517 is still marked as experimental
