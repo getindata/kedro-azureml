@@ -17,7 +17,7 @@ class KedroContextManager:
     def __init__(
         self,
         env: str,
-        project_path: str | None = None,
+        project_path: Optional[str] = None,
         extra_params: Optional[dict] = None,
     ):
         self.extra_params = extra_params
