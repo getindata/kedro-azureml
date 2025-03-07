@@ -55,21 +55,20 @@ runs:
           working-directory: ./spaceflights
           run: |
               find "../dist" -name "*.tar.gz" | xargs -I@ cp @ kedro-azureml.tar.gz
-              echo -e "\n./kedro-azureml.tar.gz\n" >> src/requirements.txt
-              echo -e "kedro-docker<0.5.0\n" >> src/requirements.txt
-              echo -e "openpyxl\n" >> src/requirements.txt  # temp fix for kedro-datasets issues with optional packages
-              sed -i '/kedro-telemetry/d' src/requirements.txt
-              sed -i '/kedro-viz/d' src/requirements.txt # starter version requirements make tests fail
+              echo -e "\n./kedro-azureml.tar.gz\n" >> requirements.txt
+              echo -e "kedro-docker~=0.6.2\n" >> requirements.txt
+              sed -i '/kedro-telemetry/d' requirements.txt
+              sed -i '/kedro-viz/d' requirements.txt # starter version requirements make tests fail
               echo '### REQUIREMENTS:'  
-              cat src/requirements.txt
-              pip install -r src/requirements.txt
+              cat requirements.txt
+              pip install -r requirements.txt
 
         - name: Update starter configs
           shell: bash
           working-directory: ./spaceflights
           run: |
               kedro docker init
-              sed -i 's/\(COPY src\/requirements.txt.*\)$/\1\nCOPY kedro-azureml.tar.gz ./g' Dockerfile
+              sed -i 's/\(COPY requirements.txt.*\)$/\1\nCOPY kedro-azureml.tar.gz ./g' Dockerfile
               cat Dockerfile
               echo "!data/01_raw" >> .dockerignore
               rm conf/base/catalog.yml
