@@ -49,7 +49,7 @@ pyarrow = ">=11.0.0"
 mlflow = ["azureml-mlflow", "mlflow"]
 
 [tool.poetry.dev-dependencies]
-pytest = "<7"
+pytest = "<9"
 pytest-cov = ">=2.8.0, <4.0.0"
 tox = ">=3.25.1"
 pre-commit = "2.20.0"
