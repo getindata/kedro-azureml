@@ -297,14 +297,14 @@ tests-mypy = ["mypy (>=1.11.1) ; platform_python_implementation == \"CPython\" a
 
 [[package]]
 name = "azure-ai-ml"
-version = "1.26.0"
+version = "1.27.1"
 description = "Microsoft Azure Machine Learning Client Library for Python"
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "azure_ai_ml-1.26.0-py3-none-any.whl", hash = "sha256:349a31a3cc015a2c42f07850c7e97489da36a11980ff68627b0ba970f0bbc744"},
-    {file = "azure_ai_ml-1.26.0.tar.gz", hash = "sha256:4973efa9c59c674fb7447a2cc816c0641c84e1e74a6398083ec5f785ae706166"},
+    {file = "azure_ai_ml-1.27.1-py3-none-any.whl", hash = "sha256:7e01bdbfe361757bc7f91dedd0192894bfe4197d5156e4b49b5a594ba88e3b92"},
+    {file = "azure_ai_ml-1.27.1.tar.gz", hash = "sha256:2925aa68796f11c2742c7603cf7115325dbbcf75c3a46af01a8f321627c22ba2"},
 ]
 
 [package.dependencies]
@@ -315,17 +315,18 @@ azure-monitor-opentelemetry = "*"
 azure-storage-blob = ">=12.10.0"
 azure-storage-file-datalake = ">=12.2.0"
 azure-storage-file-share = "*"
-colorama = "*"
-isodate = "*"
-jsonschema = ">=4.0.0"
-marshmallow = ">=3.5"
-msrest = ">=0.6.18"
-pydash = ">=6.0.0"
-pyjwt = "*"
-pyyaml = ">=5.1.0"
-strictyaml = "*"
-tqdm = "*"
-typing-extensions = "*"
+colorama = "<1.0.0"
+isodate = "<1.0.0"
+jsonschema = ">=4.0.0,<5.0.0"
+marshmallow = ">=3.5,<4.0.0"
+msrest = ">=0.6.18,<1.0.0"
+pydash = ">=6.0.0,<9.0.0"
+pyjwt = "<3.0.0"
+pyyaml = ">=5.1.0,<7.0.0"
+six = ">=1.11.0"
+strictyaml = "<2.0.0"
+tqdm = "<5.0.0"
+typing-extensions = "<5.0.0"
 
 [package.extras]
 designer = ["mldesigner"]
