@@ -297,14 +297,14 @@ tests-mypy = ["mypy (>=1.11.1) ; platform_python_implementation == \"CPython\" a
 
 [[package]]
 name = "azure-ai-ml"
-version = "1.27.1"
+version = "1.28.1"
 description = "Microsoft Azure Machine Learning Client Library for Python"
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "azure_ai_ml-1.27.1-py3-none-any.whl", hash = "sha256:7e01bdbfe361757bc7f91dedd0192894bfe4197d5156e4b49b5a594ba88e3b92"},
-    {file = "azure_ai_ml-1.27.1.tar.gz", hash = "sha256:2925aa68796f11c2742c7603cf7115325dbbcf75c3a46af01a8f321627c22ba2"},
+    {file = "azure_ai_ml-1.28.1-py3-none-any.whl", hash = "sha256:0f59557b98ed3c131e6f6c8bd02d2583e7e2a436db3145eb142f6520d22f5de8"},
+    {file = "azure_ai_ml-1.28.1.tar.gz", hash = "sha256:aa44638d033e64393c3952f59a73822f1d3f893057bd0f1957f811d7e6a58036"},
 ]
 
 [package.dependencies]
