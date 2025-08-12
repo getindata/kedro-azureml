@@ -73,7 +73,7 @@ def dummy_pipeline_deterministic_tag() -> Pipeline:
 
 @pytest.fixture()
 def dummy_plugin_config() -> KedroAzureMLConfig:
-    return _CONFIG_TEMPLATE.copy(deep=True)
+    return _CONFIG_TEMPLATE.model_copy(deep=True)
 
 
 @pytest.fixture()
@@ -115,7 +115,7 @@ def patched_azure_runner(patched_azure_dataset):
             run_id=uuid4().hex,
             storage_account_key="",
         )
-        os.environ[KEDRO_AZURE_RUNNER_CONFIG] = cfg.json()
+        os.environ[KEDRO_AZURE_RUNNER_CONFIG] = cfg.model_dump_json()
         yield AzurePipelinesRunner()
     except Exception:
         pass

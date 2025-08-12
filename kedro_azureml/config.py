@@ -12,7 +12,7 @@ class DefaultConfigDict(defaultdict):
     def __getitem__(self, key):
         defaults: BaseModel = super().__getitem__("__default__")
         this: BaseModel = super().__getitem__(key)
-        return defaults.copy(update=this.dict(exclude_none=True)) if defaults else this
+        return defaults.model_copy(update=this.model_dump(exclude_none=True)) if defaults else this
 
 
 class AzureTempStorageConfig(BaseModel):

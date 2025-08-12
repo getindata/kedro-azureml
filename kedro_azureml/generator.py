@@ -237,7 +237,7 @@ class AzureMLPipelineGenerator:
                     temporary_storage=self.config.azure.temporary_storage,
                     run_id=kedro_azure_run_id,
                     storage_account_key=self.storage_account_key,
-                ).json()
+                ).model_dump_json()
                 if not pipeline_data_passing
                 else "",
                 **self.extra_env,
