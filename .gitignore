@@ -175,3 +175,4 @@ terraform/terraform.tfstate
 conf/azure/credentials.yml
 
 spaceflights
+dictionary.dic
