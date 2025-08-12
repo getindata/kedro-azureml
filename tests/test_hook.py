@@ -51,10 +51,7 @@ def test_hook_after_context_created(
         i2 = multi_catalog.get("i2")
         assert input_data._download is True
         assert input_data._local_run is True
-        assert (
-            input_data._azureml_config
-            == azureml_local_run_hook.azure_config
-        )
+        assert input_data._azureml_config == azureml_local_run_hook.azure_config
         assert i2._download is False
         assert i2._local_run is True
         assert i2._version == Version("local", "local")

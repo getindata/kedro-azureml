@@ -209,9 +209,7 @@ class AzureMLPipelineGenerator:
         return dataset_name.startswith(PARAMS_PREFIX) or (
             dataset_name in pipeline.inputs()
             and dataset_name in self.catalog.keys()
-            and not isinstance(
-                self.catalog.get(dataset_name), AzureMLAssetDataset
-            )
+            and not isinstance(self.catalog.get(dataset_name), AzureMLAssetDataset)
         )
 
     def _construct_azure_command(
