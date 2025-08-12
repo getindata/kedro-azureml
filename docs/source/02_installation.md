@@ -11,7 +11,7 @@
 First, you need to install base Kedro package
 
 ```console
-$ pip install "kedro>=0.18.1,<0.19.0"
+$ pip install "kedro>=1.0.0"
 ```
 
 ## Plugin installation

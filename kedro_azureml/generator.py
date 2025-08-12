@@ -157,8 +157,8 @@ class AzureMLPipelineGenerator:
     def _get_input(self, dataset_name: str, pipeline: Pipeline) -> Input:
         if self._is_param_or_root_non_azureml_asset_dataset(dataset_name, pipeline):
             return Input(type="string")
-        elif dataset_name in self.catalog.list() and isinstance(
-            ds := self.catalog._get_dataset(dataset_name), AzureMLAssetDataset
+        elif dataset_name in self.catalog.keys() and isinstance(
+            ds := self.catalog.get(dataset_name), AzureMLAssetDataset
         ):
             if ds._azureml_type == "uri_file" and dataset_name not in pipeline.inputs():
                 raise ValueError(
@@ -169,8 +169,8 @@ class AzureMLPipelineGenerator:
             return Input(type="uri_folder")
 
     def _get_output(self, name):
-        if name in self.catalog.list() and isinstance(
-            ds := self.catalog._get_dataset(name), AzureMLAssetDataset
+        if name in self.catalog.keys() and isinstance(
+            ds := self.catalog.get(name), AzureMLAssetDataset
         ):
             if ds._azureml_type == "uri_file":
                 raise ValueError(
@@ -208,9 +208,9 @@ class AzureMLPipelineGenerator:
     ) -> bool:
         return dataset_name.startswith(PARAMS_PREFIX) or (
             dataset_name in pipeline.inputs()
-            and dataset_name in self.catalog.list()
+            and dataset_name in self.catalog.keys()
             and not isinstance(
-                self.catalog._get_dataset(dataset_name), AzureMLAssetDataset
+                self.catalog.get(dataset_name), AzureMLAssetDataset
             )
         )
 
@@ -334,8 +334,8 @@ class AzureMLPipelineGenerator:
                     azure_output = parent_outputs[sanitized_input_name]
                     azure_inputs[sanitized_input_name] = azure_output
                 # 2. try to find AzureMLAssetDataset in catalog
-                elif node_input in self.catalog.list() and isinstance(
-                    ds := self.catalog._get_dataset(node_input), AzureMLAssetDataset
+                elif node_input in self.catalog.keys() and isinstance(
+                    ds := self.catalog.get(node_input), AzureMLAssetDataset
                 ):
                     azure_inputs[sanitized_input_name] = Input(
                         type=ds._azureml_type,

@@ -39,7 +39,7 @@ Project initialization
 
    .. code:: console
 
-      pip install "kedro>=0.18.5,<0.19" "kedro-docker" "kedro-azureml"
+      pip install "kedro>=1.0.0" "kedro-docker" "kedro-azureml"
 
 2. Create new project (e.g. from starter)
 

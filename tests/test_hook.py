@@ -33,8 +33,8 @@ def test_hook_after_context_created(
     assert azureml_local_run_hook.azure_config.workspace_name == "best"
 
     azureml_local_run_hook.after_catalog_created(multi_catalog)
-    for dataset_name in multi_catalog.list():
-        dataset = multi_catalog._get_dataset(dataset_name, suggest=False)
+    for dataset_name in multi_catalog.keys():
+        dataset = multi_catalog.get(dataset_name)
         if isinstance(dataset, AzureMLAssetDataset):
             assert dataset._download is True
             assert dataset._local_run is True
@@ -47,19 +47,23 @@ def test_hook_after_context_created(
     )
     # if local execution
     if runner == SequentialRunner.__name__:
-        assert multi_catalog.datasets.input_data._download is True
-        assert multi_catalog.datasets.input_data._local_run is True
+        input_data = multi_catalog.get("input_data")
+        i2 = multi_catalog.get("i2")
+        assert input_data._download is True
+        assert input_data._local_run is True
         assert (
-            multi_catalog.datasets.input_data._azureml_config
+            input_data._azureml_config
             == azureml_local_run_hook.azure_config
         )
-        assert multi_catalog.datasets.i2._download is False
-        assert multi_catalog.datasets.i2._local_run is True
-        assert multi_catalog.datasets.i2._version == Version("local", "local")
+        assert i2._download is False
+        assert i2._local_run is True
+        assert i2._version == Version("local", "local")
     else:
-        assert multi_catalog.datasets.input_data._download is False
-        assert multi_catalog.datasets.input_data._local_run is False
-        assert multi_catalog.datasets.input_data._azureml_config is not None
-        assert multi_catalog.datasets.i2._download is False
-        assert multi_catalog.datasets.i2._local_run is False
-        assert multi_catalog.datasets.i2._version is None
+        input_data = multi_catalog.get("input_data")
+        i2 = multi_catalog.get("i2")
+        assert input_data._download is False
+        assert input_data._local_run is False
+        assert input_data._azureml_config is not None
+        assert i2._download is False
+        assert i2._local_run is False
+        assert i2._version is None

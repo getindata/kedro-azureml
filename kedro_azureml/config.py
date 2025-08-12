@@ -122,7 +122,7 @@ docker:
 """.strip()
 
 # This auto-validates the template above during import
-_CONFIG_TEMPLATE = KedroAzureMLConfig.parse_obj(
+_CONFIG_TEMPLATE = KedroAzureMLConfig.model_validate(
     update_dict(
         yaml.safe_load(CONFIG_TEMPLATE_YAML),
         ("azure.pipeline_data_passing.enabled", False),

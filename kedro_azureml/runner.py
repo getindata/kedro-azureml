@@ -44,33 +44,88 @@ class AzurePipelinesRunner(SequentialRunner):
         pipeline: Pipeline,
         catalog: DataCatalog,
         hook_manager: PluginManager = None,
-        session_id: str = None,
+        run_id: str = None,
+        only_missing_outputs: bool = False,
     ) -> Dict[str, Any]:
-        catalog = catalog.shallow_copy()
-        catalog_set = set(catalog.list())
-
-        # Loop over datasets in arguments to set their paths
+        # In Kedro 1.0, we need to create a new catalog with additional datasets
+        # since we can't modify the existing catalog directly
+        
+        # Get the current catalog configuration
+        catalog_config, credentials, load_versions, save_version = catalog.to_config()
+        
+        # Add missing datasets to the configuration
         for ds_name, azure_dataset_path in self.data_paths.items():
-            if ds_name in catalog_set:
-                ds = catalog._get_dataset(ds_name)
+            if ds_name not in catalog_config:
+                if self.pipeline_data_passing:
+                    catalog_config[ds_name] = {
+                        "type": "kedro_azureml.datasets.pipeline_dataset.AzureMLPipelineDataset",
+                        "dataset": {
+                            "type": "kedro_datasets.pickle.PickleDataset",
+                            "filepath": f"{ds_name}.pickle",
+                            "backend": "cloudpickle",
+                        },
+                        "root_dir": azure_dataset_path,
+                    }
+                else:
+                    # TODO: handle credentials better (probably with built-in Kedro credentials
+                    #  via ConfigLoader (but it's not available here...)
+                    dataset_cls = "kedro_azureml.datasets.runner_dataset.KedroAzureRunnerDataset"
+                    if is_distributed_environment():
+                        logger.info("Using distributed dataset class as a default")
+                        dataset_cls = "kedro_azureml.datasets.runner_dataset.KedroAzureRunnerDistributedDataset"
+                    
+                    catalog_config[ds_name] = {
+                        "type": dataset_cls,
+                        "storage_account_name": self.runner_config.temporary_storage.account_name,
+                        "storage_container": self.runner_config.temporary_storage.container,
+                        "storage_account_key": self.runner_config.storage_account_key,
+                        "dataset_name": ds_name,
+                        "run_id": self.runner_config.run_id,
+                    }
+            else:
+                # Update existing dataset paths if needed
+                ds = catalog.get(ds_name)
                 if isinstance(ds, AzureMLPipelineDataset):
                     if (
                         isinstance(ds, AzureMLAssetDataset)
                         and ds._azureml_type == "uri_file"
                     ):
-                        ds.root_dir = str(Path(azure_dataset_path).parent)
+                        catalog_config[ds_name]["root_dir"] = str(Path(azure_dataset_path).parent)
                     else:
-                        ds.root_dir = azure_dataset_path
-                    catalog.add(ds_name, ds, replace=True)
-            else:
-                catalog.add(ds_name, self.create_default_data_set(ds_name))
+                        catalog_config[ds_name]["root_dir"] = azure_dataset_path
 
-        # Loop over remaining input datasets to add them to the catalog
-        unsatisfied = pipeline.inputs() - set(catalog.list())
+        # Add remaining unsatisfied input datasets
+        unsatisfied = pipeline.inputs() - set(catalog_config.keys())
         for ds_name in unsatisfied:
-            catalog.add(ds_name, self.create_default_data_set(ds_name))
+            if self.pipeline_data_passing:
+                catalog_config[ds_name] = {
+                    "type": "kedro_azureml.datasets.pipeline_dataset.AzureMLPipelineDataset",
+                    "dataset": {
+                        "type": "kedro_datasets.pickle.PickleDataset",
+                        "filepath": f"{ds_name}.pickle",
+                        "backend": "cloudpickle",
+                    },
+                    "root_dir": self.data_paths.get(ds_name, ""),
+                }
+            else:
+                dataset_cls = "kedro_azureml.datasets.runner_dataset.KedroAzureRunnerDataset"
+                if is_distributed_environment():
+                    logger.info("Using distributed dataset class as a default")
+                    dataset_cls = "kedro_azureml.datasets.runner_dataset.KedroAzureRunnerDistributedDataset"
+                
+                catalog_config[ds_name] = {
+                    "type": dataset_cls,
+                    "storage_account_name": self.runner_config.temporary_storage.account_name,
+                    "storage_container": self.runner_config.temporary_storage.container,
+                    "storage_account_key": self.runner_config.storage_account_key,
+                    "dataset_name": ds_name,
+                    "run_id": self.runner_config.run_id,
+                }
 
-        return super().run(pipeline, catalog, hook_manager, session_id)
+        # Create a new catalog with the updated configuration
+        new_catalog = DataCatalog.from_config(catalog_config, credentials, load_versions, save_version)
+        
+        return super().run(pipeline, new_catalog, hook_manager, run_id, only_missing_outputs)
 
     def create_default_data_set(self, ds_name: str) -> AbstractDataset:
         if self.pipeline_data_passing:
