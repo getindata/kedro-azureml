@@ -1,7 +1,6 @@
 import os
 
 from azure.identity import DefaultAzureCredential, InteractiveBrowserCredential
-from azure.core.exceptions import ClientAuthenticationError
 
 
 def get_azureml_credentials():
@@ -15,7 +14,7 @@ def get_azureml_credentials():
         )
         # Check if given credential can get token successfully.
         credential.get_token("https://management.azure.com/.default")
-    except Exception: # ignore
+    except Exception:  # ignore
         # Fall back to InteractiveBrowserCredential in case DefaultAzureCredential not work
         credential = InteractiveBrowserCredential()
     return credential
