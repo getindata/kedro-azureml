@@ -51,10 +51,16 @@ mlflow = ["azureml-mlflow", "mlflow"]
 [tool.poetry.dev-dependencies]
 pytest = "<9"
 pytest-cov = ">=2.8.0, <4.0.0"
+kedro-telemetry = ">=0.6.3"
 tox = ">=3.25.1"
 pre-commit = "2.20.0"
 numpy = "1.24.4"
 pandas = "^2.0.3"
+
+[tool.poetry.scripts]
+# Enables: poetry run test
+# Calls pytest.main() inside the env
+test = "pytest:main"
 
 [tool.poetry.plugins] # Optional super table
 
