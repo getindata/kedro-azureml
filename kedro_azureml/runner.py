@@ -33,7 +33,7 @@ class AzurePipelinesRunner(SequentialRunner):
         self.pipeline_data_passing = pipeline_data_passing
         self.runner_config_raw = os.environ.get(KEDRO_AZURE_RUNNER_CONFIG)
         self.runner_config: KedroAzureRunnerConfig = (
-            KedroAzureRunnerConfig.parse_raw(self.runner_config_raw)
+            KedroAzureRunnerConfig.model_validate_json(self.runner_config_raw)
             if not self.pipeline_data_passing
             else None
         )

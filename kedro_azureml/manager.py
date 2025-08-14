@@ -74,7 +74,7 @@ CONFIG_LOADER_ARGS = {
                 raise ValueError(
                     "Missing azureml.yml files in configuration. Make sure that you configure your project first"
                 )
-        return KedroAzureMLConfig.parse_obj(obj)
+        return KedroAzureMLConfig.model_validate(obj)
 
     def __enter__(self):
         self.session = KedroSession.create(
