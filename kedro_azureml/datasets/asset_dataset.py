@@ -113,6 +113,7 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
         )
 
         self._azureml_dataset = azureml_dataset
+        self._version = version
         self._azureml_version = azureml_version
         # 1 entry for load version, 1 for save version
         self._version_cache = Cache(maxsize=2)  # type: Cache
