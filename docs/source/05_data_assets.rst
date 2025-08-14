@@ -7,6 +7,8 @@ Azure Data Assets
 Currently only the `uri_file` and `uri_folder` types are supported. Because of limitations of the Azure ML SDK, the `uri_file` type can only be used for pipeline inputs,
 not for outputs. The `uri_folder` type can be used for both inputs and outputs.
 
+The ``AzureMLAssetDataset`` supports specifying exact dataset versions using the ``azureml_version`` parameter. If not specified, the latest version will be used automatically.
+
 **For v1 API** (deprecated ⚠️) use the ``AzureMLFileDataset`` and the ``AzureMLPandasDataset`` which translate to `File/Folder dataset`_ and `Tabular dataset`_ respectively in
 Azure Machine Learning. Both fully support the Azure versioning mechanism and can be used in the same way as any
 other dataset in Kedro.
@@ -20,6 +22,34 @@ Any other underlying dataset can be used instead by adding a ``AzureMLPipelineDa
 All of these can be found under the `kedro_azureml.datasets`_ module.
 
 For details on usage, see the :ref:`API Reference` below
+
+Dataset Versioning
+^^^^^^^^^^^^^^^^^^^
+
+The ``AzureMLAssetDataset`` supports specifying exact Azure ML dataset versions using the ``azureml_version`` parameter in your ``catalog.yml``:
+
+.. code-block:: yaml
+
+    # Use a specific version
+    my_dataset:
+      type: kedro_azureml.datasets.AzureMLAssetDataset
+      azureml_dataset: my-dataset-from-azureml
+      azureml_version: "100"
+      root_dir: data/01_raw/some_data
+      dataset:
+        type: pandas.ParquetDataset
+        filepath: .
+
+    # Use latest version (default behavior)
+    my_latest_dataset:
+      type: kedro_azureml.datasets.AzureMLAssetDataset
+      azureml_dataset: my-dataset-from-azureml
+      root_dir: data/01_raw/some_data
+      dataset:
+        type: pandas.ParquetDataset
+        filepath: .
+
+**Note**: The ``azureml_version`` parameter accepts both string and integer values (e.g., ``"100"`` or ``100``). If omitted, the latest available version will be used.
 
 .. _`kedro_azureml.datasets`: https://github.com/getindata/kedro-azureml/blob/master/kedro_azureml/datasets
 .. _`File/Folder dataset`: https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-data-assets?tabs=cli#create-a-file-asset
