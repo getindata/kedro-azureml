@@ -385,6 +385,45 @@ def test_azureml_assetdataset_raises_DatasetError_wrapped_dataset_versioned():
         )
 
 
+@pytest.mark.parametrize(
+    "azureml_version,expected_version,mock_azureml_client",
+    [
+        ("100", "100", {"path": "azfs://test/path", "type": "uri_folder"}),
+        (100, "100", {"path": "azfs://test/path", "type": "uri_folder"}),
+        (None, "1", {"path": "azfs://test/path", "type": "uri_folder"}),
+    ],
+    indirect=["mock_azureml_client"],
+)
+def test_azureml_asset_dataset_with_azureml_version(
+    in_temp_dir,
+    mock_azureml_client,
+    mock_azureml_config,
+    azureml_version,
+    expected_version,
+):
+    """Test that azureml_version parameter correctly overrides version resolution."""
+    ds = AzureMLAssetDataset(
+        dataset={
+            "type": PickleDataset,
+            "filepath": "test.pickle",
+        },
+        azureml_dataset="test_dataset",
+        azureml_version=azureml_version,
+    )
+    ds._azureml_config = Path(mock_azureml_config)
+
+    # Test that _resolve_azureml_version returns the expected version
+    assert ds._resolve_azureml_version() == expected_version
+
+    # Test that the dataset can be constructed with azureml_version
+    assert ds._azureml_version == azureml_version
+
+    # Test that path includes the resolved version for local runs
+    ds._local_run = True
+    expected_path = Path("data") / "test_dataset" / expected_version / "test.pickle"
+    assert ds.path == expected_path
+
+
 def test_azureml_pipeline_dataset(tmp_path: Path):
     ds = AzureMLPipelineDataset(
         {

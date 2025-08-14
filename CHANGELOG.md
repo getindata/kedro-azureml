@@ -4,6 +4,7 @@
 - Compatibility changes for kedro 1.0.0 by [@em-pe](https://github.com/em-pe) issue #194
 - Remove dependency for azurefs-fsspec to fix mac arm64 compatibility by [@em-pe](https://github.com/em-pe) issue #101
 - Add support for python 3.12 by [@em-pe](https://github.com/em-pe)
+- Add `azureml_version` parameter to `AzureMLAssetDataset` for specifying specific dataset versions in catalog.yml issue #184
 
 ## [0.9.0] - 2025-03-07
 

@@ -42,7 +42,8 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
         ``Relevant for local execution via `kedro run`.
      | - ``filepath_arg``: Filepath arg on the wrapped dataset, defaults to `filepath`
      | - ``azureml_type``: Either `uri_folder` or `uri_file`
-     | - ``version``: Version of the AzureML dataset to be used in kedro format.
+     | - ``azureml_version``: Specific version of the AzureML dataset to use. If not provided, uses latest version.
+     | - ``version``: Version of the AzureML dataset to be used in kedro format (deprecated, use azureml_version).
 
     Example
     -------
@@ -69,6 +70,15 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
                 type: pandas.ParquetDataset
                 filepath: "companies.csv"
 
+        my_versioned_dataset:
+            type: kedro_azureml.datasets.AzureMLAssetDataset
+            azureml_dataset: my_azureml_dataset
+            azureml_version: "100"
+            root_dir: data/01_raw/some_data
+            dataset:
+                type: pandas.ParquetDataset
+                filepath: "."
+
     """
 
     versioned = True
@@ -81,6 +91,7 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
         filepath_arg: str = "filepath",
         azureml_type: AzureMLDataAssetType = "uri_folder",
         version: Optional[Version] = None,
+        azureml_version: Optional[str] = None,
         metadata: Dict[str, Any] = None,
     ):
         """
@@ -90,7 +101,7 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
                 Relevant only for local execution via `kedro run`.
         filepath_arg: Filepath arg on the wrapped dataset, defaults to `filepath`
         azureml_type: Either `uri_folder` or `uri_file`
-        version: Version of the AzureML dataset to be used in kedro format.
+        azureml_version: Specific version of the AzureML dataset to use. If not provided, uses latest version.
         metadata: Any arbitrary metadata.
             This is ignored by Kedro, but may be consumed by users or external plugins.
         """
@@ -103,6 +114,7 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
 
         self._azureml_dataset = azureml_dataset
         self._version = version
+        self._azureml_version = azureml_version
         # 1 entry for load version, 1 for save version
         self._version_cache = Cache(maxsize=2)  # type: Cache
         self._download = True
@@ -141,7 +153,7 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
             return (
                 Path(self.root_dir)
                 / self._azureml_dataset
-                / self.resolve_load_version()
+                / self._resolve_azureml_version()
                 / Path(self._dataset_config[self._filepath_arg])
             )
         else:
@@ -174,12 +186,21 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
     def _fetch_latest_load_version(self) -> str:
         return self._get_latest_version()
 
+    def _resolve_azureml_version(self) -> str:
+        """Resolve the Azure ML dataset version to use.
+
+        Returns the explicit azureml_version if provided, otherwise fetches the latest version.
+        """
+        if self._azureml_version is not None:
+            return str(self._azureml_version)
+        return self._get_latest_version()
+
     def _get_azureml_dataset(self):
         with _get_azureml_client(
             subscription_id=None, config=self._azureml_config
         ) as ml_client:
             return ml_client.data.get(
-                self._azureml_dataset, version=self.resolve_load_version()
+                self._azureml_dataset, version=self._resolve_azureml_version()
             )
 
     def _load(self) -> Any:
@@ -188,7 +209,7 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
                 azureml_ds = self._get_azureml_dataset()
             except ResourceNotFoundError:
                 raise VersionNotFoundError(
-                    f"Did not find version {self.resolve_load_version()} for {self}"
+                    f"Did not find version {self._resolve_azureml_version()} for {self}"
                 )
 
             # Use Azure ML v2 SDK native download functionality
@@ -198,7 +219,7 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
             ) as ml_client:
                 logger.info(
                     f"Downloading dataset {self._azureml_dataset} version "
-                    f"{self.resolve_load_version()} for local execution"
+                    f"{self._resolve_azureml_version()} for local execution"
                 )
                 artifact_utils.download_artifact_from_aml_uri(
                     uri=azureml_ds.path,
