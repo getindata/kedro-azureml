@@ -14,7 +14,7 @@ from kedro_azureml.cli_functions import (
     dynamic_import_job_schedule_func_from_str,
     get_context_and_pipeline,
     parse_extra_env_params,
-    parse_extra_params,
+    parse_runtime_params,
     verify_configuration_directory_for_azure,
     warn_about_ignore_files,
 )
@@ -248,7 +248,7 @@ def run(
     """Runs the specified pipeline in Azure ML Pipelines; Additional parameters can be passed from command line.
     Can be used with --wait-for-completion param to block the caller until the pipeline finishes in Azure ML.
     """
-    params = json.dumps(p) if (p := parse_extra_params(params)) else ""
+    params = json.dumps(p) if (p := parse_runtime_params(params)) else ""
 
     if subscription_id:
         click.echo(f"Overriding Azure Subscription ID for run to: {subscription_id}")
@@ -359,7 +359,7 @@ def compile(
     load_versions: Dict[str, str],
 ):
     """Compiles the pipeline into YAML format"""
-    params = json.dumps(p) if (p := parse_extra_params(params)) else ""
+    params = json.dumps(p) if (p := parse_runtime_params(params)) else ""
     extra_env = parse_extra_env_params(env_var)
     with get_context_and_pipeline(
         ctx, image, pipeline, params, aml_env, extra_env, load_versions
@@ -413,12 +413,12 @@ def execute(
     azure_outputs: List[Tuple[str, str]],
 ):
     # 1. Run kedro
-    parameters = parse_extra_params(params)
+    parameters = parse_runtime_params(params)
     azure_inputs = {ds_name: data_path for ds_name, data_path in azure_inputs}
     azure_outputs = {ds_name: data_path for ds_name, data_path in azure_outputs}
     data_paths = {**azure_inputs, **azure_outputs}
 
-    with KedroContextManager(env=ctx.env, extra_params=parameters) as mgr:
+    with KedroContextManager(env=ctx.env, runtime_params=parameters) as mgr:
         pipeline_data_passing = (
             mgr.plugin_config.azure.pipeline_data_passing is not None
             and mgr.plugin_config.azure.pipeline_data_passing.enabled

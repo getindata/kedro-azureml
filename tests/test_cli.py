@@ -120,9 +120,9 @@ def test_can_initialize_basic_plugin_config(
 
 
 @pytest.mark.parametrize(
-    "extra_params",
+    "runtime_params",
     ("", '{"unit_test_param": 666.0}'),
-    ids=("without params", "with extra params"),
+    ids=("without params", "with runtime params"),
 )
 @pytest.mark.parametrize(
     "storage_account_key",
@@ -135,7 +135,7 @@ def test_can_compile_pipeline(
     dummy_pipeline,
     dummy_plugin_config,
     tmp_path: Path,
-    extra_params,
+    runtime_params,
     storage_account_key,
 ):
     with patch.object(
@@ -157,7 +157,7 @@ def test_can_compile_pipeline(
 
         result = runner.invoke(
             cli.compile,
-            ["--output", str(output_path.absolute()), "--params", extra_params],
+            ["--output", str(output_path.absolute()), "--params", runtime_params],
             obj=cli_context,
         )
         assert result.exit_code == 0

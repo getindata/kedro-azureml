@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
 
     steps:
     - uses: actions/checkout@v4
@@ -110,8 +110,8 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pull_request_number: ${{ github.event.client_payload.pull_request.number }}
-          job: ${{ github.job }}
           conclusion: ${{ job.status }}
+          github_job: ${{ github.job }}
 
 
   codeql:
@@ -201,7 +201,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pull_request_number: ${{ github.event.client_payload.pull_request.number }}
-          job: ${{ github.job }}
+          github_job: ${{ github.job }}
           conclusion: ${{ job.status }}
 
   publish:
