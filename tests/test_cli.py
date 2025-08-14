@@ -82,7 +82,7 @@ def test_can_initialize_basic_plugin_config(
             azureml_config_path.exists() and azureml_config_path.is_file()
         ), f"{azureml_config_path.absolute()} is not a valid file"
 
-        config: KedroAzureMLConfig = KedroAzureMLConfig.parse_obj(
+        config: KedroAzureMLConfig = KedroAzureMLConfig.model_validate(
             yaml.safe_load(azureml_config_path.read_text())
         )
         assert config.azure.subscription_id == f"subscription_id_{unique_id}"

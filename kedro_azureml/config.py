@@ -12,7 +12,11 @@ class DefaultConfigDict(defaultdict):
     def __getitem__(self, key):
         defaults: BaseModel = super().__getitem__("__default__")
         this: BaseModel = super().__getitem__(key)
-        return defaults.copy(update=this.dict(exclude_none=True)) if defaults else this
+        return (
+            defaults.model_copy(update=this.model_dump(exclude_none=True))
+            if defaults
+            else this
+        )
 
 
 class AzureTempStorageConfig(BaseModel):
@@ -122,7 +126,7 @@ docker:
 """.strip()
 
 # This auto-validates the template above during import
-_CONFIG_TEMPLATE = KedroAzureMLConfig.parse_obj(
+_CONFIG_TEMPLATE = KedroAzureMLConfig.model_validate(
     update_dict(
         yaml.safe_load(CONFIG_TEMPLATE_YAML),
         ("azure.pipeline_data_passing.enabled", False),
