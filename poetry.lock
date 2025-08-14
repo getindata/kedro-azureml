@@ -536,108 +536,6 @@ typing-extensions = ">=4.6.0"
 aio = ["azure-core[aio] (>=1.30.0)"]
 
 [[package]]
-name = "azureml-dataprep"
-version = "5.1.6"
-description = "Azure ML Data Preparation SDK is used to load, transform,     and write data for machine learning workflows"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "azureml_dataprep-5.1.6-py3-none-any.whl", hash = "sha256:8f0a05d56e7cb78a57794fdcf9b38d42244d0918e8694117322ef2c5844baf55"},
-]
-
-[package.dependencies]
-azure-identity = ">=1.7.0"
-azureml-dataprep-native = ">=41.0.0,<42.0.0"
-azureml-dataprep-rslex = ">=2.22.2dev0,<2.23.0"
-cloudpickle = ">=1.1.0,<3.0.0"
-jsonschema = "*"
-pyyaml = ">=5.1.0,<7.0.0"
-
-[package.extras]
-fuse = ["fusepy (>=3.0.1,<4.0.0)"]
-pandas = ["numpy (>=1.14.0)", "pandas (>=0.23.4)", "pyarrow (>=0.17.0)"]
-parquet = ["pyarrow (>=0.17.0)"]
-pyarrow = ["pyarrow (>=0.17.0)"]
-pyspark = ["pyspark (==2.3.0)"]
-scipy = ["scipy (>=1.1.0)"]
-
-[[package]]
-name = "azureml-dataprep-native"
-version = "41.0.0"
-description = "Contains package for AzureML DataPrep specific native extensions."
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "azureml_dataprep_native-41.0.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:0136618104b9554dadbf53a33f1ece7c1ac0b70db43257e549749a65c8e00489"},
-    {file = "azureml_dataprep_native-41.0.0-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:0ad034f795ff871ceca8e209ce42ff2ea5141896f55460ccf5dfda9392b542d2"},
-    {file = "azureml_dataprep_native-41.0.0-cp310-cp310-win_amd64.whl", hash = "sha256:813f5bf498d0d02f652f17b6b55df8f2dfd86ecfebb192015582120d7c431cb6"},
-    {file = "azureml_dataprep_native-41.0.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:649a798e3c56286be587388aabd94d2f32c083633b41fffddde25d0bdc1d8ca3"},
-    {file = "azureml_dataprep_native-41.0.0-cp311-cp311-manylinux1_x86_64.whl", hash = "sha256:1aa293660540be8a9f8cec1d572cca90486e5e34e978c4948c135785996d17a2"},
-    {file = "azureml_dataprep_native-41.0.0-cp311-cp311-win_amd64.whl", hash = "sha256:7a42781a6cdf0b8e4b028eaabe71518dc6e3660f804ce14bcb716f8e3deeedb0"},
-    {file = "azureml_dataprep_native-41.0.0-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:fa41adceba611988748aaa5d16bd9090f2208cdc6b5950bb0672b546d9e7d7af"},
-    {file = "azureml_dataprep_native-41.0.0-cp312-cp312-manylinux1_x86_64.whl", hash = "sha256:da6117b31175a8601b84ddd8c3318e43dcbe188743844b55146559871526ff98"},
-    {file = "azureml_dataprep_native-41.0.0-cp312-cp312-win_amd64.whl", hash = "sha256:d94d9364239abbb523d0c69957a3d30ae735a41766f3469099fb92047ebc2ff5"},
-    {file = "azureml_dataprep_native-41.0.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:b29052e01bdceaa6e03de76a1bcd6fb22141e9e3eefcb0aa06abf0215290af45"},
-    {file = "azureml_dataprep_native-41.0.0-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:6a520c174693d984ad7c788f5b3ef9df733f1703079e82f2f2d11ed9705dcab8"},
-    {file = "azureml_dataprep_native-41.0.0-cp37-cp37m-win_amd64.whl", hash = "sha256:314c8c8382150221ab0a3ed1bd86cfc65be4ac4dab2da2c4778bc966bfe49ab3"},
-    {file = "azureml_dataprep_native-41.0.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:7de2c799bf26cdfc1a7faa49136c0f4a478746bea7a84894faaf9ed619fa3220"},
-    {file = "azureml_dataprep_native-41.0.0-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:c756fef2d160dadd2c320dea97e4fa64073e2dd1e1eb6eea4599e39e79375c06"},
-    {file = "azureml_dataprep_native-41.0.0-cp38-cp38-win_amd64.whl", hash = "sha256:fc84f68b15f2b31e3c506d1598190061bfc69bc327cd4ea4b2a9cb91645b32be"},
-    {file = "azureml_dataprep_native-41.0.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:6e04689517b95b4e15fd7bc059b7fd30acbea23ef34ff58ac59b843061cdb492"},
-    {file = "azureml_dataprep_native-41.0.0-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:dac898491faa8403569d9a5531a8db3665367474569dceb6d183cb6bb142125c"},
-    {file = "azureml_dataprep_native-41.0.0-cp39-cp39-win_amd64.whl", hash = "sha256:41229570e6e430a2e8a7ff923316b98077555fdc3de65a06f2300b5b9e213a5b"},
-]
-
-[[package]]
-name = "azureml-dataprep-rslex"
-version = "2.22.5"
-description = "Azure ML Data Preparation RustLex"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "azureml_dataprep_rslex-2.22.5-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:bfc1b273c93adc3a0fb7a088c5f8746ed3904d26255dd58c718a8c0d38102f62"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:fcd7766efaa97b2e71d4dd428e6028f95a439a31822b0748bc33d0808a107e65"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp310-cp310-win_amd64.whl", hash = "sha256:9503d2facb8c9fa0510e356b6b3ef372b7f3526fca333c2a39f1d6e52cb42a7a"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:dbaf294f81212c351081c75f1e5680fc5b0416d1a39a9c775721861df20ce9aa"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp311-cp311-manylinux1_x86_64.whl", hash = "sha256:bfdac924dacc976219e8bd52b2509d3cd1f513dc0df2fd224f8f16d5ff20fa15"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp311-cp311-win_amd64.whl", hash = "sha256:2c90f179f7d9093e9e01f95d55c81b3ed0564465a9a1018e8ca15b5ac4ff558e"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:6c73aee3f0c5bd052b7e59a0f2749bae5c493478b860d5bcab39ef53ca661ba8"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp312-cp312-manylinux1_x86_64.whl", hash = "sha256:f62aec1611eba6328b088bd4819c5fd09b6b166db5f962f1bad17e3945c5bbcd"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp312-cp312-win_amd64.whl", hash = "sha256:1e284a2aad04e5cb4a7ba63a2eb457b610e7d80a078b11b86c5e8449779cdd40"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:d8b1045d855875524f2bfed344e74542679a30b74f065d0b21e9c0b8ab44bf2b"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:50631bfeba5f9df4a0ff39dabbbcfe7df38e7caea1396d849589417281e48105"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp37-cp37m-win_amd64.whl", hash = "sha256:638540300891f6f75e31a946945c3b2ef80d8e782c20ea97b31b766c9e134bcc"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:5a56fe3924cfda5198018eed4121043609ee49f7fcb137a860969e09648b7959"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:f62975858348310c7f58b2cee994b5e64be9e1627ef205457b963e63bde13662"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp38-cp38-win_amd64.whl", hash = "sha256:6220ec99d0d07a847c95df7cf4d3f1a499b8fd2658ff7323910791e2545a063f"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:cd611e45763bbe4cdfcf8840cfc8d0a123d80592efa208b7151fef1efc4f5332"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:79a0fbfb8a6cb4dc4147649987e98cf490cff4a43a6eb0632fa42fb54ca06393"},
-    {file = "azureml_dataprep_rslex-2.22.5-cp39-cp39-win_amd64.whl", hash = "sha256:471433b8349763a71d98ccae57760feecdcb7e58863efd4e174a8f956046def6"},
-    {file = "azureml_dataprep_rslex-2.22.5-pp37-pypy37_pp73-manylinux1_x86_64.whl", hash = "sha256:2db085b15ecd0bd5c4174cf6b414c9cc8a3891586062b55ee40a3aeccc98e443"},
-    {file = "azureml_dataprep_rslex-2.22.5-pp38-pypy38_pp73-manylinux1_x86_64.whl", hash = "sha256:ba49937716c7b02c0d1927a479d63d6d9c676a65faef8670fca22c8775781827"},
-    {file = "azureml_dataprep_rslex-2.22.5-pp39-pypy39_pp73-manylinux1_x86_64.whl", hash = "sha256:690a9182b3bffdfd2f98c23ef645d77790fe8d84b5c692df7bbb8d8e4a196c53"},
-]
-
-[[package]]
-name = "azureml-fsspec"
-version = "1.3.1"
-description = "Access datastore uri with fsspec"
-optional = false
-python-versions = ">=3.6,< 4.0"
-groups = ["main"]
-files = [
-    {file = "azureml_fsspec-1.3.1-py3-none-any.whl", hash = "sha256:a0cf479e74bb213513a9995c7131f83e15b85cf7fb3a9fe56e65aad8c24b04f8"},
-]
-
-[package.dependencies]
-azureml-dataprep = ">=5.1.0a,<5.2.0a"
-fsspec = ">=2021.6.1,<=2023.10.0"
-pytz = "*"
-
-[[package]]
 name = "azureml-mlflow"
 version = "1.60.0"
 description = "Contains the integration code of AzureML with Mlflow."
@@ -5229,4 +5127,4 @@ mlflow = ["azureml-mlflow", "mlflow"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<3.13"
-content-hash = "093bc08dce25acc2562f981f7a75b5f2dfb8f28dd27b3c02e8930ddda02253ba"
+content-hash = "a8b07a33aa316fe43ec056c2d06c73911df9d270d59180c43501e0019f707fc5"

@@ -142,7 +142,7 @@ jobs:
   ### PROJECT SPECIFIC CONFIGURATION HERE
 
   e2e_tests_trusted_branch:
-    if: (github.event_name != 'repository_dispatch' && (github.event.pull_request.head.repo.full_name == github.repository || github.event.pull_request == null) || ( ! failure() && ! cancelled() && github.actor == 'dependabot[bot]'))
+    if: success() && ((github.event_name != 'repository_dispatch' && (github.event.pull_request.head.repo.full_name == github.repository || github.event.pull_request == null)) || (github.actor == 'dependabot[bot]'))
     needs: [unit_tests, sonarcloud_trusted_branch]
     runs-on: ubuntu-latest
     strategy:
@@ -166,6 +166,7 @@ jobs:
 
   e2e_tests_forked_branch:
     if: |
+      success() &&
       github.event_name == 'repository_dispatch' &&
       github.event.client_payload.slash_command.args.named.sha != '' &&
       contains(
