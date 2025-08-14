@@ -4,8 +4,8 @@ from operator import attrgetter
 from pathlib import Path
 from typing import Any, Dict, Literal, Optional, Type, Union, get_args
 
+import azure.ai.ml._artifacts._artifact_utilities as artifact_utils
 from azure.core.exceptions import ResourceNotFoundError
-from azureml.fsspec import AzureMachineLearningFileSystem
 from cachetools import Cache, cachedmethod
 from cachetools.keys import hashkey
 from kedro.io.core import (
@@ -190,32 +190,21 @@ class AzureMLAssetDataset(AzureMLPipelineDataset, AbstractVersionedDataset):
                 raise VersionNotFoundError(
                     f"Did not find version {self.resolve_load_version()} for {self}"
                 )
-            fs = AzureMachineLearningFileSystem(azureml_ds.path)
-            if azureml_ds.type == "uri_file":
-                # relative (to storage account root) path of the file dataset on azure
-                # Note that path is converted to str for compatibility reasons with
-                # fsspec AbstractFileSystem expand_path function
-                path_on_azure = str(fs._infer_storage_options(azureml_ds.path)[1])
-            elif azureml_ds.type == "uri_folder":
-                # relative (to storage account root) path of the folder dataset on azure
-                dataset_root_on_azure = fs._infer_storage_options(azureml_ds.path)[1]
-                # relative (to storage account root) path of the dataset in the folder on azure
-                path_on_azure = str(
-                    Path(dataset_root_on_azure)
-                    / self._dataset_config[self._filepath_arg]
+
+            # Use Azure ML v2 SDK native download functionality
+            # This avoids the ARM64 compatibility issues with azureml-fsspec
+            with _get_azureml_client(
+                subscription_id=None, config=self._azureml_config
+            ) as ml_client:
+                logger.info(
+                    f"Downloading dataset {self._azureml_dataset} version "
+                    f"{self.resolve_load_version()} for local execution"
                 )
-            else:
-                raise ValueError("Unsupported AzureMLDataset type")
-            if fs.isfile(path_on_azure):
-                # using APPEND will keep the local file if it already exists
-                # as versions are unique this will prevent unnecessary file download
-                fs.download(path_on_azure, self.download_path, overwrite="APPEND")
-            else:
-                # we take the relative within the Azure dataset to avoid downloading
-                # all files in a folder dataset.
-                for fpath in fs.ls(path_on_azure):
-                    logger.info(f"Downloading {fpath} for local execution")
-                    fs.download(fpath, self.download_path, overwrite="APPEND")
+                artifact_utils.download_artifact_from_aml_uri(
+                    uri=azureml_ds.path,
+                    destination=self.download_path,
+                    datastore_operation=ml_client.datastores,
+                )
         return self._construct_dataset().load()
 
     def _save(self, data: Any) -> None:
