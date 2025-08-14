@@ -13,12 +13,18 @@ shuttles:
     engine: openpyxl
 
 preprocessed_companies:
-  type: pandas.ParquetDataset
-  filepath: data/02_intermediate/preprocessed_companies.parquet
+  type: kedro_azureml.datasets.AzureMLAssetDataset
+  azureml_dataset: e2e_tests_no_pdp
+  dataset:
+    type: pandas.ParquetDataset
+    filepath: data/02_intermediate/preprocessed_companies.parquet
 
 preprocessed_shuttles:
-  type: pandas.ParquetDataset
-  filepath: data/02_intermediate/preprocessed_shuttles.parquet
+  type: kedro_azureml.datasets.AzureMLAssetDataset
+  azureml_dataset: e2e_tests_no_pdp
+  dataset:
+    type: pandas.ParquetDataset
+    filepath: data/02_intermediate/preprocessed_shuttles.parquet
 
 model_input_table:
   type: kedro_azureml.datasets.AzureMLAssetDataset
