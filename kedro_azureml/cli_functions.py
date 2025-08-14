@@ -27,7 +27,7 @@ def get_context_and_pipeline(
     load_versions: Dict[str, str] = {},
 ):
     with KedroContextManager(
-        env=ctx.env, extra_params=parse_extra_params(params, True)
+        env=ctx.env, runtime_params=parse_runtime_params(params, True)
     ) as mgr:
         storage_account_key = os.getenv("AZURE_STORAGE_ACCOUNT_KEY", "")
         pipeline_data_passing = (
@@ -64,7 +64,7 @@ def get_context_and_pipeline(
         yield mgr, az_pipeline
 
 
-def parse_extra_params(params, silent=False):
+def parse_runtime_params(params, silent=False):
     if params and (parameters := json.loads(params.strip("'"))):
         if not silent:
             click.echo(

@@ -18,9 +18,9 @@ class KedroContextManager:
         self,
         env: str,
         project_path: Optional[str] = None,
-        extra_params: Optional[dict] = None,
+        runtime_params: Optional[dict] = None,
     ):
-        self.extra_params = extra_params
+        self.runtime_params = runtime_params
         self.env = env
         self.project_path = project_path
         self.session: Optional[KedroSession] = None
@@ -78,7 +78,7 @@ CONFIG_LOADER_ARGS = {
 
     def __enter__(self):
         self.session = KedroSession.create(
-            self.project_path, env=self.env, extra_params=self.extra_params
+            self.project_path, env=self.env, runtime_params=self.runtime_params
         )
         return self
 
