@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+
+## [1.0.0] - 2025-08-15
+
 - Compatibility changes for kedro 1.0.0 by [@em-pe](https://github.com/em-pe) issue #194
 - Remove dependency for azurefs-fsspec to fix mac arm64 compatibility by [@em-pe](https://github.com/em-pe) issue #101
 - Add support for python 3.12 by [@em-pe](https://github.com/em-pe)
@@ -101,7 +104,8 @@
 
 - Initial plugin release
 
-[unreleased]: https://github.com/getindata/kedro-azureml/compare/0.9.0...HEAD
+[unreleased]: https://github.com/getindata/kedro-azureml/compare/1.0.0...HEAD
+[1.0.0]: https://github.com/getindata/kedro-azureml/compare/0.9.0...1.0.0
 [0.9.0]: https://github.com/getindata/kedro-azureml/compare/0.8.0...0.9.0
 [0.8.0]: https://github.com/getindata/kedro-azureml/compare/0.7.0...0.8.0
 [0.7.0]: https://github.com/getindata/kedro-azureml/compare/0.6.0...0.7.0
