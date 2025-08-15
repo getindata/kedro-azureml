@@ -33,7 +33,7 @@ known_third_party = ["azure", "tabulate", "pydantic","semver","setuptools"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
-kedro = ">=1.0.0,<2.0.0"
+kedro = "^1.0.0"
 cloudpickle = "^2.1.0"
 adlfs = ">=2022.2.0"
 azure-ai-ml = ">=1.2.0"
