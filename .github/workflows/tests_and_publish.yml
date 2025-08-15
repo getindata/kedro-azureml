@@ -206,6 +206,9 @@ jobs:
           conclusion: ${{ job.status }}
 
   publish:
+    permissions:
+      pull-requests: write
+      contents: write
     # only run on push to master
     if: github.event.pull_request == null && github.ref == 'refs/heads/master'
     needs: [e2e_tests_trusted_branch, codeql]
