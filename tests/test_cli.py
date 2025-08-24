@@ -82,7 +82,7 @@ def test_can_initialize_basic_plugin_config(
             azureml_config_path.exists() and azureml_config_path.is_file()
         ), f"{azureml_config_path.absolute()} is not a valid file"
 
-        config: KedroAzureMLConfig = KedroAzureMLConfig.parse_obj(
+        config: KedroAzureMLConfig = KedroAzureMLConfig.model_validate(
             yaml.safe_load(azureml_config_path.read_text())
         )
         assert config.azure.subscription_id == f"subscription_id_{unique_id}"
@@ -120,9 +120,9 @@ def test_can_initialize_basic_plugin_config(
 
 
 @pytest.mark.parametrize(
-    "extra_params",
+    "runtime_params",
     ("", '{"unit_test_param": 666.0}'),
-    ids=("without params", "with extra params"),
+    ids=("without params", "with runtime params"),
 )
 @pytest.mark.parametrize(
     "storage_account_key",
@@ -135,7 +135,7 @@ def test_can_compile_pipeline(
     dummy_pipeline,
     dummy_plugin_config,
     tmp_path: Path,
-    extra_params,
+    runtime_params,
     storage_account_key,
 ):
     with patch.object(
@@ -157,7 +157,7 @@ def test_can_compile_pipeline(
 
         result = runner.invoke(
             cli.compile,
-            ["--output", str(output_path.absolute()), "--params", extra_params],
+            ["--output", str(output_path.absolute()), "--params", runtime_params],
             obj=cli_context,
         )
         assert result.exit_code == 0

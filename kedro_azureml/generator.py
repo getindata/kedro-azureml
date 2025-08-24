@@ -157,8 +157,8 @@ class AzureMLPipelineGenerator:
     def _get_input(self, dataset_name: str, pipeline: Pipeline) -> Input:
         if self._is_param_or_root_non_azureml_asset_dataset(dataset_name, pipeline):
             return Input(type="string")
-        elif dataset_name in self.catalog.list() and isinstance(
-            ds := self.catalog._get_dataset(dataset_name), AzureMLAssetDataset
+        elif dataset_name in self.catalog.filter() and isinstance(
+            ds := self.catalog[dataset_name], AzureMLAssetDataset
         ):
             if ds._azureml_type == "uri_file" and dataset_name not in pipeline.inputs():
                 raise ValueError(
@@ -169,8 +169,8 @@ class AzureMLPipelineGenerator:
             return Input(type="uri_folder")
 
     def _get_output(self, name):
-        if name in self.catalog.list() and isinstance(
-            ds := self.catalog._get_dataset(name), AzureMLAssetDataset
+        if name in self.catalog.filter() and isinstance(
+            ds := self.catalog[name], AzureMLAssetDataset
         ):
             if ds._azureml_type == "uri_file":
                 raise ValueError(
@@ -208,10 +208,8 @@ class AzureMLPipelineGenerator:
     ) -> bool:
         return dataset_name.startswith(PARAMS_PREFIX) or (
             dataset_name in pipeline.inputs()
-            and dataset_name in self.catalog.list()
-            and not isinstance(
-                self.catalog._get_dataset(dataset_name), AzureMLAssetDataset
-            )
+            and dataset_name in self.catalog.filter()
+            and not isinstance(self.catalog[dataset_name], AzureMLAssetDataset)
         )
 
     def _construct_azure_command(
@@ -237,7 +235,7 @@ class AzureMLPipelineGenerator:
                     temporary_storage=self.config.azure.temporary_storage,
                     run_id=kedro_azure_run_id,
                     storage_account_key=self.storage_account_key,
-                ).json()
+                ).model_dump_json()
                 if not pipeline_data_passing
                 else "",
                 **self.extra_env,
@@ -334,8 +332,8 @@ class AzureMLPipelineGenerator:
                     azure_output = parent_outputs[sanitized_input_name]
                     azure_inputs[sanitized_input_name] = azure_output
                 # 2. try to find AzureMLAssetDataset in catalog
-                elif node_input in self.catalog.list() and isinstance(
-                    ds := self.catalog._get_dataset(node_input), AzureMLAssetDataset
+                elif node_input in self.catalog.filter() and isinstance(
+                    ds := self.catalog[node_input], AzureMLAssetDataset
                 ):
                     azure_inputs[sanitized_input_name] = Input(
                         type=ds._azureml_type,

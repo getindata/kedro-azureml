@@ -18,11 +18,11 @@ class AzureMLLocalRunHook:
 
     @hook_impl
     def after_catalog_created(self, catalog):
-        for dataset_name in catalog.list():
-            dataset = catalog._get_dataset(dataset_name, suggest=False)
+        for dataset_name in catalog.filter():
+            dataset = catalog[dataset_name]
             if isinstance(dataset, AzureMLAssetDataset):
                 dataset.azure_config = self.azure_config
-                catalog.add(dataset_name, dataset, replace=True)
+                catalog[dataset_name] = dataset
 
     @hook_impl
     def before_pipeline_run(self, run_params, pipeline, catalog):
@@ -32,8 +32,8 @@ class AzureMLLocalRunHook:
             pipeline: The ``Pipeline`` object representing the pipeline to be run.
             catalog: The ``DataCatalog`` from which to fetch data.
         """
-        for dataset_name in catalog.list():
-            dataset = catalog._get_dataset(dataset_name, suggest=False)
+        for dataset_name in catalog.filter():
+            dataset = catalog[dataset_name]
             if isinstance(dataset, AzureMLAssetDataset):
                 if AzurePipelinesRunner.__name__ not in run_params["runner"]:
                     # when running locally using an AzureMLAssetDataset
@@ -47,7 +47,7 @@ class AzureMLLocalRunHook:
                 else:
                     dataset.as_remote()
 
-                catalog.add(dataset_name, dataset, replace=True)
+                catalog[dataset_name] = dataset
 
 
 azureml_local_run_hook = AzureMLLocalRunHook()

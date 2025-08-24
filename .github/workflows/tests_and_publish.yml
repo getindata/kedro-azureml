@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
 
     steps:
     - uses: actions/checkout@v4
@@ -110,8 +110,8 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pull_request_number: ${{ github.event.client_payload.pull_request.number }}
-          job: ${{ github.job }}
           conclusion: ${{ job.status }}
+          github_job: ${{ github.job }}
 
 
   codeql:
@@ -142,7 +142,7 @@ jobs:
   ### PROJECT SPECIFIC CONFIGURATION HERE
 
   e2e_tests_trusted_branch:
-    if: (github.event_name != 'repository_dispatch' && (github.event.pull_request.head.repo.full_name == github.repository || github.event.pull_request == null) || ( ! failure() && ! cancelled() && github.actor == 'dependabot[bot]'))
+    if: success() && ((github.event_name != 'repository_dispatch' && (github.event.pull_request.head.repo.full_name == github.repository || github.event.pull_request == null)) || (github.actor == 'dependabot[bot]'))
     needs: [unit_tests, sonarcloud_trusted_branch]
     runs-on: ubuntu-latest
     strategy:
@@ -166,13 +166,13 @@ jobs:
 
   e2e_tests_forked_branch:
     if: |
+      success() &&
       github.event_name == 'repository_dispatch' &&
       github.event.client_payload.slash_command.args.named.sha != '' &&
       contains(
         github.event.client_payload.pull_request.head.sha,
         github.event.client_payload.slash_command.args.named.sha
-      ) ||
-      ( ! failure() && ! cancelled() && github.actor == 'dependabot[bot]')
+      ) 
     needs: [unit_tests, sonarcloud_forked_branch]
     runs-on: ubuntu-latest
     strategy:
@@ -202,10 +202,13 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pull_request_number: ${{ github.event.client_payload.pull_request.number }}
-          job: ${{ github.job }}
+          github_job: ${{ github.job }}
           conclusion: ${{ job.status }}
 
   publish:
+    permissions:
+      pull-requests: write
+      contents: write
     # only run on push to master
     if: github.event.pull_request == null && github.ref == 'refs/heads/master'
     needs: [e2e_tests_trusted_branch, codeql]

@@ -17,19 +17,20 @@ def test_can_invoke_dummy_pipeline(
     runner = patched_azure_runner
     catalog = DataCatalog()
     input_data = ["yolo :)"]
-    catalog.add("input_data", MemoryDataset(data=input_data))
+    catalog["input_data"] = MemoryDataset(data=input_data)
     results = runner.run(
         dummy_pipeline,
         catalog,
     )
-    assert results["output_data"] == input_data, "No output data found"
+
+    assert results["output_data"].load() == input_data, "No output data found"
 
 
 @pytest.mark.skip(reason="The failure should be investigated. ")
 def test_runner_fills_missing_datasets(
     dummy_pipeline: Pipeline, patched_azure_runner: AzurePipelinesRunner
 ):
-    input_data = ["yolo :)"]
+    input_data = "yolo :)"
     runner = patched_azure_runner
     catalog = DataCatalog()
     catalog.add("input_data", MemoryDataset(data=input_data))
@@ -38,7 +39,7 @@ def test_runner_fills_missing_datasets(
             dummy_pipeline.filter(node_names=[f"node{node_no + 1}"]),
             catalog,
         )
-    assert results["output_data"] == input_data, "Invalid output data"
+    assert results["output_data"].load() == input_data, "Invalid output data"
 
 
 def test_runner_pipeline_data_passing(dummy_pipeline: Pipeline, tmp_path: Path):
@@ -100,9 +101,9 @@ def test_asset_dataset_root_dir_adjustments(
     )
 
     catalog = DataCatalog({"input_data": input_dataset})
-    assert catalog.datasets.input_data.root_dir == "data"
+    assert catalog["input_data"].root_dir == "data"
     runner.run(
         dummy_pipeline.filter(node_names=["node1"]),
         catalog,
     )
-    assert catalog.datasets.input_data.root_dir == "/random/folder"
+    assert catalog["input_data"].root_dir == "/random/folder"

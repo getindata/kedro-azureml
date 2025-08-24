@@ -33,7 +33,7 @@ class AzurePipelinesRunner(SequentialRunner):
         self.pipeline_data_passing = pipeline_data_passing
         self.runner_config_raw = os.environ.get(KEDRO_AZURE_RUNNER_CONFIG)
         self.runner_config: KedroAzureRunnerConfig = (
-            KedroAzureRunnerConfig.parse_raw(self.runner_config_raw)
+            KedroAzureRunnerConfig.model_validate_json(self.runner_config_raw)
             if not self.pipeline_data_passing
             else None
         )
@@ -44,15 +44,38 @@ class AzurePipelinesRunner(SequentialRunner):
         pipeline: Pipeline,
         catalog: DataCatalog,
         hook_manager: PluginManager = None,
-        session_id: str = None,
+        only_missing_outputs: bool = False,
+        run_id: str = None,
     ) -> Dict[str, Any]:
-        catalog = catalog.shallow_copy()
-        catalog_set = set(catalog.list())
+        # Preserve Azure configs from existing datasets before copying
+        azure_configs = {}
+        for ds_name in catalog.filter():
+            ds = catalog[ds_name]
+            if isinstance(ds, AzureMLAssetDataset) and hasattr(ds, "azure_config"):
+                azure_configs[ds_name] = ds.azure_config
+
+        # Use Kedro 1.0 copy mechanism instead of shallow_copy
+        # For now, create a new catalog with the same datasets
+        updated_catalog = DataCatalog()
+
+        # Copy all existing datasets to the new catalog
+        for ds_name in catalog.filter():
+            ds = catalog[ds_name]
+            updated_catalog[ds_name] = ds
+
+        # Restore Azure configs after copying
+        for ds_name, azure_config in azure_configs.items():
+            if ds_name in updated_catalog.filter():
+                ds = updated_catalog[ds_name]
+                if isinstance(ds, AzureMLAssetDataset):
+                    ds.azure_config = azure_config
+
+        catalog_set = set(updated_catalog.filter())
 
         # Loop over datasets in arguments to set their paths
         for ds_name, azure_dataset_path in self.data_paths.items():
             if ds_name in catalog_set:
-                ds = catalog._get_dataset(ds_name)
+                ds = updated_catalog[ds_name]
                 if isinstance(ds, AzureMLPipelineDataset):
                     if (
                         isinstance(ds, AzureMLAssetDataset)
@@ -61,16 +84,22 @@ class AzurePipelinesRunner(SequentialRunner):
                         ds.root_dir = str(Path(azure_dataset_path).parent)
                     else:
                         ds.root_dir = azure_dataset_path
-                    catalog.add(ds_name, ds, replace=True)
+                    updated_catalog[ds_name] = ds
             else:
-                catalog.add(ds_name, self.create_default_data_set(ds_name))
+                updated_catalog[ds_name] = self.create_default_data_set(ds_name)
 
         # Loop over remaining input datasets to add them to the catalog
-        unsatisfied = pipeline.inputs() - set(catalog.list())
+        unsatisfied = pipeline.inputs() - set(updated_catalog.filter())
         for ds_name in unsatisfied:
-            catalog.add(ds_name, self.create_default_data_set(ds_name))
+            updated_catalog[ds_name] = self.create_default_data_set(ds_name)
 
-        return super().run(pipeline, catalog, hook_manager, session_id)
+        return super().run(
+            pipeline=pipeline,
+            catalog=updated_catalog,
+            hook_manager=hook_manager,
+            only_missing_outputs=only_missing_outputs,
+            run_id=run_id,
+        )
 
     def create_default_data_set(self, ds_name: str) -> AbstractDataset:
         if self.pipeline_data_passing:

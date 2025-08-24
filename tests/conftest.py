@@ -4,10 +4,8 @@ from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
-import fsspec
 import pandas as pd
 import pytest
-from azureml.fsspec import AzureMachineLearningFileSystem
 from kedro.io import DataCatalog
 from kedro.io.core import Version
 from kedro.pipeline import Pipeline, node, pipeline
@@ -73,7 +71,7 @@ def dummy_pipeline_deterministic_tag() -> Pipeline:
 
 @pytest.fixture()
 def dummy_plugin_config() -> KedroAzureMLConfig:
-    return _CONFIG_TEMPLATE.copy(deep=True)
+    return _CONFIG_TEMPLATE.model_copy(deep=True)
 
 
 @pytest.fixture()
@@ -115,7 +113,7 @@ def patched_azure_runner(patched_azure_dataset):
             run_id=uuid4().hex,
             storage_account_key="",
         )
-        os.environ[KEDRO_AZURE_RUNNER_CONFIG] = cfg.json()
+        os.environ[KEDRO_AZURE_RUNNER_CONFIG] = cfg.model_dump_json()
         yield AzurePipelinesRunner()
     except Exception:
         pass
@@ -185,34 +183,70 @@ def simulated_azureml_dataset(tmp_path):
     return tmp_path
 
 
-class AzureMLFileSystemMock(fsspec.implementations.local.LocalFileSystem):
-    _prefix = Path(".")
+def mock_download_artifact_from_aml_uri_with_dataset(
+    uri, destination, datastore_operation, simulated_dataset_path
+):
+    """Mock function to simulate downloading Azure ML artifacts locally"""
+    import shutil
 
-    def __init__(self, uri):
-        super().__init__()
+    # Create destination directory if it doesn't exist
+    dest_path = Path(destination)
+    dest_path.mkdir(parents=True, exist_ok=True)
 
-    def _infer_storage_options(self, uri):
-        path_on_azure = Path(
-            AzureMachineLearningFileSystem._infer_storage_options(uri)[1]
-        )
-        return ["AmlDatastore", self._prefix / path_on_azure]
+    # Map Azure ML URIs to local test directories within the simulated dataset
+    prefix = "azureml://subscriptions/1234/resourcegroups/dummy_rg/workspaces/dummy_ws/datastores/some_datastore/paths"
+    uri_to_source_map = {
+        f"{prefix}/test_file/": "test_file",
+        f"{prefix}/test_folder_file/": "test_folder_file",
+        f"{prefix}/test_folder_nested_file/": "test_folder_nested_file",
+        f"{prefix}/test_folder/": "test_folder",
+        f"{prefix}/test_folder_nested/": "test_folder_nested",
+    }
 
-    def download(self, *args, **kwargs):
-        p = Path(args[1])
-        p.mkdir(parents=True, exist_ok=True)
-        super().download(args[0], args[1], *args[2:], **kwargs)
+    # Find the source directory based on URI
+    source_folder = None
+    for test_uri, folder_name in uri_to_source_map.items():
+        if (
+            test_uri in uri
+        ):  # Use 'in' instead of 'startswith' to handle both folder and file URIs
+            source_folder = simulated_dataset_path / folder_name
+            break
+
+    # Copy all files from source folder to destination
+    if source_folder and source_folder.exists():
+        # Special handling for test_folder_nested_file - copy only from the nested subfolder
+        if (
+            "test_folder_nested_file" in str(source_folder)
+            and (source_folder / "random" / "subfolder").exists()
+        ):
+            nested_source = source_folder / "random" / "subfolder"
+            for item in nested_source.rglob("*"):
+                if item.is_file():
+                    # Copy directly to destination without preserving nested structure
+                    dest_file = dest_path / item.name
+                    shutil.copy2(item, dest_file)
+        else:
+            # Normal copy preserving relative structure
+            for item in source_folder.rglob("*"):
+                if item.is_file():
+                    relative_path = item.relative_to(source_folder)
+                    dest_file = dest_path / relative_path
+                    dest_file.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(item, dest_file)
 
 
 @pytest.fixture
 def mock_azureml_fs(simulated_azureml_dataset):
+    def mock_with_dataset(uri, destination, datastore_operation):
+        return mock_download_artifact_from_aml_uri_with_dataset(
+            uri, destination, datastore_operation, simulated_azureml_dataset
+        )
+
     with patch(
-        "kedro_azureml.datasets.asset_dataset.AzureMachineLearningFileSystem",
-        new=AzureMLFileSystemMock,
+        "kedro_azureml.datasets.asset_dataset.artifact_utils.download_artifact_from_aml_uri",
+        side_effect=mock_with_dataset,
     ):
-        with patch.object(
-            AzureMLFileSystemMock, "_prefix", new=simulated_azureml_dataset
-        ):
-            yield mock_azureml_fs
+        yield
 
 
 @pytest.fixture
