@@ -2,26 +2,27 @@
 
 [[package]]
 name = "adlfs"
-version = "2023.10.0"
+version = "2025.8.0"
 description = "Access Azure Datalake Gen1 with fsspec and dask"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "adlfs-2023.10.0-py3-none-any.whl", hash = "sha256:dfdc8cc782bd78262435fb1bc2a8cfdbdd80342bb1b1ae9dfff968de912b0b09"},
-    {file = "adlfs-2023.10.0.tar.gz", hash = "sha256:f5cf06c5b0074d17d43838d4c434791a98420d9e768b36a1a02c7b3930686543"},
+    {file = "adlfs-2025.8.0-py3-none-any.whl", hash = "sha256:c12a9203a31485cad19599bf2ad30d8efcf4cf0fd2446c60fcdc18604fae07b1"},
+    {file = "adlfs-2025.8.0.tar.gz", hash = "sha256:6fe5857866c18990f632598273e6a8b15edc6baf8614272ede25624057b83e64"},
 ]
 
 [package.dependencies]
 aiohttp = ">=3.7.0"
-azure-core = ">=1.23.1,<2.0.0"
-azure-datalake-store = ">=0.0.46,<0.1"
+azure-core = ">=1.28.0,<2.0.0"
+azure-datalake-store = ">=0.0.53,<0.1"
 azure-identity = "*"
-azure-storage-blob = ">=12.12.0"
-fsspec = ">=2023.9.0"
+azure-storage-blob = ">=12.17.0"
+fsspec = ">=2023.12.0"
 
 [package.extras]
 docs = ["furo", "myst-parser", "numpydoc", "sphinx"]
+tests = ["arrow", "dask[dataframe]", "docker", "pytest", "pytest-mock"]
 
 [[package]]
 name = "aiohappyeyeballs"
@@ -1590,14 +1591,14 @@ files = [
 
 [[package]]
 name = "fsspec"
-version = "2023.10.0"
+version = "2025.9.0"
 description = "File-system specification"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "fsspec-2023.10.0-py3-none-any.whl", hash = "sha256:346a8f024efeb749d2a5fca7ba8854474b1ff9af7c3faaf636a4548781136529"},
-    {file = "fsspec-2023.10.0.tar.gz", hash = "sha256:330c66757591df346ad3091a53bd907e15348c2ba17d63fd54f5c39c4457d2a5"},
+    {file = "fsspec-2025.9.0-py3-none-any.whl", hash = "sha256:530dc2a2af60a414a832059574df4a6e10cce927f6f4a78209390fe38955cfb7"},
+    {file = "fsspec-2025.9.0.tar.gz", hash = "sha256:19fd429483d25d28b65ec68f9f4adc16c17ea2c7c7bf54ec61360d478fb19c19"},
 ]
 
 [package.extras]
@@ -1605,7 +1606,8 @@ abfs = ["adlfs"]
 adl = ["adlfs"]
 arrow = ["pyarrow (>=1)"]
 dask = ["dask", "distributed"]
-devel = ["pytest", "pytest-cov"]
+dev = ["pre-commit", "ruff (>=0.5)"]
+doc = ["numpydoc", "sphinx", "sphinx-design", "sphinx-rtd-theme", "yarl"]
 dropbox = ["dropbox", "dropboxdrivefs", "requests"]
 full = ["adlfs", "aiohttp (!=4.0.0a0,!=4.0.0a1)", "dask", "distributed", "dropbox", "dropboxdrivefs", "fusepy", "gcsfs", "libarchive-c", "ocifs", "panel", "paramiko", "pyarrow (>=1)", "pygit2", "requests", "s3fs", "smbprotocol", "tqdm"]
 fuse = ["fusepy"]
@@ -1615,13 +1617,16 @@ github = ["requests"]
 gs = ["gcsfs"]
 gui = ["panel"]
 hdfs = ["pyarrow (>=1)"]
-http = ["aiohttp (!=4.0.0a0,!=4.0.0a1)", "requests"]
+http = ["aiohttp (!=4.0.0a0,!=4.0.0a1)"]
 libarchive = ["libarchive-c"]
 oci = ["ocifs"]
 s3 = ["s3fs"]
 sftp = ["paramiko"]
 smb = ["smbprotocol"]
 ssh = ["paramiko"]
+test = ["aiohttp (!=4.0.0a0,!=4.0.0a1)", "numpy", "pytest", "pytest-asyncio (!=0.22.0)", "pytest-benchmark", "pytest-cov", "pytest-mock", "pytest-recording", "pytest-rerunfailures", "requests"]
+test-downstream = ["aiobotocore (>=2.5.4,<3.0.0)", "dask[dataframe,test]", "moto[server] (>4,<5)", "pytest-timeout", "xarray"]
+test-full = ["adlfs", "aiohttp (!=4.0.0a0,!=4.0.0a1)", "cloudpickle", "dask", "distributed", "dropbox", "dropboxdrivefs", "fastparquet", "fusepy", "gcsfs", "jinja2", "kerchunk", "libarchive-c", "lz4", "notebook", "numpy", "ocifs", "pandas", "panel", "paramiko", "pyarrow", "pyarrow (>=1)", "pyftpdlib", "pygit2", "pytest", "pytest-asyncio (!=0.22.0)", "pytest-benchmark", "pytest-cov", "pytest-mock", "pytest-recording", "pytest-rerunfailures", "python-snappy", "requests", "smbprotocol", "tqdm", "urllib3", "zarr", "zstandard ; python_version < \"3.14\""]
 tqdm = ["tqdm"]
 
 [[package]]
