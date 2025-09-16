@@ -1,16 +1,52 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-
 version: 2
 updates:
-  - package-ecosystem: "pip" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "pip"
+    directory: "/"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    groups:
+      # Group Azure ML related dependencies
+      azure-deps:
+        patterns:
+          - "azure-*"
+          - "azureml-*"
+          - "adlfs"
+      # Group development dependencies
+      dev-deps:
+        patterns:
+          - "pytest*"
+          - "tox"
+          - "pre-commit"
+          - "coverage*"
+      # Group data processing dependencies
+      data-deps:
+        patterns:
+          - "pandas"
+          - "numpy"
+          - "pyarrow"
+
+    ignore:
+      # Ignore patch updates for stable core dependencies
+      - dependency-name: "kedro"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "pydantic"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "mlflow"
+        update-types: [ "version-update:semver-patch" ]
+      # Skip minor updates for development tools
+      - dependency-name: "pytest*"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+      day: "monday"
+    open-pull-requests-limit: 1
+    groups:
+      # Group all GitHub Actions updates
+      github-actions:
+        patterns:
+          - "*"
