@@ -537,14 +537,14 @@ aio = ["azure-core[aio] (>=1.30.0)"]
 
 [[package]]
 name = "azureml-mlflow"
-version = "1.60.0"
+version = "1.60.0.post1"
 description = "Contains the integration code of AzureML with Mlflow."
 optional = true
 python-versions = "<4.0,>=3.8"
 groups = ["main"]
 markers = "extra == \"mlflow\""
 files = [
-    {file = "azureml_mlflow-1.60.0-py3-none-any.whl", hash = "sha256:9074fa389cf24f16f3aff7d7cda62a658c93b65a4aecc3dd50a5f1e45909687f"},
+    {file = "azureml_mlflow-1.60.0.post1-py3-none-any.whl", hash = "sha256:2de4039ef1ac9e3a959ccd090af42cf265b71fdb44492e10b6912bc2383262f2"},
 ]
 
 [package.dependencies]
@@ -554,8 +554,8 @@ azure-identity = "*"
 azure-mgmt-core = ">=1.2.0,<2.0.0"
 azure-storage-blob = ">=12.5.0,<=12.19.0"
 cryptography = "*"
-jsonpickle = "*"
-mlflow-skinny = "*"
+jsonpickle = "<5.0.0"
+mlflow-skinny = "<3.0.0"
 msrest = ">=0.6.18"
 python-dateutil = ">=2.7.3,<3.0.0"
 pytz = "*"
